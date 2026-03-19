@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useFetchWorkspace } from "@/hooks/workspace";
 import { useFetchTicket, useUpdateTicket } from "@/hooks/tickets";
 import { cn } from "@/lib/utils";
-import { ChevronRight, Menu } from "lucide-react";
+import { ChevronRight, Menu, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { LeftNav } from "@/components/layout/left-nav";
@@ -63,7 +63,7 @@ export const TopNav = () => {
       {/* Top bar: always on mobile; on desktop only when on a ticket page */}
       <header
         className={cn(
-          "border-border bg-background flex h-12 shrink-0 items-center gap-2 border-b px-3",
+          "border-border bg-background/80 backdrop-blur-sm flex h-12 shrink-0 items-center gap-2 border-b px-3",
           !ticketId && "sm:hidden",
         )}
       >
@@ -81,10 +81,10 @@ export const TopNav = () => {
         {/* Breadcrumb — ticket pages only */}
         {ticketId && (
           <div className="text-muted-foreground ml-auto flex min-w-0 flex-1 items-center gap-1 text-sm sm:ml-0">
-            <span className="hidden shrink-0 sm:inline">{workspace?.name ?? "CollabSpace"}</span>
-            <ChevronRight className="hidden size-3.5 shrink-0 sm:block" />
-            <span className="hidden shrink-0 sm:inline">ticket</span>
-            <ChevronRight className="hidden size-3.5 shrink-0 sm:block" />
+            <span className="hidden shrink-0 opacity-70 sm:inline">{workspace?.name ?? "CollabSpace"}</span>
+            <ChevronRight className="hidden size-3 shrink-0 opacity-40 sm:block" />
+            <span className="hidden shrink-0 opacity-70 sm:inline">ticket</span>
+            <ChevronRight className="hidden size-3 shrink-0 opacity-40 sm:block" />
             {titleEditing ? (
               <input
                 ref={inputRef}
@@ -92,18 +92,29 @@ export const TopNav = () => {
                 onChange={(e) => handleTitleChange(e.target.value)}
                 onBlur={handleTitleBlur}
                 onKeyDown={handleTitleKeyDown}
-                className="text-foreground min-w-0 flex-1 border-b border-indigo-400 bg-transparent pb-px font-medium outline-none"
+                className="text-foreground min-w-0 flex-1 rounded-md border border-indigo-400/50 bg-indigo-500/5 px-2 py-0.5 font-medium outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                 autoFocus
               />
             ) : (
               <button
                 type="button"
                 onClick={handleTitleClick}
-                className="text-foreground hover:text-foreground/80 min-w-0 truncate text-left font-medium transition-colors"
+                className="text-foreground hover:bg-accent min-w-0 truncate rounded-md px-2 py-0.5 text-left font-medium transition-all"
                 title="Click to edit title"
               >
                 {titleValue || ticket?.title || "…"}
               </button>
+            )}
+
+            {/* Save status indicator */}
+            {updateTicketMutation.isPending && (
+              <Loader2 className="ml-1 size-3.5 shrink-0 animate-spin text-indigo-500" />
+            )}
+            {updateTicketMutation.isSuccess && !updateTicketMutation.isPending && (
+              <span className="ml-1 flex items-center gap-0.5 text-xs text-emerald-500 animate-fade-in">
+                <Check className="size-3" />
+                Saved
+              </span>
             )}
           </div>
         )}

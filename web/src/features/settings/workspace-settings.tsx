@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Save, UserPlus, X, Loader2, Mail } from "lucide-react";
+import { Save, UserPlus, X, Loader2, Mail, Check } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { axiosInstance } from "@/lib/axios";
@@ -36,6 +36,22 @@ const planBadgeStyles: Record<string, string> = {
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
+const WorkspaceSkeleton = () => (
+  <div className="flex flex-col gap-6 animate-fade-in">
+    {[1, 2].map((i) => (
+      <div key={i} className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="skeleton-shimmer h-5 w-24 rounded bg-muted" />
+        <div className="skeleton-shimmer h-3 w-48 rounded bg-muted" />
+        <div className="h-px bg-border" />
+        <div className="space-y-3">
+          <div className="skeleton-shimmer h-8 w-full rounded-lg bg-muted" />
+          <div className="skeleton-shimmer h-8 w-full rounded-lg bg-muted" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 export const WorkspaceSettings = () => {
   const queryClient = useQueryClient();
   const { data: workspace, isLoading } = useFetchWorkspaceSettings();
@@ -43,7 +59,6 @@ export const WorkspaceSettings = () => {
   const inviteMutation = useInviteToWorkspace(workspace?.id ?? "");
   const [workspaceName, setWorkspaceName] = React.useState("");
   const [inviteEmail, setInviteEmail] = React.useState("");
-  const [saved, setSaved] = React.useState(false);
   const [emailError, setEmailError] = React.useState("");
   const [memberTab, setMemberTab] = React.useState<"members" | "invited">("members");
 
@@ -54,9 +69,12 @@ export const WorkspaceSettings = () => {
   const invalidateWs = () => queryClient.invalidateQueries({ queryKey: ["settings", "workspace"] });
 
   const handleSave = async () => {
-    await updateWorkspaceMutation.mutateAsync({ name: workspaceName });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      await updateWorkspaceMutation.mutateAsync({ name: workspaceName });
+      toast.success("Workspace updated successfully");
+    } catch {
+      toast.error("Failed to update workspace");
+    }
   };
 
   const handleInvite = async () => {
@@ -75,8 +93,13 @@ export const WorkspaceSettings = () => {
       return;
     }
     setEmailError("");
-    await inviteMutation.mutateAsync(email);
-    setInviteEmail("");
+    try {
+      await inviteMutation.mutateAsync(email);
+      setInviteEmail("");
+      toast.success("Invitation sent");
+    } catch {
+      toast.error("Failed to send invitation");
+    }
   };
 
   const handleRemoveMember = async (memberId: string) => {
@@ -113,17 +136,13 @@ export const WorkspaceSettings = () => {
   };
 
   if (isLoading || !workspace) {
-    return (
-      <div className="flex h-48 items-center justify-center">
-        <Loader2 className="text-muted-foreground size-6 animate-spin" />
-      </div>
-    );
+    return <WorkspaceSkeleton />;
   }
 
   const invitedCount = workspace.invited_emails?.length ?? 0;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 animate-fade-in">
       {/* General */}
       <Card>
         <CardHeader>
@@ -132,7 +151,7 @@ export const WorkspaceSettings = () => {
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <div className="flex items-center gap-4">
-            <Avatar size="lg" className="size-14 rounded-xl after:rounded-xl">
+            <Avatar size="lg" className="size-14 rounded-xl ring-2 ring-background after:rounded-xl">
               <AvatarImage src={workspace.logo} alt={workspace.name} />
               <AvatarFallback className="rounded-xl text-lg">
                 {workspace.name
@@ -202,7 +221,7 @@ export const WorkspaceSettings = () => {
                 Invite
               </Button>
             </div>
-            {emailError && <p className="text-destructive text-xs">{emailError}</p>}
+            {emailError && <p className="text-destructive text-xs animate-fade-in">{emailError}</p>}
           </div>
 
           <Separator />
@@ -213,7 +232,7 @@ export const WorkspaceSettings = () => {
               type="button"
               onClick={() => setMemberTab("members")}
               className={cn(
-                "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                "rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
                 memberTab === "members"
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:bg-muted",
@@ -225,7 +244,7 @@ export const WorkspaceSettings = () => {
               type="button"
               onClick={() => setMemberTab("invited")}
               className={cn(
-                "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                "rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
                 memberTab === "invited"
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:bg-muted",
@@ -241,7 +260,7 @@ export const WorkspaceSettings = () => {
               {workspace.members.map((member) => (
                 <div
                   key={member.id}
-                  className="hover:bg-muted/50 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
+                  className="hover:bg-muted/50 flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors"
                 >
                   <Avatar size="sm">
                     <AvatarImage src={member.avatar} alt={member.name} />
@@ -296,7 +315,7 @@ export const WorkspaceSettings = () => {
                 workspace.invited_emails.map((email) => (
                   <div
                     key={email}
-                    className="hover:bg-muted/50 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
+                    className="hover:bg-muted/50 flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors"
                   >
                     <div className="bg-muted flex size-8 items-center justify-center rounded-full">
                       <Mail className="text-muted-foreground size-3.5" />
@@ -327,13 +346,14 @@ export const WorkspaceSettings = () => {
 
       {/* Save */}
       <div className="flex items-center justify-end gap-2">
-        {saved && (
-          <span className="text-sm text-emerald-600 dark:text-emerald-400">
-            Changes saved successfully
-          </span>
-        )}
         <Button onClick={handleSave} disabled={updateWorkspaceMutation.isPending}>
-          <Save className="size-4" />
+          {updateWorkspaceMutation.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : updateWorkspaceMutation.isSuccess ? (
+            <Check className="size-4" />
+          ) : (
+            <Save className="size-4" />
+          )}
           {updateWorkspaceMutation.isPending ? "Saving..." : "Save Changes"}
         </Button>
       </div>

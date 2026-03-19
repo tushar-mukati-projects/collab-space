@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Sun, Moon, Monitor, Check, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFetchAppearance, useUpdateAppearance } from "@/hooks/settings";
@@ -77,21 +78,35 @@ const fontSizeOptions: {
   },
 ];
 
+const AppearanceSkeleton = () => (
+  <div className="flex flex-col gap-6 animate-fade-in">
+    {[1, 2, 3].map((i) => (
+      <div key={i} className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="skeleton-shimmer h-5 w-20 rounded bg-muted" />
+        <div className="skeleton-shimmer h-3 w-48 rounded bg-muted" />
+        <div className="grid gap-3 sm:grid-cols-3">
+          {[1, 2, 3].map((j) => (
+            <div key={j} className="skeleton-shimmer h-32 rounded-xl bg-muted" />
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 export const AppearanceSettings = () => {
   const { data: prefs, isLoading } = useFetchAppearance();
   const updateAppearanceMutation = useUpdateAppearance();
   const setStoreTheme = useUIStore((s) => s.setTheme);
 
   if (isLoading || !prefs) {
-    return (
-      <div className="flex h-48 items-center justify-center">
-        <Loader2 className="text-muted-foreground size-6 animate-spin" />
-      </div>
-    );
+    return <AppearanceSkeleton />;
   }
 
   const handleThemeChange = (theme: Theme) => {
-    updateAppearanceMutation.mutate({ theme });
+    updateAppearanceMutation.mutate({ theme }, {
+      onSuccess: () => toast.success(`Theme set to ${theme}`),
+    });
     // Sync with UI store
     if (theme === "dark") {
       setStoreTheme("dark");
@@ -105,20 +120,31 @@ export const AppearanceSettings = () => {
   };
 
   const handleAccentChange = (color: string) => {
-    updateAppearanceMutation.mutate({ accent_color: color });
+    updateAppearanceMutation.mutate({ accent_color: color }, {
+      onSuccess: () => toast.success(`Accent color updated`),
+    });
   };
 
   const handleFontSizeChange = (fontSize: FontSize) => {
-    updateAppearanceMutation.mutate({ font_size: fontSize });
+    updateAppearanceMutation.mutate({ font_size: fontSize }, {
+      onSuccess: () => toast.success(`Font size set to ${fontSize}`),
+    });
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 animate-fade-in">
       {/* Theme */}
       <Card>
         <CardHeader>
-          <CardTitle>Theme</CardTitle>
-          <CardDescription>Choose your preferred color scheme.</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Theme</CardTitle>
+              <CardDescription>Choose your preferred color scheme.</CardDescription>
+            </div>
+            {updateAppearanceMutation.isPending && (
+              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -130,15 +156,15 @@ export const AppearanceSettings = () => {
                   key={option.value}
                   onClick={() => handleThemeChange(option.value)}
                   className={cn(
-                    "relative flex flex-col items-center gap-3 rounded-xl border-2 p-4 transition-all",
+                    "relative flex flex-col items-center gap-3 rounded-xl border-2 p-4 transition-all duration-200",
                     isSelected
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/40 hover:bg-muted/50",
+                      ? "border-indigo-500 bg-indigo-500/5 shadow-sm"
+                      : "border-border hover:border-indigo-500/40 hover:bg-muted/50 hover:-translate-y-0.5",
                   )}
                 >
                   {isSelected && (
-                    <div className="bg-primary absolute top-2 right-2 flex size-5 items-center justify-center rounded-full">
-                      <Check className="text-primary-foreground size-3" />
+                    <div className="bg-indigo-500 absolute top-2 right-2 flex size-5 items-center justify-center rounded-full animate-fade-in-scale">
+                      <Check className="text-white size-3" />
                     </div>
                   )}
                   {/* Preview */}
@@ -208,19 +234,19 @@ export const AppearanceSettings = () => {
                   key={color.value}
                   onClick={() => handleAccentChange(color.value)}
                   className={cn(
-                    "group flex flex-col items-center gap-1.5 rounded-xl border-2 px-4 py-3 transition-all",
+                    "group flex flex-col items-center gap-1.5 rounded-xl border-2 px-4 py-3 transition-all duration-200",
                     isSelected
-                      ? "border-primary bg-primary/5"
-                      : "hover:border-border border-transparent",
+                      ? "border-indigo-500 bg-indigo-500/5 shadow-sm"
+                      : "hover:border-border border-transparent hover:-translate-y-0.5",
                   )}
                 >
                   <div
                     className={cn(
-                      "relative flex size-10 items-center justify-center rounded-full",
+                      "relative flex size-10 items-center justify-center rounded-full transition-transform group-hover:scale-110",
                       color.class,
                     )}
                   >
-                    {isSelected && <Check className="size-4 text-white" />}
+                    {isSelected && <Check className="size-4 text-white animate-fade-in-scale" />}
                   </div>
                   <span className="text-xs font-medium">{color.name}</span>
                 </button>
@@ -245,15 +271,15 @@ export const AppearanceSettings = () => {
                   key={option.value}
                   onClick={() => handleFontSizeChange(option.value)}
                   className={cn(
-                    "relative flex flex-col items-start gap-2 rounded-xl border-2 p-4 text-left transition-all",
+                    "relative flex flex-col items-start gap-2 rounded-xl border-2 p-4 text-left transition-all duration-200",
                     isSelected
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/40 hover:bg-muted/50",
+                      ? "border-indigo-500 bg-indigo-500/5 shadow-sm"
+                      : "border-border hover:border-indigo-500/40 hover:bg-muted/50 hover:-translate-y-0.5",
                   )}
                 >
                   {isSelected && (
-                    <div className="bg-primary absolute top-2 right-2 flex size-5 items-center justify-center rounded-full">
-                      <Check className="text-primary-foreground size-3" />
+                    <div className="bg-indigo-500 absolute top-2 right-2 flex size-5 items-center justify-center rounded-full animate-fade-in-scale">
+                      <Check className="text-white size-3" />
                     </div>
                   )}
                   {/* Preview text */}

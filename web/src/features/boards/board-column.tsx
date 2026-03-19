@@ -37,14 +37,14 @@ export const BoardColumn = ({
       )}
     >
       {/* Column header */}
-      <div className="flex items-center justify-between rounded-t-xl px-3 py-2">
+      <div className="flex items-center justify-between rounded-t-xl px-3 py-2.5">
         <div className="flex items-center gap-2">
           <span
-            className="inline-block size-2.5 rounded-full"
+            className="inline-block size-2.5 rounded-full ring-2 ring-background"
             style={{ backgroundColor: column.color }}
           />
-          <span className="text-sm font-semibold">{column.name}</span>
-          <span className="bg-muted text-muted-foreground flex size-5 items-center justify-center rounded-full text-[11px] font-medium">
+          <span className="text-sm font-semibold tracking-tight">{column.name}</span>
+          <span className="bg-muted text-muted-foreground flex size-5 items-center justify-center rounded-full text-[11px] font-semibold">
             {tickets.length}
           </span>
         </div>
@@ -52,7 +52,7 @@ export const BoardColumn = ({
           <button
             type="button"
             onClick={onAddTicket}
-            className="text-muted-foreground hover:text-foreground hover:bg-muted rounded-md p-0.5 transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg p-1 transition-all duration-200 hover:scale-105"
             title="Add ticket"
           >
             <Plus className="size-4" />
@@ -64,8 +64,8 @@ export const BoardColumn = ({
       <div
         ref={setNodeRef}
         className={cn(
-          "flex flex-1 flex-col gap-2 overflow-y-auto rounded-b-xl px-2 pt-1 pb-2 transition-colors",
-          isOver && "bg-primary/5 ring-primary/20 rounded-xl ring-2 ring-inset",
+          "flex flex-1 flex-col gap-2 overflow-y-auto rounded-b-xl px-2 pt-1 pb-2 transition-all duration-200",
+          isOver && "bg-indigo-500/5 ring-indigo-500/20 rounded-xl ring-2 ring-inset scale-[1.01]",
         )}
       >
         <SortableContext items={tickets.map((t) => t.id)} strategy={verticalListSortingStrategy}>
@@ -81,8 +81,8 @@ export const BoardColumn = ({
 
         {/* Empty state */}
         {tickets.length === 0 && (
-          <div className="border-border flex flex-1 items-center justify-center rounded-lg border border-dashed py-8">
-            <span className="text-muted-foreground text-xs">No tickets</span>
+          <div className="border-border flex flex-1 items-center justify-center rounded-xl border border-dashed py-8 transition-colors">
+            <span className="text-muted-foreground/60 text-xs">No tickets</span>
           </div>
         )}
       </div>

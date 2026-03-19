@@ -41,19 +41,37 @@ export const NotificationSettings = () => {
 
   if (isLoading || !prefs) {
     return (
-      <div className="flex h-48 items-center justify-center">
-        <Loader2 className="text-muted-foreground size-6 animate-spin" />
+      <div className="flex flex-col gap-6 animate-fade-in">
+        {[1, 2].map((i) => (
+          <div key={i} className="rounded-xl border border-border bg-card p-6 space-y-4">
+            <div className="skeleton-shimmer h-5 w-36 rounded bg-muted" />
+            <div className="skeleton-shimmer h-3 w-56 rounded bg-muted" />
+            <div className="space-y-3">
+              {[1, 2, 3].map((j) => (
+                <div key={j} className="flex items-center gap-3">
+                  <div className="skeleton-shimmer size-4 rounded bg-muted" />
+                  <div className="flex-1 space-y-1">
+                    <div className="skeleton-shimmer h-4 w-40 rounded bg-muted" />
+                    <div className="skeleton-shimmer h-3 w-64 rounded bg-muted" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
 
   const togglePreference = (key: string) => {
     const currentValue = prefs[key as keyof typeof prefs] as boolean;
-    updatePrefsMutation.mutate({ [key]: !currentValue });
+    updatePrefsMutation.mutate({ [key]: !currentValue }, {
+      onSuccess: () => toast.success("Notification preferences updated"),
+    });
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 animate-fade-in">
       {/* Notification types */}
       <Card>
         <CardHeader>

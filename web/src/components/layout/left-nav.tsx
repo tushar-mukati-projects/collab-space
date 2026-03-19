@@ -21,7 +21,7 @@ const navLinks = [
 ];
 
 const navItemBase =
-  "flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors";
+  "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200";
 
 const statusDot: Record<string, string> = {
   backlog: "bg-gray-400",
@@ -54,7 +54,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
   const wsInitials =
     workspace?.name
       ?.split(" ")
-      .map((n) => n[0])
+      .map((n: string) => n[0])
       .join("")
       .slice(0, 2) ?? "CS";
   const currentUserName = clerkUser?.fullName ?? clerkUser?.firstName ?? "User";
@@ -73,18 +73,20 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
         <Link
           href="/boards"
           onClick={onClose}
-          className="hover:bg-accent/60 flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors"
+          className="hover:bg-accent/60 flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-all duration-200"
         >
-          <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-indigo-500/20 text-xs font-semibold text-indigo-400">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500/25 to-indigo-600/15 text-xs font-bold text-indigo-500">
             {wsInitials}
           </span>
-          <span className="truncate text-sm font-semibold">{workspace?.name ?? "CollabSpace"}</span>
+          <span className="truncate text-sm font-semibold tracking-tight">
+            {workspace?.name ?? "CollabSpace"}
+          </span>
         </Link>
       </div>
 
       {/* Scrollable middle section */}
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-2 pb-2">
-        {/* Search + Inbox + My Tickets */}
+      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto px-2 pb-2">
+        {/* Search + Inbox */}
         <div className="space-y-0.5">
           <button
             type="button"
@@ -99,7 +101,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
           >
             <Search className="size-4 shrink-0" />
             <span>Search</span>
-            <kbd className="border-border bg-muted text-muted-foreground pointer-events-none ml-auto hidden items-center rounded border px-1.5 font-mono text-[10px] sm:inline-flex">
+            <kbd className="border-border bg-muted text-muted-foreground pointer-events-none ml-auto hidden items-center rounded-md border px-1.5 font-mono text-[10px] sm:inline-flex">
               ⌘K
             </kbd>
           </button>
@@ -122,17 +124,17 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
               <Ticket className="size-4 shrink-0" />
               <span>My Tickets</span>
               {myTickets.length > 0 && (
-                <span className="bg-muted text-muted-foreground ml-auto rounded-full px-1.5 py-0 text-[10px] font-semibold">
+                <span className="bg-primary/10 text-primary ml-auto rounded-full px-1.5 py-0 text-[10px] font-semibold">
                   {myTickets.length}
                 </span>
               )}
             </PopoverTrigger>
             <PopoverContent side="right" sideOffset={8} align="start" className="w-auto p-0">
               <div className="flex h-[min(32rem,80vh)] w-72 flex-col">
-                <div className="border-border flex shrink-0 items-center border-b px-3 py-2">
+                <div className="border-border flex shrink-0 items-center border-b px-3 py-2.5">
                   <h2 className="text-sm font-semibold">My Tickets</h2>
                   {myTickets.length > 0 && (
-                    <span className="bg-muted text-muted-foreground ml-2 rounded-full px-1.5 py-0 text-[10px] font-semibold">
+                    <span className="bg-primary/10 text-primary ml-2 rounded-full px-1.5 py-0 text-[10px] font-semibold">
                       {myTickets.length}
                     </span>
                   )}
@@ -140,9 +142,9 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
                 <div className="flex-1 overflow-y-auto">
                   {myTickets.length === 0 ? (
                     <div className="text-muted-foreground flex flex-col items-center justify-center py-12 text-sm">
-                      <Ticket className="mb-3 size-8 opacity-40" />
+                      <Ticket className="mb-3 size-8 opacity-30" />
                       <p className="font-medium">No tickets</p>
-                      <p className="text-xs">No assigned tickets yet</p>
+                      <p className="text-xs opacity-70">No assigned tickets yet</p>
                     </div>
                   ) : (
                     <div className="flex flex-col py-1">
@@ -151,7 +153,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
                           key={ticket.id}
                           type="button"
                           onClick={() => router.push(`/ticket/${ticket.id}`)}
-                          className="hover:bg-muted/50 flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors"
+                          className="hover:bg-accent/60 flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors"
                         >
                           <span
                             className={cn(
@@ -172,7 +174,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
           </Popover>
         </div>
 
-        {/* Favorites popover — same style as My Tickets */}
+        {/* Favorites popover */}
         <Popover>
           <PopoverTrigger
             render={
@@ -188,17 +190,17 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
             <Star className="size-4 shrink-0" />
             <span>Favorites</span>
             {favorites.length > 0 && (
-              <span className="bg-muted text-muted-foreground ml-auto rounded-full px-1.5 py-0 text-[10px] font-semibold">
+              <span className="bg-amber-500/10 text-amber-500 ml-auto rounded-full px-1.5 py-0 text-[10px] font-semibold">
                 {favorites.length}
               </span>
             )}
           </PopoverTrigger>
           <PopoverContent side="right" sideOffset={8} align="start" className="w-auto p-0">
             <div className="flex h-[min(32rem,80vh)] w-72 flex-col">
-              <div className="border-border flex shrink-0 items-center border-b px-3 py-2">
+              <div className="border-border flex shrink-0 items-center border-b px-3 py-2.5">
                 <h2 className="text-sm font-semibold">Favorites</h2>
                 {favorites.length > 0 && (
-                  <span className="bg-muted text-muted-foreground ml-2 rounded-full px-1.5 py-0 text-[10px] font-semibold">
+                  <span className="bg-amber-500/10 text-amber-500 ml-2 rounded-full px-1.5 py-0 text-[10px] font-semibold">
                     {favorites.length}
                   </span>
                 )}
@@ -206,9 +208,9 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
               <div className="flex-1 overflow-y-auto">
                 {favorites.length === 0 ? (
                   <div className="text-muted-foreground flex flex-col items-center justify-center py-12 text-sm">
-                    <Star className="mb-3 size-8 opacity-40" />
+                    <Star className="mb-3 size-8 opacity-30" />
                     <p className="font-medium">No favorites</p>
-                    <p className="text-xs">Star tickets to pin them here</p>
+                    <p className="text-xs opacity-70">Star tickets to pin them here</p>
                   </div>
                 ) : (
                   <div className="flex flex-col py-1">
@@ -217,7 +219,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
                         key={fav.id}
                         type="button"
                         onClick={() => router.push(`/ticket/${fav.ticket_id}`)}
-                        className="hover:bg-muted/50 flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors"
+                        className="hover:bg-accent/60 flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors"
                       >
                         <span
                           className={cn(
@@ -237,6 +239,9 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
           </PopoverContent>
         </Popover>
 
+        {/* Separator */}
+        <div className="!my-3 mx-3 h-px bg-border" />
+
         {/* Nav links */}
         <div className="space-y-0.5">
           {navLinks.map((link) => {
@@ -249,11 +254,14 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
                 className={cn(
                   navItemBase,
                   isActive
-                    ? "bg-accent text-accent-foreground"
+                    ? "bg-primary/8 text-foreground font-semibold"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
               >
-                <link.icon className="size-4 shrink-0" />
+                {isActive && (
+                  <span className="absolute left-0 h-5 w-[3px] rounded-r-full bg-indigo-500" />
+                )}
+                <link.icon className={cn("size-4 shrink-0", isActive && "text-indigo-500")} />
                 {link.label}
               </Link>
             );
@@ -261,7 +269,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
         </div>
       </div>
 
-      {/* Settings + Log out + User (fixed at bottom) */}
+      {/* Settings + Log out (fixed at bottom) */}
       <div className="border-border shrink-0 space-y-0.5 border-t px-2 py-2">
         <button
           type="button"
@@ -271,10 +279,12 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
           }}
           className={cn(
             navItemBase,
-            "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+            pathname === "/settings"
+              ? "bg-primary/8 text-foreground font-semibold"
+              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
           )}
         >
-          <Settings className="size-4 shrink-0" />
+          <Settings className={cn("size-4 shrink-0", pathname === "/settings" && "text-indigo-500")} />
           Settings
         </button>
         <button
@@ -285,7 +295,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
           }}
           className={cn(
             navItemBase,
-            "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+            "text-muted-foreground hover:bg-destructive/8 hover:text-destructive",
           )}
         >
           <LogOut className="size-4 shrink-0" />
@@ -295,7 +305,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
 
       <div className="border-border shrink-0 border-t px-2 py-2">
         <div className={cn(navItemBase, "text-muted-foreground cursor-default")}>
-          <Avatar size="sm" className="shrink-0">
+          <Avatar size="sm" className="shrink-0 ring-2 ring-background">
             <AvatarImage src={currentUserAvatar} />
             <AvatarFallback className="text-xs">{initials ?? "?"}</AvatarFallback>
           </Avatar>

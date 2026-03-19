@@ -8,6 +8,27 @@ import { ManageLabelsDialog } from "./manage-labels-dialog";
 import { ManageStatusDialog } from "./manage-status-dialog";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronRight, Plus, Loader2, Tag, CircleDot, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const BoardSkeleton = () => (
+  <div className="space-y-2 animate-fade-in">
+    {[1, 2].map((i) => (
+      <div key={i} className="rounded-xl border border-border bg-card">
+        <div className="flex items-center px-4 py-3.5">
+          <div className="flex flex-1 items-center gap-3">
+            <div className="skeleton-shimmer h-4 w-4 rounded bg-muted" />
+            <div className="skeleton-shimmer h-4 w-32 rounded bg-muted" />
+            <div className="skeleton-shimmer h-5 w-16 rounded-full bg-muted" />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="skeleton-shimmer h-3 w-20 rounded bg-muted" />
+            <div className="skeleton-shimmer h-3 w-16 rounded bg-muted" />
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export const BoardView = () => {
   const router = useRouter();
@@ -35,16 +56,24 @@ export const BoardView = () => {
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="text-muted-foreground size-6 animate-spin" />
+      <div className="mx-auto max-w-[1400px] p-4 sm:p-6">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="skeleton-shimmer h-8 w-24 rounded-lg bg-muted" />
+          <div className="flex gap-2">
+            <div className="skeleton-shimmer h-8 w-28 rounded-lg bg-muted" />
+            <div className="skeleton-shimmer h-8 w-28 rounded-lg bg-muted" />
+            <div className="skeleton-shimmer h-8 w-24 rounded-lg bg-muted" />
+          </div>
+        </div>
+        <BoardSkeleton />
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-[1400px] p-4 sm:p-6">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Boards</h1>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 animate-fade-in">
+        <h1 className="text-2xl font-bold tracking-tight">Boards</h1>
         <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
@@ -72,9 +101,9 @@ export const BoardView = () => {
       </div>
 
       {showCreateInput && (
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-4 flex items-center gap-2 animate-fade-in">
           <input
-            className="bg-background focus:ring-ring rounded-md border px-3 py-1.5 text-sm outline-none focus:ring-2"
+            className="bg-background focus:ring-ring/30 rounded-lg border px-3 py-1.5 text-sm outline-none transition-all focus:ring-2 focus:border-indigo-400"
             placeholder="Board name..."
             value={newBoardName}
             onChange={(e) => setNewBoardName(e.target.value)}
@@ -82,7 +111,11 @@ export const BoardView = () => {
             autoFocus
           />
           <Button size="sm" onClick={handleCreateBoard} disabled={createBoardMutation.isPending}>
-            Create
+            {createBoardMutation.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              "Create"
+            )}
           </Button>
           <Button
             size="sm"
@@ -98,27 +131,40 @@ export const BoardView = () => {
       )}
 
       <div className="space-y-2">
-        {boards?.map((board) => (
-          <div key={board.id} className="bg-card rounded-lg border">
+        {boards?.map((board, index) => (
+          <div
+            key={board.id}
+            className="bg-card rounded-xl border border-border transition-all duration-200 hover:border-border/80 hover:shadow-sm animate-fade-in"
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
             <div className="flex items-center">
               <button
-                className="hover:bg-muted/50 flex flex-1 items-center justify-between px-4 py-3 text-left transition-colors"
+                className="hover:bg-muted/50 flex flex-1 items-center justify-between rounded-l-xl px-4 py-3.5 text-left transition-colors"
                 onClick={() => toggleBoard(board.id)}
               >
                 <div className="flex items-center gap-3">
-                  {effectiveOpenId === board.id ? (
-                    <ChevronDown className="text-muted-foreground size-4" />
-                  ) : (
+                  <span
+                    className={cn(
+                      "transition-transform duration-200",
+                      effectiveOpenId === board.id && "rotate-90",
+                    )}
+                  >
                     <ChevronRight className="text-muted-foreground size-4" />
-                  )}
-                  <span className="font-medium">{board.name}</span>
-                  <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
+                  </span>
+                  <span className="font-semibold">{board.name}</span>
+                  <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
                     {board.ticket_counts.total} tickets
                   </span>
                 </div>
                 <div className="text-muted-foreground flex items-center gap-3 text-xs">
-                  <span>{board.ticket_counts.in_progress} in progress</span>
-                  <span>{board.ticket_counts.done} done</span>
+                  <span className="flex items-center gap-1">
+                    <span className="size-1.5 rounded-full bg-yellow-400" />
+                    {board.ticket_counts.in_progress} in progress
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="size-1.5 rounded-full bg-green-500" />
+                    {board.ticket_counts.done} done
+                  </span>
                 </div>
               </button>
               <button
@@ -129,20 +175,36 @@ export const BoardView = () => {
                     deleteBoardMutation.mutate(board.id);
                   }
                 }}
-                className="text-muted-foreground hover:text-destructive hover:bg-accent mr-2 inline-flex items-center justify-center rounded-md p-2 transition-colors"
+                className={cn(
+                  "text-muted-foreground hover:text-destructive hover:bg-destructive/8 mr-2 inline-flex items-center justify-center rounded-lg p-2 transition-all",
+                  deleteBoardMutation.isPending && "pointer-events-none opacity-50",
+                )}
               >
-                <Trash2 className="size-4" />
+                {deleteBoardMutation.isPending ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Trash2 className="size-4" />
+                )}
               </button>
             </div>
 
-            {effectiveOpenId === board.id && (
-              <div className="border-t px-4 pt-2 pb-4">
-                <BoardColumns
-                  board={board}
-                  onCardClick={(ticketId) => router.push(`/ticket/${ticketId}`)}
-                />
+            <div
+              className={cn(
+                "grid transition-all duration-300 ease-in-out",
+                effectiveOpenId === board.id
+                  ? "grid-rows-[1fr] opacity-100"
+                  : "grid-rows-[0fr] opacity-0",
+              )}
+            >
+              <div className="overflow-hidden">
+                <div className="border-t px-4 pt-2 pb-4">
+                  <BoardColumns
+                    board={board}
+                    onCardClick={(ticketId) => router.push(`/ticket/${ticketId}`)}
+                  />
+                </div>
               </div>
-            )}
+            </div>
           </div>
         ))}
       </div>

@@ -26,6 +26,7 @@ import {
   ChevronRight,
   Star,
   Trash2,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -104,6 +105,43 @@ const getUserInitials = (name: string) => {
 };
 
 // ---------------------------------------------------------------------------
+// Skeleton loader
+// ---------------------------------------------------------------------------
+
+const TicketSkeleton = () => (
+  <div className="flex h-full animate-fade-in">
+    <div className="flex flex-1 flex-col">
+      <div className="border-border flex items-center justify-between border-b px-4 py-2">
+        <div className="skeleton-shimmer h-4 w-16 rounded bg-muted" />
+        <div className="flex gap-2">
+          <div className="skeleton-shimmer h-6 w-14 rounded bg-muted" />
+          <div className="skeleton-shimmer h-6 w-14 rounded bg-muted" />
+        </div>
+      </div>
+      <div className="flex-1 p-8">
+        <div className="mx-auto max-w-6xl space-y-4">
+          <div className="skeleton-shimmer h-6 w-3/4 rounded bg-muted" />
+          <div className="skeleton-shimmer h-4 w-full rounded bg-muted" />
+          <div className="skeleton-shimmer h-4 w-2/3 rounded bg-muted" />
+          <div className="skeleton-shimmer h-32 w-full rounded-xl bg-muted" />
+        </div>
+      </div>
+    </div>
+    <div className="border-border hidden w-[380px] border-l lg:block">
+      <div className="space-y-4 p-4">
+        <div className="skeleton-shimmer h-5 w-24 rounded bg-muted" />
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="flex items-center gap-3">
+            <div className="skeleton-shimmer h-4 w-20 rounded bg-muted" />
+            <div className="skeleton-shimmer h-7 w-28 rounded-lg bg-muted" />
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
@@ -129,9 +167,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   const toggleFavMutation = useToggleFavorite();
   const isFavorited = favorites.some((f) => f.ticket_id === ticketId);
 
-  // Collaboration config — works in two modes:
-  // 1. WebSocket (NEXT_PUBLIC_COLLAB_URL=ws://...) — for self-hosted with Hocuspocus
-  // 2. Serverless (NEXT_PUBLIC_COLLAB_URL=serverless) — polling via API routes, works on Vercel
+  // Collaboration config
   const collabConfig = React.useMemo(() => {
     const collabUrl = process.env.NEXT_PUBLIC_COLLAB_URL;
     if (!collabUrl || !clerkUser?.id || !workspace) return undefined;
@@ -147,6 +183,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
       token: `${clerkUser.id}:${wsId}`,
     };
   }, [ticketId, clerkUser, workspace]);
+
   // Parent ticket (only fetched when this ticket is a sub-ticket)
   const parentTicketId = ticket?.parent_type === "ticket" ? (ticket.parent_id ?? "") : "";
   const { data: parentTicket } = useFetchTicket(parentTicketId, fetchEnabled);
@@ -203,7 +240,10 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
         updateTicketMutation.mutate(
           { id: ticketId, data: { content: value } },
           {
-            onSuccess: () => setSaveStatus("saved"),
+            onSuccess: () => {
+              setSaveStatus("saved");
+              setTimeout(() => setSaveStatus("idle"), 2000);
+            },
             onError: () => setSaveStatus("idle"),
           },
         );
@@ -213,7 +253,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   );
 
   const handleContentChange = (value: string) => {
-    if (collabConfig) return; // Yjs/Hocuspocus handles persistence
+    if (collabConfig) return;
     debouncedSaveContent(value);
   };
 
@@ -242,16 +282,12 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   };
 
   if (ticketLoading) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="text-muted-foreground size-6 animate-spin" />
-      </div>
-    );
+    return <TicketSkeleton />;
   }
 
   if (!ticket) {
     return (
-      <div className="flex h-96 flex-col items-center justify-center gap-3">
+      <div className="flex h-96 flex-col items-center justify-center gap-3 animate-fade-in">
         <p className="text-muted-foreground text-sm">Ticket not found.</p>
         <Button variant="outline" size="sm" onClick={() => router.push("/boards")}>
           <ArrowLeft className="size-4" />
@@ -264,14 +300,28 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   const selectedDate = ticket.due_date ? new Date(ticket.due_date) : undefined;
 
   // ---------------------------------------------------------------------------
-  // Properties + Activity panel — shared between desktop sidebar and mobile sheet
+  // Properties + Activity panel
   // ---------------------------------------------------------------------------
 
   const propertiesPanel = (
     <div className="space-y-6 p-4">
       {/* Properties section */}
       <div className="space-y-4">
-        <h4 className="text-sm font-semibold">Properties</h4>
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-semibold">Properties</h4>
+          {updateTicketMutation.isPending && (
+            <span className="flex items-center gap-1 text-[11px] text-indigo-500 save-indicator">
+              <Loader2 className="size-3 animate-spin" />
+              Updating...
+            </span>
+          )}
+          {updateTicketMutation.isSuccess && !updateTicketMutation.isPending && (
+            <span className="flex items-center gap-1 text-[11px] text-emerald-500 animate-fade-in">
+              <Check className="size-3" />
+              Saved
+            </span>
+          )}
+        </div>
 
         <div className="grid grid-cols-[6.5rem_1fr] gap-x-2 gap-y-3 text-sm">
           {/* Status */}
@@ -433,7 +483,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
                   key={lbl.id}
                   type="button"
                   onClick={() => toggleLabel(lbl.id)}
-                  className="hover:bg-accent flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+                  className="hover:bg-accent flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors"
                 >
                   <Checkbox
                     checked={ticket.labels.includes(lbl.id)}
@@ -471,6 +521,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
               />
             </PopoverContent>
           </Popover>
+
           {/* Parent ticket */}
           {ticket.parent_type === "ticket" && parentTicket && (
             <>
@@ -481,7 +532,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
               <button
                 type="button"
                 onClick={() => router.push(`/ticket/${parentTicket.id}`)}
-                className="text-foreground hover:text-primary truncate text-left text-sm font-medium transition-colors"
+                className="text-foreground hover:text-indigo-500 truncate text-left text-sm font-medium transition-colors"
               >
                 {parentTicket.title}
               </button>
@@ -499,7 +550,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
           <button
             type="button"
             onClick={() => setCreateSubOpen(true)}
-            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:bg-accent inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs transition-all"
           >
             <Plus className="size-3" />
             Add
@@ -507,7 +558,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
         </div>
 
         {subTickets.length === 0 && (
-          <p className="text-muted-foreground text-xs">No sub-tickets yet.</p>
+          <p className="text-muted-foreground/60 text-xs">No sub-tickets yet.</p>
         )}
 
         {subTickets.map((sub) => {
@@ -518,7 +569,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
               key={sub.id}
               type="button"
               onClick={() => router.push(`/ticket/${sub.id}`)}
-              className="hover:bg-accent flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors"
+              className="hover:bg-accent flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-all"
             >
               <StatusIcon className={cn("size-3.5 shrink-0", statusOpt?.color)} />
               <span className="truncate text-sm">{sub.title}</span>
@@ -531,14 +582,16 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   );
 
   // ---------------------------------------------------------------------------
-  // Activity & Comments — rendered below the editor in the main column
+  // Activity & Comments
   // ---------------------------------------------------------------------------
 
   const activitySection = (
     <div className="space-y-4">
       <h4 className="text-sm font-semibold">Activity</h4>
 
-      {timeline.length === 0 && <p className="text-muted-foreground text-xs">No activity yet.</p>}
+      {timeline.length === 0 && (
+        <p className="text-muted-foreground/60 text-xs">No activity yet.</p>
+      )}
 
       <div className="space-y-4">
         {timeline.map((item) => {
@@ -546,7 +599,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
             const comment = item.data as Comment;
             const author = userMap.get(comment.author_id);
             return (
-              <div key={item.id} className="flex gap-3">
+              <div key={item.id} className="flex gap-3 animate-fade-in">
                 <Avatar size="sm">
                   {author && (
                     <>
@@ -605,8 +658,16 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
           }}
           className="text-sm"
         />
-        <Button size="icon" onClick={handleSubmitComment} disabled={!commentText.trim()}>
-          <Send className="size-4" />
+        <Button
+          size="icon"
+          onClick={handleSubmitComment}
+          disabled={!commentText.trim() || createCommentMutation.isPending}
+        >
+          {createCommentMutation.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Send className="size-4" />
+          )}
         </Button>
       </div>
     </div>
@@ -617,12 +678,19 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
       {/* Left column — title + markdown content */}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {/* Toolbar bar */}
-        <div className="border-border flex shrink-0 items-center justify-between border-b px-4 py-2">
+        <div className="border-border bg-background/80 backdrop-blur-sm flex shrink-0 items-center justify-between border-b px-4 py-2">
           <div className="flex items-center gap-2">
-            {saveStatus !== "idle" && (
-              <p className="text-muted-foreground text-xs">
-                {saveStatus === "saving" ? "Saving…" : "Saved"}
-              </p>
+            {saveStatus === "saving" && (
+              <span className="text-muted-foreground flex items-center gap-1.5 text-xs save-indicator">
+                <Loader2 className="size-3 animate-spin" />
+                Saving...
+              </span>
+            )}
+            {saveStatus === "saved" && (
+              <span className="flex items-center gap-1 text-xs text-emerald-500 animate-fade-in">
+                <Check className="size-3" />
+                Saved
+              </span>
             )}
           </div>
           <div className="flex items-center gap-1">
@@ -636,15 +704,23 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
                   });
                 }
               }}
-              className="text-muted-foreground hover:text-destructive hover:bg-accent inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors"
+              disabled={deleteTicketMutation.isPending}
+              className={cn(
+                "text-muted-foreground hover:text-destructive hover:bg-destructive/8 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition-all",
+                deleteTicketMutation.isPending && "pointer-events-none opacity-50",
+              )}
             >
-              <Trash2 className="size-3.5" />
+              {deleteTicketMutation.isPending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="size-3.5" />
+              )}
               Delete
             </button>
             <button
               type="button"
               onClick={() => setDetailsOpen(true)}
-              className="text-muted-foreground hover:text-foreground hover:bg-accent inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors lg:hidden"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition-all lg:hidden"
             >
               <SlidersHorizontal className="size-3.5" />
               Details
@@ -652,14 +728,20 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
             <button
               type="button"
               onClick={() => toggleFavMutation.mutate(ticketId)}
+              disabled={toggleFavMutation.isPending}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors",
+                "inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition-all",
                 isFavorited
                   ? "text-amber-500 hover:text-amber-600"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent",
+                toggleFavMutation.isPending && "opacity-60",
               )}
             >
-              <Star className={cn("size-3.5", isFavorited && "fill-amber-400")} />
+              {toggleFavMutation.isPending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Star className={cn("size-3.5", isFavorited && "fill-amber-400")} />
+              )}
               {isFavorited ? "Favorited" : "Favorite"}
             </button>
           </div>

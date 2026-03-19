@@ -84,8 +84,9 @@ export const BoardCard = ({ ticket, labelMap, onCardClick }: BoardCardProps) => 
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group border-border bg-card hover:border-border/80 relative cursor-pointer rounded-lg border p-3 shadow-sm transition-all hover:shadow-md",
-        isDragging && "ring-primary/20 opacity-50 shadow-lg ring-2",
+        "group border-border bg-card relative cursor-pointer rounded-xl border p-3 transition-all duration-200",
+        "hover:border-border/70 hover:shadow-md hover:-translate-y-0.5",
+        isDragging && "ring-primary/20 opacity-50 shadow-lg ring-2 rotate-1",
       )}
       onClick={handleClick}
     >
@@ -93,7 +94,7 @@ export const BoardCard = ({ ticket, labelMap, onCardClick }: BoardCardProps) => 
       <button
         type="button"
         data-drag-handle
-        className="absolute top-1/2 left-1 -translate-y-1/2 cursor-grab rounded p-0.5 opacity-0 transition-opacity group-hover:opacity-60 hover:!opacity-100 active:cursor-grabbing"
+        className="absolute top-1/2 left-1 -translate-y-1/2 cursor-grab rounded-md p-0.5 opacity-0 transition-all duration-200 group-hover:opacity-60 hover:!opacity-100 hover:bg-muted active:cursor-grabbing"
         {...attributes}
         {...listeners}
       >
@@ -106,13 +107,16 @@ export const BoardCard = ({ ticket, labelMap, onCardClick }: BoardCardProps) => 
         data-fav-btn
         onClick={handleToggleFav}
         className={cn(
-          "absolute top-2 right-2 rounded p-0.5 transition-opacity",
-          isFavorited ? "opacity-100" : "opacity-0 group-hover:opacity-60 hover:!opacity-100",
+          "absolute top-2 right-2 rounded-md p-0.5 transition-all duration-200",
+          isFavorited
+            ? "opacity-100 scale-100"
+            : "opacity-0 scale-90 group-hover:opacity-60 group-hover:scale-100 hover:!opacity-100",
+          toggleFavorite.isPending && "pointer-events-none animate-pulse",
         )}
       >
         <Star
           className={cn(
-            "size-3.5",
+            "size-3.5 transition-colors",
             isFavorited ? "fill-amber-400 text-amber-400" : "text-muted-foreground",
           )}
         />
@@ -136,9 +140,9 @@ export const BoardCard = ({ ticket, labelMap, onCardClick }: BoardCardProps) => 
               return (
                 <span
                   key={labelId}
-                  className="inline-flex items-center gap-1 rounded-full px-1.5 py-0 text-[10px] font-medium"
+                  className="inline-flex items-center gap-1 rounded-full px-1.5 py-0 text-[10px] font-medium transition-colors"
                   style={{
-                    backgroundColor: `${label.color}25`,
+                    backgroundColor: `${label.color}20`,
                     color: label.color,
                   }}
                 >

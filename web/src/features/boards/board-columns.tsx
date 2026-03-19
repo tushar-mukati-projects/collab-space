@@ -435,20 +435,22 @@ export const BoardColumns = ({ board, onCardClick }: BoardColumnsProps) => {
       />
       <ScrollArea className="flex-1">
         {ticketsLoading ? (
-          <div className="flex gap-4 pt-2 pb-4" style={{ minWidth: "fit-content" }}>
+          <div className="flex gap-4 pt-2 pb-4 animate-fade-in" style={{ minWidth: "fit-content" }}>
             {COLUMN_DEFS.map((col) => (
               <div key={col.status} className="w-[300px] shrink-0 space-y-3">
-                <div className="flex items-center gap-2 px-1 py-2">
-                  <div className="bg-muted h-3 w-20 animate-pulse rounded" />
-                  <div className="bg-muted h-4 w-5 animate-pulse rounded-full" />
+                <div className="flex items-center gap-2 px-1 py-2.5">
+                  <span className="inline-block size-2.5 rounded-full" style={{ backgroundColor: col.color, opacity: 0.4 }} />
+                  <div className="skeleton-shimmer h-3.5 w-20 rounded bg-muted" />
+                  <div className="skeleton-shimmer size-5 rounded-full bg-muted" />
                 </div>
                 {[1, 2].map((i) => (
-                  <div key={i} className="border-border bg-card space-y-2 rounded-lg border p-3">
-                    <div className="bg-muted h-4 w-3/4 animate-pulse rounded" />
-                    <div className="bg-muted h-3 w-1/2 animate-pulse rounded" />
+                  <div key={i} className="border-border bg-card space-y-2.5 rounded-xl border p-3">
+                    <div className="skeleton-shimmer h-3.5 w-5 rounded bg-muted" />
+                    <div className="skeleton-shimmer h-4 w-3/4 rounded bg-muted" />
+                    <div className="skeleton-shimmer h-3 w-1/2 rounded bg-muted" />
                     <div className="flex gap-1">
-                      <div className="bg-muted h-4 w-12 animate-pulse rounded-full" />
-                      <div className="bg-muted h-4 w-10 animate-pulse rounded-full" />
+                      <div className="skeleton-shimmer h-4 w-12 rounded-full bg-muted" />
+                      <div className="skeleton-shimmer h-4 w-10 rounded-full bg-muted" />
                     </div>
                   </div>
                 ))}

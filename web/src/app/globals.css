@@ -128,6 +128,9 @@
   html {
     @apply font-sans;
     font-size: 16px;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   html.font-compact {
     font-size: 14px;
@@ -135,6 +138,113 @@
   html.font-comfortable {
     font-size: 18px;
   }
+
+  /* Smooth transitions on all interactive elements */
+  button, a, input, select, textarea, [role="button"] {
+    @apply transition-all duration-200 ease-out;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/30;
+  }
+
+  /* Selection styling */
+  ::selection {
+    @apply bg-primary/15 text-foreground;
+  }
+}
+
+/* ─── Global progress bar ─────────────────────────────────────────────────── */
+
+@keyframes progress-indeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+.global-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 9999;
+  overflow: hidden;
+  background: transparent;
+}
+
+.global-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, oklch(0.637 0.237 261), transparent);
+  animation: progress-indeterminate 1.2s ease-in-out infinite;
+}
+
+.dark .global-progress-bar::after {
+  background: linear-gradient(90deg, transparent, oklch(0.637 0.237 261 / 80%), transparent);
+}
+
+/* ─── Subtle entrance animations ──────────────────────────────────────────── */
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-scale {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out both;
+}
+
+.animate-fade-in-scale {
+  animation: fade-in-scale 0.2s ease-out both;
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, transparent 0%, var(--muted) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* ─── Inline save indicator ───────────────────────────────────────────────── */
+
+@keyframes save-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.save-indicator {
+  animation: save-pulse 1.5s ease-in-out infinite;
+}
+
+/* ─── Glass effect for nav sidebar ────────────────────────────────────────── */
+
+.glass-sidebar {
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
 }
 
 /* ─── Collaboration cursors ────────────────────────────────────────────────── */

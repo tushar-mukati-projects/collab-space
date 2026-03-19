@@ -47,27 +47,27 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="w-full max-w-md px-4">
+    <div className="w-full max-w-md px-4 animate-fade-in">
       {/* Header */}
       <div className="mb-8 text-center">
-        <div className="bg-primary/10 text-primary mx-auto mb-4 flex size-12 items-center justify-center rounded-xl text-lg font-bold">
+        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/25 to-indigo-600/15 text-lg font-bold text-indigo-500">
           CS
         </div>
-        <h1 className="text-xl font-semibold">Welcome, {firstName}!</h1>
+        <h1 className="text-xl font-bold tracking-tight">Welcome, {firstName}!</h1>
         <p className="text-muted-foreground mt-1 text-sm">
           Create a new workspace or join an existing one
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="border-border mb-6 flex rounded-lg border p-1">
+      <div className="border-border mb-6 flex rounded-xl border p-1">
         <button
           type="button"
           onClick={() => setTab("create")}
           className={cn(
-            "flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+            "flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
             tab === "create"
-              ? "bg-accent text-accent-foreground"
+              ? "bg-accent text-accent-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
@@ -78,16 +78,16 @@ export default function OnboardingPage() {
           type="button"
           onClick={() => setTab("join")}
           className={cn(
-            "relative flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+            "relative flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
             tab === "join"
-              ? "bg-accent text-accent-foreground"
+              ? "bg-accent text-accent-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
           <Users className="size-4" />
           Join workspace
           {invitations.length > 0 && (
-            <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-[9px] font-bold">
+            <span className="bg-indigo-500 text-white absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-[9px] font-bold animate-fade-in-scale">
               {invitations.length}
             </span>
           )}
@@ -96,7 +96,7 @@ export default function OnboardingPage() {
 
       {/* Create workspace tab */}
       {tab === "create" && (
-        <form onSubmit={handleCreate} className="flex flex-col gap-5">
+        <form onSubmit={handleCreate} className="flex flex-col gap-5 animate-fade-in">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="ws-name">Workspace name</Label>
             <Input
@@ -112,7 +112,7 @@ export default function OnboardingPage() {
           </div>
 
           {/* Plan card */}
-          <div className="border-border rounded-xl border p-4">
+          <div className="border-border rounded-xl border p-4 transition-all hover:border-indigo-500/30 hover:shadow-sm">
             <div className="flex items-center gap-3">
               <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-500">
                 <Sparkles className="size-4" />
@@ -138,7 +138,7 @@ export default function OnboardingPage() {
           >
             {createWorkspaceMutation.isPending ? (
               <>
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin text-indigo-200" />
                 Creating...
               </>
             ) : (
@@ -153,16 +153,25 @@ export default function OnboardingPage() {
 
       {/* Join workspace tab */}
       {tab === "join" && (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 animate-fade-in">
           {invitationsLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="text-muted-foreground size-5 animate-spin" />
+            <div className="flex flex-col gap-3 py-4">
+              {[1, 2].map((i) => (
+                <div key={i} className="border-border flex items-center gap-3 rounded-xl border p-4">
+                  <div className="skeleton-shimmer size-10 shrink-0 rounded-lg bg-muted" />
+                  <div className="flex-1 space-y-2">
+                    <div className="skeleton-shimmer h-4 w-32 rounded bg-muted" />
+                    <div className="skeleton-shimmer h-3 w-44 rounded bg-muted" />
+                  </div>
+                  <div className="skeleton-shimmer h-8 w-16 rounded-lg bg-muted" />
+                </div>
+              ))}
             </div>
           ) : invitations.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center py-12 text-center">
-              <Building2 className="mb-3 size-10 opacity-30" />
+              <Building2 className="mb-3 size-10 opacity-20" />
               <p className="text-sm font-medium">No invitations</p>
-              <p className="mt-1 text-xs">
+              <p className="mt-1 text-xs opacity-70">
                 Ask a workspace owner to invite <br />
                 <span className="text-foreground font-medium">{email}</span>
               </p>
@@ -172,10 +181,11 @@ export default function OnboardingPage() {
               <p className="text-muted-foreground text-xs">
                 You&apos;ve been invited to the following workspaces:
               </p>
-              {invitations.map((inv) => (
+              {invitations.map((inv, i) => (
                 <div
                   key={inv.id}
-                  className="border-border flex items-center gap-3 rounded-xl border p-4"
+                  className="border-border flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-indigo-500/30 hover:shadow-sm animate-fade-in"
+                  style={{ animationDelay: `${i * 80}ms` }}
                 >
                   <Image
                     src={inv.logo}
@@ -186,7 +196,7 @@ export default function OnboardingPage() {
                     unoptimized
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{inv.name}</p>
+                    <p className="truncate text-sm font-semibold">{inv.name}</p>
                     <p className="text-muted-foreground text-xs">
                       {inv.member_count} member{inv.member_count !== 1 && "s"} &middot;{" "}
                       {inv.plan.charAt(0).toUpperCase() + inv.plan.slice(1)} plan
@@ -198,7 +208,7 @@ export default function OnboardingPage() {
                     disabled={joinWorkspaceMutation.isPending}
                   >
                     {joinWorkspaceMutation.isPending ? (
-                      <Loader2 className="size-3.5 animate-spin" />
+                      <Loader2 className="size-3.5 animate-spin text-indigo-200" />
                     ) : (
                       <CheckCircle2 className="size-3.5" />
                     )}

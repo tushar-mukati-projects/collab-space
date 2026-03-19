@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
@@ -143,8 +144,9 @@ export const CreateTicketDialog = ({
       });
       resetForm();
       onOpenChange(false);
+      toast.success("Ticket created successfully");
     } catch {
-      // handled by React Query
+      toast.error("Failed to create ticket");
     }
   };
 
@@ -178,7 +180,7 @@ export const CreateTicketDialog = ({
     >
       <DialogContent
         showCloseButton={false}
-        className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl"
+        className="flex max-h-[85vh] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-2xl animate-fade-in-scale"
         onKeyDown={handleKeyDown}
       >
         {/* Title input */}

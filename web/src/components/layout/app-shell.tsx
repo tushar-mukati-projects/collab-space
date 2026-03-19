@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { Loader2 } from "lucide-react";
 import { useUIStore } from "@/stores/ui-store";
 import { useFetchWorkspace } from "@/hooks/workspace";
 import { useFetchAppearance } from "@/hooks/settings";
@@ -22,6 +21,21 @@ const resolveTheme = (pref: "light" | "dark" | "system"): "light" | "dark" => {
   }
   return pref;
 };
+
+const LoadingSplash = () => (
+  <div className="bg-background flex h-screen items-center justify-center">
+    <div className="flex flex-col items-center gap-4 animate-fade-in">
+      <div className="flex size-10 items-center justify-center rounded-xl bg-indigo-500/20">
+        <span className="text-sm font-bold text-indigo-500">CS</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <div className="size-1.5 rounded-full bg-indigo-500/60 animate-pulse" />
+        <div className="size-1.5 rounded-full bg-indigo-500/40 animate-pulse [animation-delay:150ms]" />
+        <div className="size-1.5 rounded-full bg-indigo-500/20 animate-pulse [animation-delay:300ms]" />
+      </div>
+    </div>
+  </div>
+);
 
 export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const theme = useUIStore((s) => s.theme);
@@ -106,18 +120,14 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
     (isSignedIn && !isAuthRoute && !isOnboardingRoute && (wsLoading || appearanceLoading));
 
   if (isInitializing) {
-    return (
-      <div className="bg-background flex h-screen items-center justify-center">
-        <Loader2 className="text-muted-foreground size-5 animate-spin" />
-      </div>
-    );
+    return <LoadingSplash />;
   }
 
   // Auth pages — minimal centered layout
   if (isAuthRoute) {
     return (
       <div className="bg-background flex h-screen items-center justify-center overflow-hidden">
-        {children}
+        <div className="animate-fade-in">{children}</div>
       </div>
     );
   }
@@ -126,7 +136,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
   if (isOnboardingRoute) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center overflow-auto py-8">
-        {children}
+        <div className="animate-fade-in">{children}</div>
       </div>
     );
   }
@@ -154,7 +164,9 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
       )}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {hasWorkspace && <TopNav />}
-        <main className="flex-1 overflow-auto">{children}</main>
+        <main className="flex-1 overflow-auto">
+          <div className="animate-fade-in">{children}</div>
+        </main>
       </div>
       {hasWorkspace && <CommandPalette />}
     </div>

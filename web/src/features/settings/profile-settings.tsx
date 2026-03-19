@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Save, Loader2 } from "lucide-react";
+import { Save, Loader2, Check } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,13 +12,39 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useFetchProfile, useUpdateProfile } from "@/hooks/settings";
 
+const ProfileSkeleton = () => (
+  <div className="flex flex-col gap-6 animate-fade-in">
+    <div className="rounded-xl border border-border bg-card p-6">
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <div className="skeleton-shimmer size-16 rounded-full bg-muted" />
+          <div className="space-y-2">
+            <div className="skeleton-shimmer h-4 w-28 rounded bg-muted" />
+            <div className="skeleton-shimmer h-5 w-16 rounded-full bg-muted" />
+          </div>
+        </div>
+        <div className="h-px bg-border" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <div className="skeleton-shimmer h-3 w-16 rounded bg-muted" />
+            <div className="skeleton-shimmer h-8 w-full rounded-lg bg-muted" />
+          </div>
+          <div className="space-y-2">
+            <div className="skeleton-shimmer h-3 w-12 rounded bg-muted" />
+            <div className="skeleton-shimmer h-8 w-full rounded-lg bg-muted" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 export const ProfileSettings = () => {
   const { data: profile, isLoading } = useFetchProfile();
   const updateProfileMutation = useUpdateProfile();
 
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
-  const [saved, setSaved] = React.useState(false);
 
   React.useEffect(() => {
     if (profile) {
@@ -27,9 +54,12 @@ export const ProfileSettings = () => {
   }, [profile]);
 
   const handleSave = async () => {
-    await updateProfileMutation.mutateAsync({ name, email });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      await updateProfileMutation.mutateAsync({ name, email });
+      toast.success("Profile updated successfully");
+    } catch {
+      toast.error("Failed to update profile");
+    }
   };
 
   const roleBadgeColor = {
@@ -40,15 +70,11 @@ export const ProfileSettings = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex h-48 items-center justify-center">
-        <Loader2 className="text-muted-foreground size-6 animate-spin" />
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 animate-fade-in">
       <Card>
         <CardHeader>
           <CardTitle>Profile Information</CardTitle>
@@ -57,7 +83,7 @@ export const ProfileSettings = () => {
         <CardContent className="flex flex-col gap-6">
           {/* Avatar display */}
           <div className="flex items-center gap-4">
-            <Avatar size="lg" className="size-16">
+            <Avatar size="lg" className="size-16 ring-2 ring-background">
               <AvatarImage src={profile?.avatar} alt={profile?.name ?? "User"} />
               <AvatarFallback className="text-lg">
                 {profile?.name
@@ -116,13 +142,14 @@ export const ProfileSettings = () => {
 
       {/* Save button */}
       <div className="flex items-center justify-end gap-2">
-        {saved && (
-          <span className="text-sm text-emerald-600 dark:text-emerald-400">
-            Changes saved successfully
-          </span>
-        )}
         <Button onClick={handleSave} disabled={updateProfileMutation.isPending}>
-          <Save className="size-4" />
+          {updateProfileMutation.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : updateProfileMutation.isSuccess ? (
+            <Check className="size-4" />
+          ) : (
+            <Save className="size-4" />
+          )}
           {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
         </Button>
       </div>

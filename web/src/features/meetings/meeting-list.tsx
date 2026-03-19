@@ -61,10 +61,12 @@ const MeetingCard = ({
   meeting,
   users,
   onJoin,
+  index,
 }: {
   meeting: Meeting;
   users: User[];
   onJoin: () => void;
+  index: number;
 }) => {
   const participants = meeting.participants
     .map((id) => users.find((u) => u.id === id))
@@ -74,11 +76,14 @@ const MeetingCard = ({
   const overflowCount = participants.length - 3;
 
   return (
-    <div className="group border-border bg-card hover:bg-muted/50 flex items-center justify-between rounded-lg border p-4 transition-colors">
+    <div
+      className="group border-border bg-card hover:bg-accent/30 flex items-center justify-between rounded-xl border p-4 transition-all duration-200 hover:shadow-sm hover:-translate-y-0.5 animate-fade-in"
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
       <div className="flex flex-1 items-center gap-4">
         <div
           className={cn(
-            "flex size-10 shrink-0 items-center justify-center rounded-lg",
+            "flex size-10 shrink-0 items-center justify-center rounded-xl transition-colors",
             meeting.status === "live"
               ? "bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
               : meeting.status === "scheduled"
@@ -90,7 +95,7 @@ const MeetingCard = ({
         </div>
         <div className="flex flex-1 flex-col gap-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{meeting.title}</span>
+            <span className="text-sm font-semibold">{meeting.title}</span>
             <StatusBadge status={meeting.status} />
           </div>
           <span className="text-muted-foreground text-xs">
@@ -114,7 +119,7 @@ const MeetingCard = ({
           {overflowCount > 0 && <AvatarGroupCount>+{overflowCount}</AvatarGroupCount>}
         </AvatarGroup>
         {meeting.status !== "ended" && (
-          <Button size="sm" onClick={onJoin}>
+          <Button size="sm" onClick={onJoin} className="transition-all hover:scale-105">
             Join
           </Button>
         )}
@@ -140,11 +145,11 @@ export const MeetingList = ({
   return (
     <div className="h-full overflow-y-auto">
       <div className="mx-auto max-w-6xl p-4 sm:p-6">
-        {/* Header — matches boards page style */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        {/* Header */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 animate-fade-in">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">Meetings</h1>
-            <span className="bg-muted text-muted-foreground rounded-md px-1.5 py-0.5 text-xs font-medium">
+            <h1 className="text-2xl font-bold tracking-tight">Meetings</h1>
+            <span className="bg-muted text-muted-foreground rounded-lg px-2 py-0.5 text-xs font-medium">
               {meetings.length}
             </span>
           </div>
@@ -161,12 +166,13 @@ export const MeetingList = ({
               Upcoming Meetings
             </h3>
             <div className="flex flex-col gap-2">
-              {upcomingMeetings.map((meeting) => (
+              {upcomingMeetings.map((meeting, i) => (
                 <MeetingCard
                   key={meeting.id}
                   meeting={meeting}
                   users={users}
                   onJoin={() => onJoinMeeting(meeting.id)}
+                  index={i}
                 />
               ))}
             </div>
@@ -180,12 +186,13 @@ export const MeetingList = ({
               Past Meetings
             </h3>
             <div className="flex flex-col gap-2">
-              {pastMeetings.map((meeting) => (
+              {pastMeetings.map((meeting, i) => (
                 <MeetingCard
                   key={meeting.id}
                   meeting={meeting}
                   users={users}
                   onJoin={() => onJoinMeeting(meeting.id)}
+                  index={i}
                 />
               ))}
             </div>
@@ -193,7 +200,7 @@ export const MeetingList = ({
         )}
 
         {meetings.length === 0 && (
-          <div className="flex h-64 flex-col items-center justify-center gap-3 text-center">
+          <div className="flex h-64 flex-col items-center justify-center gap-3 text-center animate-fade-in">
             <div className="bg-muted flex size-12 items-center justify-center rounded-full">
               <Video className="text-muted-foreground size-6" />
             </div>
