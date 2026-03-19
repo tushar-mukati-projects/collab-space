@@ -4,13 +4,30 @@ import type { ZodSchema, z } from "zod";
 declare global {
   namespace Express {
     interface Request {
-      userId: string;
-      workspaceId: string;
-      validated: Record<string, any>;
+      validated: any;
     }
   }
 }
 
-export const validated = <T extends ZodSchema>(req: Request, _schema: T): z.infer<T> => {
-  return req.validated as z.infer<T>;
+export interface AuthedRequest extends Request {
+  userId: string;
+}
+
+export interface WorkspaceRequest extends AuthedRequest {
+  workspaceId: string;
+}
+
+type Context = { userId: string; workspaceId: string };
+
+// With schema: returns parsed data + context
+export const validated: {
+  <T extends ZodSchema>(req: Request, schema: T): z.infer<T> & Context;
+  (req: Request): Context;
+} = (req: Request, _schema?: any) => {
+  const base = req.validated ?? {};
+  return {
+    ...base,
+    userId: (req as any).userId,
+    workspaceId: (req as any).workspaceId,
+  };
 };

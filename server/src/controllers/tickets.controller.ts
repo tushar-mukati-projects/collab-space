@@ -1,5 +1,4 @@
 import type { Request, Response } from "express";
-import { wrapController } from "./index.js";
 import { validated } from "../types.js";
 import {
   listTicketsSchema,
@@ -24,8 +23,8 @@ const ensureArray = (val: unknown): string[] => {
   return Array.isArray(val) ? val : [String(val)];
 };
 
-const listCtrl = async (req: Request, res: Response) => {
-  const { query: q } = validated(req, listTicketsSchema);
+export const list = async (req: Request, res: Response) => {
+  const { query: q, workspaceId } = validated(req, listTicketsSchema);
   const filters = {
     assignees: ensureArray(q.assignees),
     created_by: ensureArray(q.created_by),
@@ -36,75 +35,74 @@ const listCtrl = async (req: Request, res: Response) => {
     search_term: q.search_term,
     parent_id: q.parent_id,
   };
-  res.json(await listTickets(req.workspaceId, filters));
+  res.json(await listTickets(workspaceId, filters));
 };
 
-const createCtrl = async (req: Request, res: Response) => {
-  const { body } = validated(req, createTicketSchema);
-  res.status(201).json(await createTicket(body, req.userId, req.workspaceId));
+export const create = async (req: Request, res: Response) => {
+  const { body, userId, workspaceId } = validated(req, createTicketSchema);
+  res.status(201).json(await createTicket(body, userId, workspaceId));
 };
 
-const getOneCtrl = async (req: Request, res: Response) => {
+export const getOne = async (req: Request, res: Response) => {
   const {
     params: { id },
+    workspaceId,
   } = validated(req, ticketIdSchema);
-  const t = await getTicket(id, req.workspaceId);
+  const t = await getTicket(id, workspaceId);
   if (!t) return res.status(404).json({ error: "Ticket not found" });
   res.json(t);
 };
 
-const updateCtrl = async (req: Request, res: Response) => {
+export const update = async (req: Request, res: Response) => {
   const {
     params: { id },
     body,
+    userId,
+    workspaceId,
   } = validated(req, updateTicketSchema);
-  const t = await updateTicket(id, body, req.userId, req.workspaceId);
+  const t = await updateTicket(id, body, userId, workspaceId);
   if (!t) return res.status(404).json({ error: "Ticket not found" });
   res.json(t);
 };
 
-const removeCtrl = async (req: Request, res: Response) => {
+export const remove = async (req: Request, res: Response) => {
   const {
     params: { id },
+    workspaceId,
   } = validated(req, ticketIdSchema);
-  if (!(await deleteTicket(id, req.workspaceId)))
+  if (!(await deleteTicket(id, workspaceId)))
     return res.status(404).json({ error: "Ticket not found" });
   res.json({ success: true });
 };
 
-const listCommentsCtrl = async (req: Request, res: Response) => {
+export const listComments = async (req: Request, res: Response) => {
   const {
     params: { id },
+    workspaceId,
   } = validated(req, ticketIdSchema);
-  const c = await listCommentsSvc(id, req.workspaceId);
+  const c = await listCommentsSvc(id, workspaceId);
   if (!c) return res.status(404).json({ error: "Ticket not found" });
   res.json(c);
 };
 
-const createCommentCtrl = async (req: Request, res: Response) => {
+export const createComment = async (req: Request, res: Response) => {
   const {
     params: { id },
     body: { content, author_id },
+    userId,
+    workspaceId,
   } = validated(req, createCommentSchema);
-  const c = await createCommentSvc(id, content, author_id ?? req.userId, req.workspaceId);
+  const c = await createCommentSvc(id, content, author_id ?? userId, workspaceId);
   if (!c) return res.status(404).json({ error: "Ticket not found" });
   res.status(201).json(c);
 };
 
-const listActivitiesCtrl = async (req: Request, res: Response) => {
+export const listActivities = async (req: Request, res: Response) => {
   const {
     params: { id },
+    workspaceId,
   } = validated(req, ticketIdSchema);
-  const a = await listActivitiesSvc(id, req.workspaceId);
+  const a = await listActivitiesSvc(id, workspaceId);
   if (!a) return res.status(404).json({ error: "Ticket not found" });
   res.json(a);
 };
-
-export const list = wrapController(listCtrl);
-export const create = wrapController(createCtrl);
-export const getOne = wrapController(getOneCtrl);
-export const update = wrapController(updateCtrl);
-export const remove = wrapController(removeCtrl);
-export const listComments = wrapController(listCommentsCtrl);
-export const createComment = wrapController(createCommentCtrl);
-export const listActivities = wrapController(listActivitiesCtrl);

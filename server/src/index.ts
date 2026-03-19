@@ -4,6 +4,7 @@ import cors from "cors";
 import { createServer } from "http";
 import { clerkMiddleware } from "@clerk/express";
 import { config } from "./config.js";
+import { authMiddleware, workspaceMiddleware } from "./middleware/auth.js";
 import { routes } from "./routes/index.js";
 import { startCollab } from "./collab-server.js";
 import type { Request, Response, NextFunction } from "express";
@@ -24,15 +25,13 @@ app.use(
     secretKey: process.env.CLERK_SECRET_KEY,
   }),
 );
-app.use("/api", routes);
+app.use("/api", authMiddleware, workspaceMiddleware, routes);
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
   res.status(500).json({ error: "Internal server error" });
 });
 
 const server = createServer(app);
-
-// Mount Hocuspocus on the same server at /collab
 startCollab(server);
 
 server.listen(config.PORT, () => {

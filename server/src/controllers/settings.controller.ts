@@ -1,5 +1,4 @@
 import type { Request, Response } from "express";
-import { wrapController } from "./index.js";
 import { validated } from "../types.js";
 import { updateProfileSchema, updateWorkspaceSettingsSchema } from "../schemas/settings.schema.js";
 import { prisma } from "../db.js";
@@ -22,48 +21,62 @@ const getMemberRole = async (userId: string, workspaceId: string) => {
   return m?.role ?? "member";
 };
 
-const getProfileCtrl = async (req: Request, res: Response) => {
-  const role = await getMemberRole(req.userId, req.workspaceId);
-  const p = await getProfile(req.userId, { role });
+export const getProfileHandler = async (req: Request, res: Response) => {
+  const { userId, workspaceId } = validated(req);
+  const role = await getMemberRole(userId, workspaceId);
+  const p = await getProfile(userId, { role });
   if (!p) return res.status(404).json({ error: "User not found" });
   res.json(p);
 };
-const updateProfileCtrl = async (req: Request, res: Response) => {
-  const { body } = validated(req, updateProfileSchema);
-  const u = await updateProfile(req.userId, body);
-  const role = await getMemberRole(req.userId, req.workspaceId);
+export const updateProfileHandler = async (req: Request, res: Response) => {
+  const { body, userId, workspaceId } = validated(req, updateProfileSchema);
+  const u = await updateProfile(userId, body);
+  const role = await getMemberRole(userId, workspaceId);
   res.json({ id: u.id, name: u.name, email: u.email, avatar: u.avatar, role });
 };
-const getWsCtrl = async (req: Request, res: Response) => {
-  const ws = await getWorkspaceSettings(req.workspaceId);
+export const getWorkspaceSettingsHandler = async (req: Request, res: Response) => {
+  const { workspaceId } = validated(req);
+  const ws = await getWorkspaceSettings(workspaceId);
   if (!ws) return res.status(400).json({ error: "Workspace not found" });
   res.json(ws);
 };
-const updateWsCtrl = async (req: Request, res: Response) => {
-  const { body } = validated(req, updateWorkspaceSettingsSchema);
-  const role = await getMemberRole(req.userId, req.workspaceId);
-  const r = await updateWorkspaceSettings(req.workspaceId, body, role);
+export const updateWorkspaceSettingsHandler = async (req: Request, res: Response) => {
+  const { body, userId, workspaceId } = validated(req, updateWorkspaceSettingsSchema);
+  const role = await getMemberRole(userId, workspaceId);
+  const r = await updateWorkspaceSettings(workspaceId, body, role);
   if ("error" in r && r.error === "forbidden") return res.status(403).json({ error: "Forbidden" });
   res.json(r);
 };
-const getNotifCtrl = async (req: Request, res: Response) => {
-  res.json(await getNotificationPrefs(req.userId, req.workspaceId));
+export const getNotificationPrefsHandler = async (req: Request, res: Response) => {
+  const { userId, workspaceId } = validated(req);
+  res.json(await getNotificationPrefs(userId, workspaceId));
 };
-const updateNotifCtrl = async (req: Request, res: Response) => {
-  res.json(await updateNotificationPrefs(req.userId, req.workspaceId, req.body));
+export const updateNotificationPrefsHandler = async (req: Request, res: Response) => {
+  const { userId, workspaceId } = validated(req);
+  res.json(await updateNotificationPrefs(userId, workspaceId, req.body));
 };
-const getAppearCtrl = async (req: Request, res: Response) => {
-  res.json(await getAppearancePrefs(req.userId, req.workspaceId));
+export const getAppearancePrefsHandler = async (req: Request, res: Response) => {
+  const { userId, workspaceId } = validated(req);
+  res.json(await getAppearancePrefs(userId, workspaceId));
 };
-const updateAppearCtrl = async (req: Request, res: Response) => {
-  res.json(await updateAppearancePrefs(req.userId, req.workspaceId, req.body));
+export const updateAppearancePrefsHandler = async (req: Request, res: Response) => {
+  const { userId, workspaceId } = validated(req);
+  res.json(await updateAppearancePrefs(userId, workspaceId, req.body));
 };
 
-export const getProfileHandler = wrapController(getProfileCtrl);
-export const updateProfileHandler = wrapController(updateProfileCtrl);
-export const getWorkspaceSettingsHandler = wrapController(getWsCtrl);
-export const updateWorkspaceSettingsHandler = wrapController(updateWsCtrl);
-export const getNotificationPrefsHandler = wrapController(getNotifCtrl);
-export const updateNotificationPrefsHandler = wrapController(updateNotifCtrl);
-export const getAppearancePrefsHandler = wrapController(getAppearCtrl);
-export const updateAppearancePrefsHandler = wrapController(updateAppearCtrl);
+export const testEmailHandler = async (req: Request, res: Response) => {
+  const { userId } = validated(req);
+  const { sendNotificationEmail } = await import("../services/email.service.js");
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true },
+  });
+  if (!user) return res.status(404).json({ error: "User not found" });
+  const result = await sendNotificationEmail(
+    user.email,
+    "Test Email from CollabSpace",
+    "If you're reading this, email delivery is working correctly.",
+    "/settings",
+  );
+  res.json({ success: result.success, sent_to: user.email });
+};

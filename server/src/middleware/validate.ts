@@ -1,14 +1,16 @@
-import type { Request, Response, NextFunction } from "express";
-import { ZodSchema, ZodError } from "zod";
+import type { Request, Response, NextFunction, RequestHandler } from "express";
+import type { ZodSchema, z } from "zod";
+import { ZodError } from "zod";
+import type { AuthedRequest, WorkspaceRequest } from "../types.js";
 
-export const validate = (schema: ZodSchema) => {
+export const validate = <T extends ZodSchema>(schema: T) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       req.validated = schema.parse({
         body: req.body,
         query: req.query,
         params: req.params,
-      }) as Record<string, any>;
+      });
       next();
     } catch (err) {
       if (err instanceof ZodError) {
@@ -18,3 +20,34 @@ export const validate = (schema: ZodSchema) => {
     }
   };
 };
+
+// Elysia-like: schema + handler in one call, types flow automatically
+// Usage: router.post("/", ...endpoint(schema, async (data, req, res) => { ... }))
+
+export const endpoint = <T extends ZodSchema>(
+  schema: T,
+  handler: (data: z.infer<T>, req: WorkspaceRequest, res: Response) => Promise<any>,
+): RequestHandler[] => [
+  validate(schema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await handler(req.validated, req as WorkspaceRequest, res);
+    } catch (err) {
+      next(err);
+    }
+  },
+];
+
+export const authedEndpoint = <T extends ZodSchema>(
+  schema: T,
+  handler: (data: z.infer<T>, req: AuthedRequest, res: Response) => Promise<any>,
+): RequestHandler[] => [
+  validate(schema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await handler(req.validated, req as AuthedRequest, res);
+    } catch (err) {
+      next(err);
+    }
+  },
+];

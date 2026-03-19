@@ -1,18 +1,17 @@
 import type { Request, Response } from "express";
-import { wrapController } from "./index.js";
 import { validated } from "../types.js";
 import { toggleFavoriteSchema } from "../schemas/favorites.schema.js";
 import { listFavorites, toggleFavorite } from "../services/favorite.service.js";
 
-const listCtrl = async (req: Request, res: Response) => {
-  res.json(await listFavorites(req.userId, req.workspaceId));
+export const list = async (req: Request, res: Response) => {
+  const { userId, workspaceId } = validated(req);
+  res.json(await listFavorites(userId, workspaceId));
 };
-const toggleCtrl = async (req: Request, res: Response) => {
+export const toggle = async (req: Request, res: Response) => {
   const {
     body: { ticket_id },
+    userId,
+    workspaceId,
   } = validated(req, toggleFavoriteSchema);
-  res.json(await toggleFavorite(req.userId, req.workspaceId, ticket_id));
+  res.json(await toggleFavorite(userId, workspaceId, ticket_id));
 };
-
-export const list = wrapController(listCtrl);
-export const toggle = wrapController(toggleCtrl);

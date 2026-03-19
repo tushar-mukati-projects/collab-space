@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { requireWorkspace } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
 import {
   listTicketsSchema,
@@ -20,12 +19,12 @@ import {
 } from "../controllers/tickets.controller.js";
 
 const router = Router();
-router.get("/", requireWorkspace, validate(listTicketsSchema), list);
-router.post("/", requireWorkspace, validate(createTicketSchema), create);
-router.get("/:id", requireWorkspace, validate(ticketIdSchema), getOne);
-router.patch("/:id", requireWorkspace, validate(updateTicketSchema), update);
-router.delete("/:id", requireWorkspace, validate(ticketIdSchema), remove);
-router.get("/:id/comments", requireWorkspace, validate(ticketIdSchema), listComments);
-router.post("/:id/comments", requireWorkspace, validate(createCommentSchema), createComment);
-router.get("/:id/activities", requireWorkspace, validate(ticketIdSchema), listActivities);
+router.get("/", validate(listTicketsSchema), list);
+router.post("/", validate(createTicketSchema), create);
+router.get("/:id", validate(ticketIdSchema), getOne);
+router.patch("/:id", validate(updateTicketSchema), update);
+router.delete("/:id", validate(ticketIdSchema), remove);
+router.get("/:id/comments", validate(ticketIdSchema), listComments);
+router.post("/:id/comments", validate(createCommentSchema), createComment);
+router.get("/:id/activities", validate(ticketIdSchema), listActivities);
 export default router;

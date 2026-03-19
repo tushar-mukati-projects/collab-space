@@ -1,5 +1,4 @@
 import type { Request, Response } from "express";
-import { wrapController } from "./index.js";
 import { validated } from "../types.js";
 import {
   markNotificationsSchema,
@@ -9,32 +8,32 @@ import {
 import { listNotifications, markNotifications } from "../services/notification.service.js";
 import { savePushSubscription, removePushSubscription } from "../services/push.service.js";
 
-const listCtrl = async (req: Request, res: Response) => {
-  res.json(await listNotifications(req.userId));
+export const list = async (req: Request, res: Response) => {
+  const { userId } = validated(req);
+  res.json(await listNotifications(userId));
 };
-const markReadCtrl = async (req: Request, res: Response) => {
+export const markRead = async (req: Request, res: Response) => {
   const {
     body: { ids, status },
+    userId,
   } = validated(req, markNotificationsSchema);
-  await markNotifications(ids, status.read, req.userId);
+  await markNotifications(ids, status.read, userId);
   res.json({ success: true });
 };
-const subscribeCtrl = async (req: Request, res: Response) => {
+export const subscribe = async (req: Request, res: Response) => {
   const {
     body: { endpoint, p256dh, auth },
+    userId,
+    workspaceId,
   } = validated(req, pushSubscribeSchema);
-  await savePushSubscription(req.userId, req.workspaceId, endpoint, p256dh, auth);
+  await savePushSubscription(userId, workspaceId, endpoint, p256dh, auth);
   res.json({ success: true });
 };
-const unsubscribeCtrl = async (req: Request, res: Response) => {
+export const unsubscribe = async (req: Request, res: Response) => {
   const {
     body: { endpoint },
+    userId,
   } = validated(req, pushUnsubscribeSchema);
-  await removePushSubscription(endpoint, req.userId);
+  await removePushSubscription(endpoint, userId);
   res.json({ success: true });
 };
-
-export const list = wrapController(listCtrl);
-export const markRead = wrapController(markReadCtrl);
-export const subscribe = wrapController(subscribeCtrl);
-export const unsubscribe = wrapController(unsubscribeCtrl);
