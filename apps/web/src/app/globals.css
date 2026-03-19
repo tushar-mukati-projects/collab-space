@@ -1,0 +1,324 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@plugin "@tailwindcss/typography";
+@source "../node_modules/@blocknote/shadcn";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.809 0.105 251.813);
+  --chart-2: oklch(0.623 0.214 259.815);
+  --chart-3: oklch(0.546 0.245 262.881);
+  --chart-4: oklch(0.488 0.243 264.376);
+  --chart-5: oklch(0.424 0.199 265.638);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.809 0.105 251.813);
+  --chart-2: oklch(0.623 0.214 259.815);
+  --chart-3: oklch(0.546 0.245 262.881);
+  --chart-4: oklch(0.488 0.243 264.376);
+  --chart-5: oklch(0.424 0.199 265.638);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+    font-size: 16px;
+  }
+  html.font-compact {
+    font-size: 14px;
+  }
+  html.font-comfortable {
+    font-size: 18px;
+  }
+}
+
+/* ─── Collaboration cursors ────────────────────────────────────────────────── */
+
+.collaboration-cursor__caret {
+  position: relative;
+  border-left: 2px solid;
+  border-right: none;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  word-break: normal;
+}
+
+.collaboration-cursor__label {
+  position: absolute;
+  top: -1.4em;
+  left: -1px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: normal;
+  white-space: nowrap;
+  color: #fff;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px 3px 3px 0;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ─── BlockNote editor ─────────────────────────────────────────────────────── */
+
+.bn-ticket-editor {
+  --bn-font-family: var(--font-sans);
+}
+
+.bn-ticket-editor .bn-editor {
+  padding-bottom: 2rem;
+  min-height: 12rem;
+  background: transparent !important;
+}
+
+/* Match editor background to page background in both themes */
+.bn-ticket-editor [data-theming-css-variables-demo],
+.bn-ticket-editor .bn-container {
+  background: transparent !important;
+}
+
+/* Scale down to match app's font sizes */
+.bn-ticket-editor .bn-block-content {
+  font-size: 0.875rem;
+  line-height: 1.625;
+}
+
+/* ── Heading sizes ────────────────────────────────────────────────────────────
+   BlockNote sets font-size via a CSS variable (--level, in em) which resolves
+   to 48px / 32px / 20px at 16px base — way too large for our UI.
+   We override directly on .bn-block-content with !important and rem units.
+   H1 = default heading (no data-level attribute); H2+ have data-level set. */
+.bn-ticket-editor .bn-block-content[data-content-type="heading"] {
+  font-size: 1.375rem !important; /* H1 ~22px */
+}
+.bn-ticket-editor .bn-block-content[data-content-type="heading"][data-level="2"] {
+  font-size: 1.125rem !important; /* H2 ~18px */
+}
+.bn-ticket-editor .bn-block-content[data-content-type="heading"][data-level="3"],
+.bn-ticket-editor .bn-block-content[data-content-type="heading"][data-level="4"],
+.bn-ticket-editor .bn-block-content[data-content-type="heading"][data-level="5"],
+.bn-ticket-editor .bn-block-content[data-content-type="heading"][data-level="6"] {
+  font-size: 1rem !important; /* H3-H6 ~16px */
+}
+
+.bn-ticket-editor .bn-block-content[data-content-type="codeBlock"] {
+  font-size: 0.8125rem;
+}
+
+/* ── File panel (upload/embed modal) ─────────────────────────────────────────
+   Constrain width and clean up visual appearance. */
+.bn-panel {
+  width: 380px;
+  max-width: calc(100vw - 2rem);
+}
+.bn-panel .bn-tab-panel {
+  padding-top: 0.5rem;
+}
+
+/* ── Suggestion menu selection highlight ─────────────────────────────────────
+   The aria-selected:bg-accent Tailwind classes come from @blocknote/shadcn's
+   JS bundle and may not be picked up by Tailwind's scanner. Explicit rule
+   guarantees the selected item is visually highlighted. */
+.bn-suggestion-menu .bn-suggestion-menu-item[aria-selected="true"] {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+/* ── Slash menu — compact mode ────────────────────────────────────────────────
+   Make suggestion menu items smaller and hide verbose descriptions. */
+.bn-suggestion-menu {
+  max-height: 18rem;
+  overflow-y: auto;
+}
+.bn-suggestion-menu .bn-suggestion-menu-item {
+  padding: 0.25rem 0.5rem !important;
+  min-height: 0 !important;
+  font-size: 0.8125rem !important;
+}
+.bn-suggestion-menu .bn-suggestion-menu-item [data-position="left"] {
+  padding: 0.25rem !important;
+}
+.bn-suggestion-menu .bn-suggestion-menu-item [data-position="left"] svg {
+  width: 1rem !important;
+  height: 1rem !important;
+}
+/* Hide subtitle/description text */
+.bn-suggestion-menu .bn-suggestion-menu-item .text-xs:last-child {
+  display: none;
+}
+/* Tighter label section headers */
+.bn-suggestion-menu .bn-suggestion-menu-label {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.6875rem;
+}
+
+/* ── Block side menu — compact ────────────────────────────────────────────────
+   The + and drag handle buttons are too large; scale them down. */
+.bn-side-menu .bn-button {
+  height: 1.375rem !important;
+  width: 1.375rem !important;
+  padding: 0 !important;
+}
+.bn-side-menu .bn-button svg {
+  width: 0.875rem !important;
+  height: 0.875rem !important;
+}
+
+/* ── Table handles — compact ──────────────────────────────────────────────────
+   The column/row drag handles on tables are too large by default. */
+.bn-editor [data-content-type="table"] .tableWrapper {
+  --bn-table-widget-size: 14px !important;
+  --bn-table-handle-size: 6px !important;
+}
+.bn-table-cell-handle {
+  height: 10px !important;
+  padding: 0 2px !important;
+}
+.bn-table-cell-handle svg {
+  width: 0.75rem !important;
+  height: 0.75rem !important;
+}
+
+/* ── Mobile — reduce BlockNote's hardcoded 54px padding ──────────────────────
+   The bn-editor has padding-inline: 54px baked into the library CSS.
+   On small screens this eats most of the viewport width. */
+@media (max-width: 639px) {
+  .bn-editor {
+    padding-inline: 1rem !important;
+  }
+}
+
+/* ── Compact editor for dialogs ───────────────────────────────────────────────
+   Used inside create-ticket-dialog. No large bottom padding. */
+.bn-compact-editor {
+  --bn-font-family: var(--font-sans);
+}
+.bn-compact-editor .bn-editor {
+  padding-bottom: 1rem;
+  min-height: 8rem;
+}
+.bn-compact-editor .bn-block-content {
+  font-size: 0.875rem;
+  line-height: 1.625;
+}
+.bn-compact-editor .bn-block-content[data-content-type="heading"] {
+  font-size: 1.25rem !important;
+}
+.bn-compact-editor .bn-block-content[data-content-type="heading"][data-level="2"] {
+  font-size: 1.0625rem !important;
+}
+.bn-compact-editor .bn-block-content[data-content-type="heading"][data-level="3"],
+.bn-compact-editor .bn-block-content[data-content-type="heading"][data-level="4"],
+.bn-compact-editor .bn-block-content[data-content-type="heading"][data-level="5"],
+.bn-compact-editor .bn-block-content[data-content-type="heading"][data-level="6"] {
+  font-size: 0.9375rem !important;
+}
+.bn-compact-editor .bn-suggestion-menu-item[aria-selected="true"] {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}

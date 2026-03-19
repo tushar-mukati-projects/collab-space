@@ -1,0 +1,47 @@
+{
+  "name": "server",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "build": "bun prisma generate && bun tsc",
+    "start": "bun src/index.ts",
+    "collab": "bun src/collab-server.ts",
+    "db:generate": "bun prisma generate",
+    "db:migrate": "bun prisma migrate dev",
+    "db:push": "bun prisma db push",
+    "db:seed": "bun prisma/seed.ts",
+    "db:studio": "bun prisma studio",
+    "lint": "bun eslint",
+    "typecheck": "bun tsc --noEmit",
+    "format:check": "bun prettier --check \"src/**/*.ts\"",
+    "format:fix": "bun prettier --write \"src/**/*.ts\"",
+    "check": "bun run typecheck && bun run lint && bun run format:check",
+    "check:fix": "bun run lint -- --fix && bun run format:fix && bun run typecheck"
+  },
+  "dependencies": {
+    "@clerk/express": "^1.6.0",
+    "@hocuspocus/extension-database": "^3.4.4",
+    "@hocuspocus/server": "^3.4.4",
+    "@prisma/adapter-pg": "^7.5.0",
+    "@prisma/client": "^7.5.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.3.1",
+    "express": "^5.1.0",
+    "express-validator": "^7.3.1",
+    "pg": "^8.20.0",
+    "prisma": "^7.5.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^20",
+    "@types/pg": "^8.18.0",
+    "eslint": "^9",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1",
+    "typescript": "^5",
+    "typescript-eslint": "^8.57.1"
+  }
+}

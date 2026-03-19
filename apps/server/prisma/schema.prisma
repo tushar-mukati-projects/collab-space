@@ -1,0 +1,326 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  owner
+  admin
+  member
+  guest
+}
+
+enum UserStatus {
+  online
+  offline
+  away
+}
+
+enum WorkspacePlan {
+  free
+  pro
+  enterprise
+}
+
+enum TicketStatus {
+  backlog
+  todo
+  in_progress
+  in_review
+  done
+}
+
+enum TicketPriority {
+  urgent
+  high
+  medium
+  low
+  none
+}
+
+enum TicketParentType {
+  board
+  ticket
+}
+
+enum MeetingStatus {
+  scheduled
+  live
+  ended
+}
+
+enum NotificationType {
+  ticket_assigned
+  mentioned
+  meeting_starting
+  document_shared
+  status_changed
+}
+
+enum ActivityType {
+  ticket_created
+  ticket_updated
+  ticket_status_changed
+  ticket_assigned
+  comment_added
+  document_created
+  document_updated
+  meeting_created
+  meeting_started
+  meeting_ended
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id         String   @id // Clerk user ID
+  email      String   @unique
+  name       String
+  avatar     String   @default("")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  memberships        WorkspaceMember[]
+  created_tickets    Ticket[]       @relation("TicketCreator")
+  assigned_tickets   Ticket[]       @relation("TicketAssignee")
+  comments           Comment[]
+  activities         Activity[]
+  meetings           Meeting[]      @relation("MeetingParticipants")
+  notifications_sent  Notification[] @relation("NotificationActor")
+  notifications_recv  Notification[] @relation("NotificationRecipient")
+  notification_prefs  NotificationPrefs[]
+  appearance_prefs    AppearancePrefs[]
+  favorites           Favorite[]
+  push_subscriptions  PushSubscription[]
+}
+
+model Workspace {
+  id             String        @id @default(cuid())
+  name           String
+  slug           String        @unique
+  logo           String        @default("")
+  plan           WorkspacePlan @default(pro)
+  invited_emails String[]      @default([])
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @updatedAt
+
+  members            WorkspaceMember[]
+  boards             Board[]
+  tickets            Ticket[]
+  labels             Label[]
+  meetings           Meeting[]
+  status_definitions StatusDefinition[]
+  notification_prefs  NotificationPrefs[]
+  appearance_prefs    AppearancePrefs[]
+  favorites           Favorite[]
+  push_subscriptions  PushSubscription[]
+}
+
+model WorkspaceMember {
+  id           String     @id @default(cuid())
+  user_id      String
+  workspace_id String
+  role         UserRole   @default(member)
+  status       UserStatus @default(offline)
+  joined_at    DateTime   @default(now())
+
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, workspace_id])
+  @@index([workspace_id])
+}
+
+model Board {
+  id           String   @id @default(cuid())
+  name         String
+  workspace_id String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id])
+}
+
+model Label {
+  id           String @id @default(cuid())
+  name         String
+  color        String
+  workspace_id String
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  tickets   Ticket[]  @relation("TicketLabels")
+
+  @@index([workspace_id])
+}
+
+model Ticket {
+  id           String            @id @default(cuid())
+  title        String
+  description  String            @default("")
+  content      String            @default("")
+  status       TicketStatus      @default(backlog)
+  priority     TicketPriority    @default(none)
+  assignee_id  String?
+  created_by   String
+  parent_id    String?
+  parent_type  TicketParentType?
+  due_date     DateTime?
+  workspace_id String
+  created_at   DateTime          @default(now())
+  updated_at   DateTime          @updatedAt
+
+  workspace   Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  assignee    User?     @relation("TicketAssignee", fields: [assignee_id], references: [id], onDelete: SetNull)
+  creator     User      @relation("TicketCreator", fields: [created_by], references: [id])
+  labels      Label[]   @relation("TicketLabels")
+  comments    Comment[]
+  activities  Activity[]
+  favorites   Favorite[]
+
+  @@index([workspace_id, status, created_at(sort: Desc)])
+  @@index([parent_id])
+  @@index([assignee_id])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  content    String
+  author_id  String
+  ticket_id  String
+  created_at DateTime @default(now())
+
+  author User   @relation(fields: [author_id], references: [id], onDelete: Cascade)
+  ticket Ticket @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+
+  @@index([ticket_id, created_at])
+}
+
+model Activity {
+  id         String       @id @default(cuid())
+  type       ActivityType
+  message    String
+  user_id    String
+  ticket_id  String
+  created_at DateTime     @default(now())
+
+  user   User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  ticket Ticket @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+
+  @@index([ticket_id, created_at])
+}
+
+model Meeting {
+  id            String        @id @default(cuid())
+  title         String
+  description   String        @default("")
+  start_time    DateTime
+  end_time      DateTime
+  status        MeetingStatus @default(scheduled)
+  room_id       String        @unique
+  recording_url String?
+  workspace_id  String
+
+  workspace    Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  participants User[]    @relation("MeetingParticipants")
+
+  @@index([workspace_id, start_time])
+}
+
+model Notification {
+  id         String           @id @default(cuid())
+  type       NotificationType
+  title      String
+  message    String
+  read       Boolean          @default(false)
+  link       String
+  actor_id   String
+  user_id    String
+  created_at DateTime         @default(now())
+
+  actor     User @relation("NotificationActor", fields: [actor_id], references: [id], onDelete: Cascade)
+  recipient User @relation("NotificationRecipient", fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, read, created_at(sort: Desc)])
+}
+
+model StatusDefinition {
+  id           String       @id @default(cuid())
+  value        TicketStatus
+  name         String
+  color        String
+  order        Int
+  workspace_id String
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@unique([workspace_id, value])
+  @@index([workspace_id, order])
+}
+
+model NotificationPrefs {
+  id               String  @id @default(cuid())
+  user_id          String
+  workspace_id     String
+  ticket_assigned  Boolean @default(true)
+  mentioned        Boolean @default(true)
+  meeting_starting Boolean @default(true)
+  status_changed   Boolean @default(false)
+  email_enabled    Boolean @default(true)
+  push_enabled     Boolean @default(true)
+
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, workspace_id])
+}
+
+model AppearancePrefs {
+  id           String @id @default(cuid())
+  user_id      String
+  workspace_id String
+  theme        String @default("system")
+  accent_color String @default("indigo")
+  font_size    String @default("default")
+
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, workspace_id])
+}
+
+model Favorite {
+  id           String   @id @default(cuid())
+  user_id      String
+  workspace_id String
+  ticket_id    String
+  created_at   DateTime @default(now())
+
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  ticket    Ticket    @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, workspace_id, ticket_id])
+  @@index([user_id, workspace_id])
+}
+
+model PushSubscription {
+  id           String   @id @default(cuid())
+  user_id      String
+  workspace_id String
+  endpoint     String   @unique
+  p256dh       String
+  auth         String
+  created_at   DateTime @default(now())
+
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+}
