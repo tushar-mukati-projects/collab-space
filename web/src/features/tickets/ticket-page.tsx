@@ -104,6 +104,45 @@ const getUserInitials = (name: string) => {
     .join("");
 };
 
+type TicketPropertyDraft = Pick<
+  Ticket,
+  "status" | "priority" | "assignee" | "labels" | "due_date"
+>;
+
+const createPropertyDraft = (ticket: Ticket): TicketPropertyDraft => ({
+  status: ticket.status,
+  priority: ticket.priority,
+  assignee: ticket.assignee,
+  labels: [...ticket.labels],
+  due_date: ticket.due_date,
+});
+
+const propertyDraftEquals = (left: TicketPropertyDraft, right: TicketPropertyDraft) =>
+  left.status === right.status &&
+  left.priority === right.priority &&
+  left.assignee === right.assignee &&
+  left.due_date === right.due_date &&
+  left.labels.length === right.labels.length &&
+  left.labels.every((labelId, index) => labelId === right.labels[index]);
+
+const PropertyField = ({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: React.ElementType;
+  label: string;
+  children: React.ReactNode;
+}) => (
+  <div className="rounded-2xl border border-border/60 bg-card/80 p-3 shadow-xs">
+    <div className="text-muted-foreground mb-2 flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] uppercase">
+      <Icon className="size-3.5" />
+      <span>{label}</span>
+    </div>
+    {children}
+  </div>
+);
+
 // ---------------------------------------------------------------------------
 // Skeleton loader
 // ---------------------------------------------------------------------------
@@ -127,7 +166,7 @@ const TicketSkeleton = () => (
         </div>
       </div>
     </div>
-    <div className="border-border hidden w-[380px] border-l lg:block">
+    <div className="border-border hidden w-95 border-l lg:block">
       <div className="space-y-4 p-4">
         <div className="skeleton-shimmer h-5 w-24 rounded bg-muted" />
         {[1, 2, 3, 4, 5].map((i) => (
@@ -160,7 +199,8 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   const { data: labels = [] } = useFetchLabels();
   const { data: comments = [] } = useFetchComments(ticketId, fetchEnabled);
   const { data: activities = [] } = useFetchActivities(ticketId, fetchEnabled);
-  const updateTicketMutation = useUpdateTicket();
+  const contentUpdateMutation = useUpdateTicket();
+  const propertyUpdateMutation = useUpdateTicket();
   const deleteTicketMutation = useDeleteTicket();
   const createCommentMutation = useCreateComment();
   const { data: favorites = [] } = useFetchFavorites();
@@ -195,10 +235,17 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   const [commentText, setCommentText] = React.useState("");
   const [labelsOpen, setLabelsOpen] = React.useState(false);
   const [saveStatus, setSaveStatus] = React.useState<"idle" | "saving" | "saved">("idle");
+  const [propertiesSaveStatus, setPropertiesSaveStatus] = React.useState<"idle" | "saved">(
+    "idle",
+  );
   const [detailsOpen, setDetailsOpen] = React.useState(false);
   const [createSubOpen, setCreateSubOpen] = React.useState(false);
+  const [dueDateOpen, setDueDateOpen] = React.useState(false);
+  const [propertyDraft, setPropertyDraft] = React.useState<TicketPropertyDraft | null>(null);
 
   const saveTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const propertyStatusTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const propertyTicketIdRef = React.useRef<string | null>(null);
 
   const userMap = React.useMemo(() => {
     const map = new Map<string, User>();
@@ -237,7 +284,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       setSaveStatus("saving");
       saveTimerRef.current = setTimeout(() => {
-        updateTicketMutation.mutate(
+        contentUpdateMutation.mutate(
           { id: ticketId, data: { content: value } },
           {
             onSuccess: () => {
@@ -249,7 +296,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
         );
       }, 800);
     },
-    [ticketId, updateTicketMutation],
+    [ticketId, contentUpdateMutation],
   );
 
   const handleContentChange = (value: string) => {
@@ -257,9 +304,33 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
     debouncedSaveContent(value);
   };
 
-  const handleUpdate = (data: Partial<Ticket>) => {
-    updateTicketMutation.mutate({ id: ticketId, data });
-  };
+  const syncedPropertyDraft = React.useMemo(
+    () => (ticket ? createPropertyDraft(ticket) : null),
+    [ticket],
+  );
+
+  React.useEffect(() => {
+    if (!ticket || !syncedPropertyDraft) return;
+
+    setPropertyDraft((current) => {
+      const isSameTicket = propertyTicketIdRef.current === ticket.id;
+
+      if (!current || !isSameTicket) {
+        return syncedPropertyDraft;
+      }
+
+      return propertyDraftEquals(current, syncedPropertyDraft) ? syncedPropertyDraft : current;
+    });
+
+    propertyTicketIdRef.current = ticket.id;
+  }, [syncedPropertyDraft, ticket]);
+
+  React.useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (propertyStatusTimerRef.current) clearTimeout(propertyStatusTimerRef.current);
+    };
+  }, []);
 
   const handleSubmitComment = () => {
     if (commentText.trim()) {
@@ -270,15 +341,6 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
       });
       setCommentText("");
     }
-  };
-
-  const toggleLabel = (labelId: string) => {
-    if (!ticket) return;
-    const current = ticket.labels ?? [];
-    const next = current.includes(labelId)
-      ? current.filter((l) => l !== labelId)
-      : [...current, labelId];
-    handleUpdate({ labels: next });
   };
 
   if (ticketLoading) {
@@ -297,7 +359,79 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
     );
   }
 
-  const selectedDate = ticket.due_date ? new Date(ticket.due_date) : undefined;
+  const currentProperties = propertyDraft ?? syncedPropertyDraft ?? createPropertyDraft(ticket);
+  const isPropertiesDirty = !propertyDraftEquals(currentProperties, createPropertyDraft(ticket));
+  const isPropertiesSaving = propertyUpdateMutation.isPending;
+  const showPropertyActions = isPropertiesDirty || isPropertiesSaving;
+  const selectedDate = currentProperties.due_date ? new Date(currentProperties.due_date) : undefined;
+  const selectedLabels = currentProperties.labels
+    .map((labelId) => labelMap.get(labelId))
+    .filter((label): label is Label => Boolean(label));
+  const visibleLabels = selectedLabels.slice(0, 2);
+  const hiddenLabelCount = selectedLabels.length - visibleLabels.length;
+
+  const updatePropertyDraft = <K extends keyof TicketPropertyDraft>(
+    key: K,
+    value: TicketPropertyDraft[K],
+  ) => {
+    setPropertiesSaveStatus("idle");
+    setPropertyDraft((current) => ({
+      ...(current ?? currentProperties),
+      [key]: value,
+    }));
+  };
+
+  const toggleLabel = (labelId: string) => {
+    setPropertiesSaveStatus("idle");
+    setPropertyDraft((current) => {
+      const base = current ?? currentProperties;
+      const nextLabels = base.labels.includes(labelId)
+        ? base.labels.filter((existingLabelId) => existingLabelId !== labelId)
+        : [...base.labels, labelId];
+
+      return {
+        ...base,
+        labels: nextLabels,
+      };
+    });
+    setLabelsOpen(false);
+  };
+
+  const handleCancelProperties = () => {
+    setLabelsOpen(false);
+    setDueDateOpen(false);
+    setPropertiesSaveStatus("idle");
+    setPropertyDraft(createPropertyDraft(ticket));
+  };
+
+  const handleSaveProperties = () => {
+    if (!isPropertiesDirty || isPropertiesSaving) return;
+
+    propertyUpdateMutation.mutate(
+      { id: ticketId, data: currentProperties },
+      {
+        onSuccess: () => {
+          setLabelsOpen(false);
+          setDueDateOpen(false);
+          setPropertiesSaveStatus("saved");
+
+          if (propertyStatusTimerRef.current) clearTimeout(propertyStatusTimerRef.current);
+          propertyStatusTimerRef.current = setTimeout(() => {
+            setPropertiesSaveStatus("idle");
+          }, 2000);
+        },
+        onError: () => {
+          setPropertiesSaveStatus("idle");
+        },
+      },
+    );
+  };
+
+  const propertyTriggerClassName =
+    "h-10 w-full rounded-xl border-border/60 bg-background px-3 text-sm shadow-none transition-colors hover:bg-accent/30";
+  const propertyContentClassName =
+    "rounded-2xl border border-border/70 bg-background/98 p-2 shadow-xl";
+  const propertyItemClassName = "min-h-10 rounded-xl px-2 py-2 text-sm";
 
   // ---------------------------------------------------------------------------
   // Properties + Activity panel
@@ -307,236 +441,308 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
     <div className="space-y-6 p-4">
       {/* Properties section */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold">Properties</h4>
-          {updateTicketMutation.isPending && (
-            <span className="flex items-center gap-1 text-[11px] text-primary save-indicator">
-              <Loader2 className="size-3 animate-spin" />
-              Updating...
-            </span>
-          )}
-          {updateTicketMutation.isSuccess && !updateTicketMutation.isPending && (
-            <span className="flex items-center gap-1 text-[11px] text-emerald-500 animate-fade-in">
-              <Check className="size-3" />
-              Saved
-            </span>
-          )}
+        <div className="rounded-2xl border border-border/60 bg-card/80 p-4 shadow-xs">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-1">
+              <h4 className="text-sm font-semibold">Properties</h4>
+              <div className="text-muted-foreground flex min-h-5 items-center gap-1.5 text-xs">
+                {isPropertiesSaving ? (
+                  <>
+                    <Loader2 className="size-3 animate-spin" />
+                    Saving changes...
+                  </>
+                ) : propertiesSaveStatus === "saved" ? (
+                  <>
+                    <Check className="size-3 text-emerald-500" />
+                    Changes saved
+                  </>
+                ) : isPropertiesDirty ? (
+                  <>
+                    <span className="size-1.5 rounded-full bg-amber-500" />
+                    Unsaved changes
+                  </>
+                ) : (
+                  null
+                )}
+              </div>
+            </div>
+
+            {showPropertyActions ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelProperties}
+                  disabled={!isPropertiesDirty || isPropertiesSaving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSaveProperties}
+                  disabled={!isPropertiesDirty || isPropertiesSaving}
+                >
+                  {isPropertiesSaving ? <Loader2 className="size-3.5 animate-spin" /> : null}
+                  Save
+                </Button>
+              </div>
+            ) : null}
+          </div>
         </div>
 
-        <div className="grid grid-cols-[6.5rem_1fr] gap-x-2 gap-y-3 text-sm">
-          {/* Status */}
-          <span className="text-muted-foreground flex items-center gap-1.5">
-            <CircleDot className="size-3.5" />
-            Status
-          </span>
-          <Select
-            value={ticket.status}
-            onValueChange={(val) => handleUpdate({ status: val as TicketStatus })}
-          >
-            <SelectTrigger size="sm" className="h-7 w-auto">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {statusOptions.map((opt) => {
-                const Icon = opt.icon;
-                return (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    <Icon className={cn("size-3.5", opt.color)} />
-                    {opt.label}
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-
-          {/* Priority */}
-          <span className="text-muted-foreground flex items-center gap-1.5">
-            <AlertCircle className="size-3.5" />
-            Priority
-          </span>
-          <Select
-            value={ticket.priority}
-            onValueChange={(val) => handleUpdate({ priority: val as TicketPriority })}
-          >
-            <SelectTrigger size="sm" className="h-7 w-auto">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {priorityOptions.map((opt) => {
-                const Icon = opt.icon;
-                return (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    <Icon className={cn("size-3.5", opt.color)} />
-                    {opt.label}
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-
-          {/* Assignee */}
-          <span className="text-muted-foreground flex items-center gap-1.5">
-            <UserIcon className="size-3.5" />
-            Assignee
-          </span>
-          <Select
-            value={ticket.assignee ?? "__none__"}
-            onValueChange={(val) => handleUpdate({ assignee: val === "__none__" ? null : val })}
-          >
-            <SelectTrigger size="sm" className="h-7 w-auto">
-              <SelectValue>
-                {(() => {
-                  if (!ticket.assignee) return "Unassigned";
-                  const u = userMap.get(ticket.assignee);
-                  if (!u) return "Unassigned";
-                  return (
-                    <span className="flex items-center gap-1.5">
-                      <Avatar size="sm" className="size-4">
-                        <AvatarImage src={u.avatar} alt={u.name} />
-                        <AvatarFallback className="text-[8px]">
-                          {getUserInitials(u.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      {u.name}
-                    </span>
-                  );
-                })()}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">Unassigned</SelectItem>
-              {users.map((u) => (
-                <SelectItem key={u.id} value={u.id}>
-                  <Avatar size="sm" className="size-4">
-                    <AvatarImage src={u.avatar} alt={u.name} />
-                    <AvatarFallback className="text-[8px]">
-                      {getUserInitials(u.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  {u.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Created by */}
-          <span className="text-muted-foreground flex items-center gap-1.5">
-            <UserIcon className="size-3.5" />
-            Created by
-          </span>
-          <div className="flex items-center gap-1.5">
-            {(() => {
-              const creator = userMap.get(ticket.created_by);
-              return creator ? (
-                <>
-                  <Avatar size="sm" className="size-4">
-                    <AvatarImage src={creator.avatar} alt={creator.name} />
-                    <AvatarFallback className="text-[8px]">
-                      {getUserInitials(creator.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm">{creator.name}</span>
-                </>
-              ) : (
-                <span className="text-muted-foreground text-sm">—</span>
-              );
-            })()}
-          </div>
-
-          {/* Labels */}
-          <span className="text-muted-foreground flex items-center gap-1.5">
-            <Tag className="size-3.5" />
-            Labels
-          </span>
-          <Popover open={labelsOpen} onOpenChange={setLabelsOpen}>
-            <PopoverTrigger
-              render={
-                <Button variant="outline" size="sm" className="h-7 w-auto justify-start gap-1" />
-              }
-            >
-              {ticket.labels.length === 0 ? (
-                <span className="text-muted-foreground">Add labels</span>
-              ) : (
-                <div className="flex flex-wrap gap-1">
-                  {ticket.labels.map((lid) => {
-                    const lbl = labelMap.get(lid);
-                    if (!lbl) return null;
+        <div className="relative">
+          <div className={cn("space-y-3 transition-opacity", isPropertiesSaving && "pointer-events-none opacity-45")}>
+            <PropertyField icon={CircleDot} label="Status">
+              <Select
+                value={currentProperties.status}
+                disabled={isPropertiesSaving}
+                onValueChange={(value) => updatePropertyDraft("status", value as TicketStatus)}
+              >
+                <SelectTrigger size="sm" className={propertyTriggerClassName}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="start" className={propertyContentClassName}>
+                  {statusOptions.map((opt) => {
+                    const Icon = opt.icon;
                     return (
-                      <span
-                        key={lbl.id}
-                        className="border-border inline-flex items-center gap-1 rounded-full border px-1.5 py-0 text-[10px]"
-                      >
-                        <span
-                          className="inline-block size-2 rounded-full"
-                          style={{ backgroundColor: lbl.color }}
-                        />
-                        {lbl.name}
-                      </span>
+                      <SelectItem key={opt.value} value={opt.value} className={propertyItemClassName}>
+                        <Icon className={cn("size-3.5", opt.color)} />
+                        {opt.label}
+                      </SelectItem>
                     );
                   })}
-                </div>
-              )}
-            </PopoverTrigger>
-            <PopoverContent className="w-48 p-1" align="start">
-              {labels.map((lbl) => (
-                <button
-                  key={lbl.id}
-                  type="button"
-                  onClick={() => toggleLabel(lbl.id)}
-                  className="hover:bg-accent flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors"
-                >
-                  <Checkbox
-                    checked={ticket.labels.includes(lbl.id)}
-                    className="pointer-events-none"
-                  />
-                  <span
-                    className="inline-block size-2.5 rounded-full"
-                    style={{ backgroundColor: lbl.color }}
-                  />
-                  {lbl.name}
-                </button>
-              ))}
-            </PopoverContent>
-          </Popover>
+                </SelectContent>
+              </Select>
+            </PropertyField>
 
-          {/* Due date */}
-          <span className="text-muted-foreground flex items-center gap-1.5">
-            <CalendarIcon className="size-3.5" />
-            Due date
-          </span>
-          <Popover>
-            <PopoverTrigger
-              render={
-                <Button variant="outline" size="sm" className="h-7 w-auto justify-start gap-1.5" />
-              }
-            >
-              <CalendarIcon className="text-muted-foreground size-3.5" />
-              {ticket.due_date ? format(new Date(ticket.due_date), "MMM d, yyyy") : "Set date"}
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => handleUpdate({ due_date: date ? date.toISOString() : null })}
-              />
-            </PopoverContent>
-          </Popover>
-
-          {/* Parent ticket */}
-          {ticket.parent_type === "ticket" && parentTicket && (
-            <>
-              <span className="text-muted-foreground flex items-center gap-1.5">
-                <CornerDownRight className="size-3.5 rotate-180" />
-                Parent
-              </span>
-              <button
-                type="button"
-                onClick={() => router.push(`/ticket/${parentTicket.id}`)}
-                className="text-foreground hover:text-primary truncate text-left text-sm font-medium transition-colors"
+            <PropertyField icon={AlertCircle} label="Priority">
+              <Select
+                value={currentProperties.priority}
+                disabled={isPropertiesSaving}
+                onValueChange={(value) => updatePropertyDraft("priority", value as TicketPriority)}
               >
-                {parentTicket.title}
-              </button>
-            </>
+                <SelectTrigger size="sm" className={propertyTriggerClassName}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="start" className={propertyContentClassName}>
+                  {priorityOptions.map((opt) => {
+                    const Icon = opt.icon;
+                    return (
+                      <SelectItem key={opt.value} value={opt.value} className={propertyItemClassName}>
+                        <Icon className={cn("size-3.5", opt.color)} />
+                        {opt.label}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </PropertyField>
+
+            <PropertyField icon={UserIcon} label="Assignee">
+              <Select
+                value={currentProperties.assignee ?? "__none__"}
+                disabled={isPropertiesSaving}
+                onValueChange={(value) =>
+                  updatePropertyDraft("assignee", value === "__none__" ? null : value)
+                }
+              >
+                <SelectTrigger size="sm" className={propertyTriggerClassName}>
+                  <SelectValue>
+                    {(() => {
+                      if (!currentProperties.assignee) return "Unassigned";
+
+                      const assignee = userMap.get(currentProperties.assignee);
+                      if (!assignee) return "Unassigned";
+
+                      return (
+                        <span className="flex items-center gap-2">
+                          <Avatar size="sm" className="size-5">
+                            <AvatarImage src={assignee.avatar} alt={assignee.name} />
+                            <AvatarFallback className="text-[9px]">
+                              {getUserInitials(assignee.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="truncate">{assignee.name}</span>
+                        </span>
+                      );
+                    })()}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent align="start" className={propertyContentClassName}>
+                  <SelectItem value="__none__" className={propertyItemClassName}>
+                    Unassigned
+                  </SelectItem>
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id} className={propertyItemClassName}>
+                      <Avatar size="sm" className="size-5">
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarFallback className="text-[9px]">
+                          {getUserInitials(user.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="truncate">{user.name}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </PropertyField>
+
+            <PropertyField icon={UserIcon} label="Created by">
+              <div className="border-border/60 flex min-h-10 items-center gap-2 rounded-xl border bg-background px-3">
+                {(() => {
+                  const creator = userMap.get(ticket.created_by);
+
+                  return creator ? (
+                    <>
+                      <Avatar size="sm" className="size-5">
+                        <AvatarImage src={creator.avatar} alt={creator.name} />
+                        <AvatarFallback className="text-[9px]">
+                          {getUserInitials(creator.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="truncate text-sm font-medium">{creator.name}</span>
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">Unknown creator</span>
+                  );
+                })()}
+              </div>
+            </PropertyField>
+
+            <PropertyField icon={Tag} label="Labels">
+              <Popover
+                open={labelsOpen}
+                onOpenChange={(open) => {
+                  if (isPropertiesSaving) return;
+                  setLabelsOpen(open);
+                }}
+              >
+                <PopoverTrigger
+                  render={
+                    <Button variant="outline" size="sm" className="h-auto min-h-10 w-full justify-start rounded-xl border-border/60 bg-background px-3 py-2 text-left shadow-none hover:bg-accent/30" />
+                  }
+                >
+                  {selectedLabels.length === 0 ? (
+                    <span className="text-muted-foreground">Select labels</span>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {visibleLabels.map((label) => (
+                        <span
+                          key={label.id}
+                          className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-muted/35 px-2 py-0.5 text-[11px] font-medium"
+                        >
+                          <span
+                            className="size-2 rounded-full"
+                            style={{ backgroundColor: label.color }}
+                          />
+                          {label.name}
+                        </span>
+                      ))}
+                      {hiddenLabelCount > 0 && (
+                        <span className="text-muted-foreground text-[11px] font-medium">
+                          +{hiddenLabelCount} more
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </PopoverTrigger>
+                <PopoverContent align="start" className={cn("w-64 gap-0", propertyContentClassName)}>
+                  <div className="border-border/60 mb-2 border-b px-1 pb-2">
+                    <p className="text-sm font-semibold">Labels</p>
+                    <p className="text-muted-foreground text-[11px]">
+                      Pick a label, then save the ticket changes.
+                    </p>
+                  </div>
+                  <div className="max-h-64 space-y-1 overflow-y-auto pr-1">
+                    {labels.map((label) => (
+                      <button
+                        key={label.id}
+                        type="button"
+                        onClick={() => toggleLabel(label.id)}
+                        className="hover:bg-accent flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left text-sm transition-colors"
+                      >
+                        <Checkbox
+                          checked={currentProperties.labels.includes(label.id)}
+                          className="pointer-events-none"
+                        />
+                        <span
+                          className="size-2.5 rounded-full"
+                          style={{ backgroundColor: label.color }}
+                        />
+                        <span className="truncate">{label.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </PropertyField>
+
+            <PropertyField icon={CalendarIcon} label="Due date">
+              <Popover
+                open={dueDateOpen}
+                onOpenChange={(open) => {
+                  if (isPropertiesSaving) return;
+                  setDueDateOpen(open);
+                }}
+              >
+                <PopoverTrigger
+                  render={
+                    <Button variant="outline" size="sm" className="h-10 w-full justify-start rounded-xl border-border/60 bg-background px-3 text-left shadow-none hover:bg-accent/30" />
+                  }
+                >
+                  <CalendarIcon className="text-muted-foreground size-3.5" />
+                  <span className="truncate">
+                    {currentProperties.due_date
+                      ? format(new Date(currentProperties.due_date), "MMM d, yyyy")
+                      : "Set a due date"}
+                  </span>
+                </PopoverTrigger>
+                <PopoverContent align="start" className={cn("w-auto p-2", propertyContentClassName)}>
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => {
+                      updatePropertyDraft("due_date", date ? date.toISOString() : null);
+                      setDueDateOpen(false);
+                    }}
+                  />
+                  <div className="border-border/60 flex justify-end border-t px-2 pt-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        updatePropertyDraft("due_date", null);
+                        setDueDateOpen(false);
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </PropertyField>
+
+            {ticket.parent_type === "ticket" && parentTicket && (
+              <PropertyField icon={CornerDownRight} label="Parent ticket">
+                <button
+                  type="button"
+                  onClick={() => router.push(`/ticket/${parentTicket.id}`)}
+                  className="border-border/60 text-foreground hover:border-primary/35 hover:bg-accent flex min-h-10 w-full items-center gap-2 rounded-xl border bg-background px-3 text-left text-sm font-medium transition-colors"
+                >
+                  <CornerDownRight className="text-muted-foreground size-3.5 rotate-180" />
+                  <span className="truncate">{parentTicket.title}</span>
+                </button>
+              </PropertyField>
+            )}
+          </div>
+
+          {isPropertiesSaving && (
+            <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-background/70 backdrop-blur-[2px]">
+              <div className="flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1.5 text-xs font-medium shadow-sm">
+                <Loader2 className="size-3.5 animate-spin" />
+                Saving properties...
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -768,7 +974,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
       </div>
 
       {/* Desktop right column — properties & activity */}
-      <div className="border-border hidden w-[380px] flex-col border-l lg:flex">
+      <div className="border-border hidden w-95 flex-col border-l lg:flex">
         <ScrollArea className="flex-1">{propertiesPanel}</ScrollArea>
       </div>
 
