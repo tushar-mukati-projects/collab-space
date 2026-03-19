@@ -6,7 +6,7 @@
 
 export type UserStatus = "online" | "offline" | "away";
 
-export type UserRole = "owner" | "admin" | "member" | "guest";
+export type UserRole = "admin" | "member";
 
 export type WorkspacePlan = "free" | "pro" | "enterprise";
 

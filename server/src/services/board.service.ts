@@ -161,3 +161,11 @@ export const moveTicket = async (
   const ticket_counts = await computeTicketCounts(board.id);
   return { data: serializeBoard(board, ticket_counts) };
 };
+
+export const deleteBoard = async (id: string, workspaceId: string) => {
+  const board = await prisma.board.findFirst({ where: { id, workspace_id: workspaceId } });
+  if (!board) return false;
+  await prisma.ticket.deleteMany({ where: { parent_id: id, parent_type: "board" } });
+  await prisma.board.delete({ where: { id } });
+  return true;
+};

@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { validated } from "../types.js";
 import { updateProfileSchema, updateWorkspaceSettingsSchema } from "../schemas/settings.schema.js";
 import { prisma } from "../db.js";
+import { WORKSPACE_ROLES } from "../constants.js";
 import {
   getProfile,
   updateProfile,
@@ -18,7 +19,7 @@ const getMemberRole = async (userId: string, workspaceId: string) => {
     where: { user_id: userId, workspace_id: workspaceId },
     select: { role: true },
   });
-  return m?.role ?? "member";
+  return m?.role ?? WORKSPACE_ROLES.MEMBER;
 };
 
 export const getProfileHandler = async (req: Request, res: Response) => {

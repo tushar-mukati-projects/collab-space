@@ -17,3 +17,17 @@ export const inviteToWorkspaceSchema = z.object({
   params: z.object({ id: z.string() }),
   body: z.object({ email: z.string().email() }),
 });
+
+export const revokeInviteSchema = z.object({
+  params: z.object({ id: z.string() }),
+  body: z.object({ email: z.string().email() }),
+});
+
+export const removeMemberSchema = z.object({
+  params: z.object({ id: z.string(), memberId: z.string() }),
+});
+
+export const changeRoleSchema = z.object({
+  params: z.object({ id: z.string(), memberId: z.string() }),
+  body: z.object({ role: z.enum(["admin", "member"]) }),
+});

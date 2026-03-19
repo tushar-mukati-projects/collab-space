@@ -53,13 +53,17 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
   // Media refs
   const localStreamRef = React.useRef<MediaStream | null>(null);
   const screenStreamRef = React.useRef<MediaStream | null>(null);
+  const localVideoElRef = React.useRef<HTMLVideoElement | null>(null);
+  const screenVideoElRef = React.useRef<HTMLVideoElement | null>(null);
   const chatEndRef = React.useRef<HTMLDivElement>(null);
 
   const localVideoRef = (node: HTMLVideoElement | null) => {
+    localVideoElRef.current = node;
     if (node && localStreamRef.current) node.srcObject = localStreamRef.current;
   };
 
   const screenVideoRef = (node: HTMLVideoElement | null) => {
+    screenVideoElRef.current = node;
     if (node && screenStreamRef.current) node.srcObject = screenStreamRef.current;
   };
 
@@ -90,6 +94,7 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
           return;
         }
         localStreamRef.current = stream;
+        if (localVideoElRef.current) localVideoElRef.current.srcObject = stream;
         setIsCameraOn(true);
         setIsMicOn(true);
       } catch {
@@ -128,6 +133,9 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
           });
           localStreamRef.current = newStream;
           setIsMicOn(true);
+        }
+        if (localVideoElRef.current && localStreamRef.current) {
+          localVideoElRef.current.srcObject = localStreamRef.current;
         }
         setIsCameraOn(true);
       } catch {
@@ -173,6 +181,7 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
           audio: false,
         });
         screenStreamRef.current = stream;
+        if (screenVideoElRef.current) screenVideoElRef.current.srcObject = stream;
         stream.getVideoTracks()[0].onended = () => {
           screenStreamRef.current = null;
           setIsScreenSharing(false);

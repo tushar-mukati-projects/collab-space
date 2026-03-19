@@ -1,4 +1,5 @@
 import { prisma } from "../db.js";
+import { WORKSPACE_ROLES } from "../constants.js";
 
 // ─── Profile ────────────────────────────────────────────────────────────────
 
@@ -82,7 +83,7 @@ export const updateWorkspaceSettings = async (
   data: { name?: string },
   role: string,
 ) => {
-  if (role !== "owner" && role !== "admin") {
+  if (role !== WORKSPACE_ROLES.ADMIN) {
     return { error: "forbidden" as const };
   }
 

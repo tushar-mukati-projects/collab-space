@@ -9,10 +9,8 @@ datasource db {
 // ─── Enums ───────────────────────────────────────────────────────────────────
 
 enum UserRole {
-  owner
   admin
   member
-  guest
 }
 
 enum UserStatus {

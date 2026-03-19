@@ -6,12 +6,18 @@ import {
   getInvitationsSchema,
   joinWorkspaceSchema,
   inviteToWorkspaceSchema,
+  removeMemberSchema,
+  changeRoleSchema,
+  revokeInviteSchema,
 } from "../schemas/workspace.schema.js";
 import {
   createWorkspace,
   getInvitations as getInvitationsSvc,
   joinWorkspace,
   inviteToWorkspace,
+  revokeInvite as revokeInviteSvc,
+  removeMember as removeMemberSvc,
+  changeMemberRole as changeRoleSvc,
 } from "../services/workspace.service.js";
 import { sendInvitationEmail } from "../services/email.service.js";
 import { prisma } from "../db.js";
@@ -70,5 +76,40 @@ export const invite = async (req: Request, res: Response) => {
     ]);
     await sendInvitationEmail(email, ws?.name ?? "CollabSpace", inviter?.name ?? "A team member");
   } catch {}
+  res.json({ success: true });
+};
+
+export const revokeInvite = async (req: Request, res: Response) => {
+  const {
+    params: { id },
+    body: { email },
+    userId,
+  } = validated(req, revokeInviteSchema);
+  const result = await revokeInviteSvc(id, email, userId);
+  if (result.error === "not_found") return res.status(404).json({ error: "Workspace not found" });
+  if (result.error === "forbidden") return res.status(403).json({ error: "Forbidden" });
+  res.json({ success: true });
+};
+
+export const removeMember = async (req: Request, res: Response) => {
+  const {
+    params: { id, memberId },
+    userId,
+  } = validated(req, removeMemberSchema);
+  const result = await removeMemberSvc(id, memberId, userId);
+  if (result.error === "not_found") return res.status(404).json({ error: "Member not found" });
+  if (result.error === "forbidden") return res.status(403).json({ error: "Forbidden" });
+  res.json({ success: true });
+};
+
+export const changeRole = async (req: Request, res: Response) => {
+  const {
+    params: { id, memberId },
+    body: { role },
+    userId,
+  } = validated(req, changeRoleSchema);
+  const result = await changeRoleSvc(id, memberId, role, userId);
+  if (result.error === "not_found") return res.status(404).json({ error: "Member not found" });
+  if (result.error === "forbidden") return res.status(403).json({ error: "Forbidden" });
   res.json({ success: true });
 };

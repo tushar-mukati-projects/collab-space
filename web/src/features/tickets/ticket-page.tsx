@@ -25,6 +25,7 @@ import {
   CornerDownRight,
   ChevronRight,
   Star,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import {
   useFetchTicket,
   useUpdateTicket,
+  useDeleteTicket,
   useFetchComments,
   useFetchActivities,
   useCreateComment,
@@ -113,12 +115,15 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   const router = useRouter();
   const { user: clerkUser } = useUser();
   const { data: workspace } = useFetchWorkspace();
-  const { data: ticket, isLoading: ticketLoading } = useFetchTicket(ticketId);
+  const [isDeleted, setIsDeleted] = React.useState(false);
+  const fetchEnabled = !isDeleted;
+  const { data: ticket, isLoading: ticketLoading } = useFetchTicket(ticketId, fetchEnabled);
   const { data: users = [] } = useFetchUsers();
   const { data: labels = [] } = useFetchLabels();
-  const { data: comments = [] } = useFetchComments(ticketId);
-  const { data: activities = [] } = useFetchActivities(ticketId);
+  const { data: comments = [] } = useFetchComments(ticketId, fetchEnabled);
+  const { data: activities = [] } = useFetchActivities(ticketId, fetchEnabled);
   const updateTicketMutation = useUpdateTicket();
+  const deleteTicketMutation = useDeleteTicket();
   const createCommentMutation = useCreateComment();
   const { data: favorites = [] } = useFetchFavorites();
   const toggleFavMutation = useToggleFavorite();
@@ -144,10 +149,11 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   }, [ticketId, clerkUser, workspace]);
   // Parent ticket (only fetched when this ticket is a sub-ticket)
   const parentTicketId = ticket?.parent_type === "ticket" ? (ticket.parent_id ?? "") : "";
-  const { data: parentTicket } = useFetchTicket(parentTicketId);
+  const { data: parentTicket } = useFetchTicket(parentTicketId, fetchEnabled);
 
-  // Sub-tickets of this ticket
-  const { data: subTickets = [] } = useTickets({ parent_id: ticketId, parent_type: ["ticket"] });
+  const { data: subTickets = [] } = useTickets(
+    fetchEnabled ? { parent_id: ticketId, parent_type: ["ticket"] } : undefined,
+  );
 
   const [commentText, setCommentText] = React.useState("");
   const [labelsOpen, setLabelsOpen] = React.useState(false);
@@ -328,7 +334,24 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
             onValueChange={(val) => handleUpdate({ assignee: val === "__none__" ? null : val })}
           >
             <SelectTrigger size="sm" className="h-7 w-auto">
-              <SelectValue />
+              <SelectValue>
+                {(() => {
+                  if (!ticket.assignee) return "Unassigned";
+                  const u = userMap.get(ticket.assignee);
+                  if (!u) return "Unassigned";
+                  return (
+                    <span className="flex items-center gap-1.5">
+                      <Avatar size="sm" className="size-4">
+                        <AvatarImage src={u.avatar} alt={u.name} />
+                        <AvatarFallback className="text-[8px]">
+                          {getUserInitials(u.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {u.name}
+                    </span>
+                  );
+                })()}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__none__">Unassigned</SelectItem>
@@ -603,6 +626,21 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
             )}
           </div>
           <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm("Delete this ticket?")) {
+                  setIsDeleted(true);
+                  deleteTicketMutation.mutate(ticketId, {
+                    onSuccess: () => router.push("/boards"),
+                  });
+                }
+              }}
+              className="text-muted-foreground hover:text-destructive hover:bg-accent inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors"
+            >
+              <Trash2 className="size-3.5" />
+              Delete
+            </button>
             <button
               type="button"
               onClick={() => setDetailsOpen(true)}

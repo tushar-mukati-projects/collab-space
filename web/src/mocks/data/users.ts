@@ -6,7 +6,7 @@ export const mockUsers: User[] = [
     name: "Priya Sharma",
     email: "priya@collabspace.io",
     avatar: "https://ui-avatars.com/api/?name=Priya+Sharma&background=6366f1&color=fff",
-    role: "owner",
+    role: "admin",
     status: "online",
     created_at: "2025-09-01T08:00:00Z",
     updated_at: "2026-03-15T08:00:00Z",

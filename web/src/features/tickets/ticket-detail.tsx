@@ -303,7 +303,24 @@ export const TicketDetail = ({
               }
             >
               <SelectTrigger size="sm" className="h-7 w-auto">
-                <SelectValue />
+                <SelectValue>
+                  {(() => {
+                    if (!ticket.assignee) return "Unassigned";
+                    const u = userMap.get(ticket.assignee);
+                    if (!u) return "Unassigned";
+                    return (
+                      <span className="flex items-center gap-1.5">
+                        <Avatar size="sm" className="size-4">
+                          <AvatarImage src={u.avatar} alt={u.name} />
+                          <AvatarFallback className="text-[8px]">
+                            {getUserInitials(u.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        {u.name}
+                      </span>
+                    );
+                  })()}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">Unassigned</SelectItem>

@@ -6,6 +6,7 @@ import {
   createBoard,
   getBoard,
   moveTicket as moveTicketSvc,
+  deleteBoard,
 } from "../services/board.service.js";
 
 export const list = async (req: Request, res: Response) => {
@@ -40,4 +41,14 @@ export const moveTicket = async (req: Request, res: Response) => {
   const r = await moveTicketSvc(ticket_id, to_status, userId, workspaceId);
   if ("error" in r) return res.status(404).json({ error: r.error });
   res.json(r);
+};
+
+export const remove = async (req: Request, res: Response) => {
+  const {
+    params: { id },
+    workspaceId,
+  } = validated(req, getBoardSchema);
+  if (!(await deleteBoard(id, workspaceId)))
+    return res.status(404).json({ error: "Board not found" });
+  res.json({ success: true });
 };

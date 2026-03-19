@@ -1,22 +1,31 @@
 "use client";
 
 import * as React from "react";
-import { Save, UserPlus, X, Loader2, Mail, Clock } from "lucide-react";
+import { Save, UserPlus, X, Loader2, Mail } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { axiosInstance } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useQueryClient } from "@tanstack/react-query";
 import { useFetchWorkspaceSettings, useUpdateWorkspaceSettings } from "@/hooks/settings";
 import { useInviteToWorkspace } from "@/hooks/workspace";
 
 const roleBadgeStyles: Record<string, string> = {
-  owner: "bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400",
   admin: "bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400",
   member: "bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400",
-  guest: "bg-zinc-500/15 text-zinc-600 dark:bg-zinc-500/20 dark:text-zinc-400",
 };
 
 const planBadgeStyles: Record<string, string> = {
@@ -25,11 +34,10 @@ const planBadgeStyles: Record<string, string> = {
   enterprise: "bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400",
 };
 
-const isValidEmail = (email: string) => {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-};
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 export const WorkspaceSettings = () => {
+  const queryClient = useQueryClient();
   const { data: workspace, isLoading } = useFetchWorkspaceSettings();
   const updateWorkspaceMutation = useUpdateWorkspaceSettings();
   const inviteMutation = useInviteToWorkspace(workspace?.id ?? "");
@@ -37,12 +45,13 @@ export const WorkspaceSettings = () => {
   const [inviteEmail, setInviteEmail] = React.useState("");
   const [saved, setSaved] = React.useState(false);
   const [emailError, setEmailError] = React.useState("");
+  const [memberTab, setMemberTab] = React.useState<"members" | "invited">("members");
 
   React.useEffect(() => {
-    if (workspace) {
-      setWorkspaceName(workspace.name);
-    }
+    if (workspace) setWorkspaceName(workspace.name);
   }, [workspace]);
+
+  const invalidateWs = () => queryClient.invalidateQueries({ queryKey: ["settings", "workspace"] });
 
   const handleSave = async () => {
     await updateWorkspaceMutation.mutateAsync({ name: workspaceName });
@@ -53,33 +62,53 @@ export const WorkspaceSettings = () => {
   const handleInvite = async () => {
     const email = inviteEmail.trim().toLowerCase();
     if (!email) return;
-
     if (!isValidEmail(email)) {
       setEmailError("Please enter a valid email address");
       return;
     }
-
-    // Check if already a member
     if (workspace?.members.some((m) => m.email.toLowerCase() === email)) {
-      setEmailError("This person is already a member");
+      setEmailError("Already a member");
       return;
     }
-
-    // Check if already invited
-    if (workspace?.invited_emails.includes(email)) {
-      setEmailError("This person has already been invited");
+    if (workspace?.invited_emails?.includes(email)) {
+      setEmailError("Already invited");
       return;
     }
-
     setEmailError("");
     await inviteMutation.mutateAsync(email);
     setInviteEmail("");
   };
 
-  const handleInviteKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleInvite();
+  const handleRemoveMember = async (memberId: string) => {
+    if (!workspace) return;
+    try {
+      await axiosInstance.delete(`/workspaces/${workspace.id}/members/${memberId}`);
+      invalidateWs();
+      toast.success("Member removed");
+    } catch {
+      toast.error("Failed to remove member");
+    }
+  };
+
+  const handleRevokeInvite = async (email: string) => {
+    if (!workspace) return;
+    try {
+      await axiosInstance.post(`/workspaces/${workspace.id}/revoke-invite`, { email });
+      invalidateWs();
+      toast.success("Invitation revoked");
+    } catch {
+      toast.error("Failed to revoke invitation");
+    }
+  };
+
+  const handleRoleChange = async (memberId: string, role: string) => {
+    if (!workspace) return;
+    try {
+      await axiosInstance.patch(`/workspaces/${workspace.id}/members/${memberId}`, { role });
+      invalidateWs();
+      toast.success("Role updated");
+    } catch {
+      toast.error("Failed to update role");
     }
   };
 
@@ -90,6 +119,8 @@ export const WorkspaceSettings = () => {
       </div>
     );
   }
+
+  const invitedCount = workspace.invited_emails?.length ?? 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -115,9 +146,7 @@ export const WorkspaceSettings = () => {
               <span className="text-muted-foreground text-xs">{workspace.slug}</span>
             </div>
           </div>
-
           <Separator />
-
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="ws-name">Workspace Name</Label>
@@ -128,7 +157,6 @@ export const WorkspaceSettings = () => {
                 placeholder="Workspace name"
               />
             </div>
-
             <div className="flex flex-col gap-1.5">
               <Label>Current Plan</Label>
               <div className="border-input bg-muted/50 flex h-8 items-center gap-2 rounded-lg border px-2.5 text-sm">
@@ -141,11 +169,11 @@ export const WorkspaceSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Members */}
+      {/* Members & Invitations */}
       <Card>
         <CardHeader>
-          <CardTitle>Members</CardTitle>
-          <CardDescription>Manage workspace members and their roles.</CardDescription>
+          <CardTitle>People</CardTitle>
+          <CardDescription>Manage workspace members and invitations.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {/* Invite input */}
@@ -157,7 +185,7 @@ export const WorkspaceSettings = () => {
                   setInviteEmail(e.target.value);
                   setEmailError("");
                 }}
-                onKeyDown={handleInviteKeyDown}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleInvite())}
                 placeholder="Invite by email address..."
                 className="flex-1"
                 type="email"
@@ -171,78 +199,129 @@ export const WorkspaceSettings = () => {
                 ) : (
                   <UserPlus className="size-4" />
                 )}
-                {inviteMutation.isPending ? "Sending..." : "Invite"}
+                Invite
               </Button>
             </div>
             {emailError && <p className="text-destructive text-xs">{emailError}</p>}
           </div>
 
-          {/* Pending invitations */}
-          {workspace.invited_emails.length > 0 && (
-            <>
-              <Separator />
-              <div className="flex flex-col gap-1">
-                <span className="text-muted-foreground mb-1 flex items-center gap-1.5 text-xs font-medium">
-                  <Clock className="size-3" />
-                  Pending Invitations ({workspace.invited_emails.length})
-                </span>
-                {workspace.invited_emails.map((email) => (
+          <Separator />
+
+          {/* Tabs */}
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => setMemberTab("members")}
+              className={cn(
+                "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                memberTab === "members"
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-muted",
+              )}
+            >
+              Members ({workspace.members.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setMemberTab("invited")}
+              className={cn(
+                "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                memberTab === "invited"
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-muted",
+              )}
+            >
+              Invited ({invitedCount})
+            </button>
+          </div>
+
+          {/* Members tab */}
+          {memberTab === "members" && (
+            <div className="flex flex-col gap-1">
+              {workspace.members.map((member) => (
+                <div
+                  key={member.id}
+                  className="hover:bg-muted/50 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
+                >
+                  <Avatar size="sm">
+                    <AvatarImage src={member.avatar} alt={member.name} />
+                    <AvatarFallback>
+                      {member.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-1 flex-col">
+                    <span className="text-sm font-medium">{member.name}</span>
+                    <span className="text-muted-foreground text-xs">{member.email}</span>
+                  </div>
+                  <Select
+                    value={member.role}
+                    onValueChange={(role) => role && handleRoleChange(member.id, role)}
+                  >
+                    <SelectTrigger size="sm" className="h-7 w-auto">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="member">Member</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {(
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => {
+                        if (confirm(`Remove ${member.name}?`)) handleRemoveMember(member.id);
+                      }}
+                    >
+                      <X className="size-3.5" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Invited tab */}
+          {memberTab === "invited" && (
+            <div className="flex flex-col gap-1">
+              {invitedCount === 0 ? (
+                <p className="text-muted-foreground py-6 text-center text-sm">
+                  No pending invitations
+                </p>
+              ) : (
+                workspace.invited_emails.map((email) => (
                   <div
                     key={email}
-                    className="hover:bg-muted/50 flex items-center gap-3 rounded-lg px-3 py-2 transition-colors"
+                    className="hover:bg-muted/50 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
                   >
                     <div className="bg-muted flex size-8 items-center justify-center rounded-full">
                       <Mail className="text-muted-foreground size-3.5" />
                     </div>
                     <div className="flex flex-1 flex-col">
-                      <span className="text-muted-foreground text-sm">{email}</span>
+                      <span className="text-sm">{email}</span>
                     </div>
                     <Badge className="bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
                       Pending
                     </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => {
+                        if (confirm(`Revoke invitation for ${email}?`)) handleRevokeInvite(email);
+                      }}
+                    >
+                      <X className="size-3.5" />
+                    </Button>
                   </div>
-                ))}
-              </div>
-            </>
+                ))
+              )}
+            </div>
           )}
-
-          <Separator />
-
-          {/* Members list */}
-          <div className="flex flex-col gap-1">
-            {workspace.members.map((member) => (
-              <div
-                key={member.id}
-                className="hover:bg-muted/50 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
-              >
-                <Avatar size="sm">
-                  <AvatarImage src={member.avatar} alt={member.name} />
-                  <AvatarFallback>
-                    {member.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-1 flex-col">
-                  <span className="text-sm font-medium">{member.name}</span>
-                  <span className="text-muted-foreground text-xs">{member.email}</span>
-                </div>
-                <Badge className={roleBadgeStyles[member.role] ?? roleBadgeStyles.member}>
-                  {member.role}
-                </Badge>
-                {member.role !== "owner" && (
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    <X className="size-3.5" />
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
         </CardContent>
       </Card>
 

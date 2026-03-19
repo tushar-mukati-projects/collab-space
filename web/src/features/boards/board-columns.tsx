@@ -416,7 +416,8 @@ export const BoardColumns = ({ board, onCardClick }: BoardColumnsProps) => {
           index: ticketIndex >= 0 ? ticketIndex : 0,
         },
         {
-          onSettled: () => setDragColumns(null), // clear override, fall back to server data
+          onSuccess: () => setDragColumns(null),
+          onError: () => setDragColumns(null),
         },
       );
     }

@@ -1,4 +1,5 @@
 import { prisma } from "../db.js";
+import { WORKSPACE_ROLES } from "../constants.js";
 
 type ClerkUser = { id: string; email: string; name: string; avatar: string };
 
@@ -93,7 +94,7 @@ export const createWorkspace = async (
       members: {
         create: {
           user_id: userId,
-          role: "owner",
+          role: WORKSPACE_ROLES.ADMIN,
         },
       },
       status_definitions: {
@@ -187,7 +188,7 @@ export const joinWorkspace = async (
       data: {
         user_id: userId,
         workspace_id: workspaceId,
-        role: "member",
+        role: WORKSPACE_ROLES.MEMBER,
       },
     });
 
@@ -215,7 +216,7 @@ export const inviteToWorkspace = async (workspaceId: string, email: string, invi
     },
   });
 
-  if (!callerMembership || !["owner", "admin"].includes(callerMembership.role)) {
+  if (!callerMembership || callerMembership.role !== WORKSPACE_ROLES.ADMIN) {
     return { error: "forbidden" as const };
   }
 
@@ -228,5 +229,65 @@ export const inviteToWorkspace = async (workspaceId: string, email: string, invi
     });
   }
 
+  return { error: null };
+};
+
+export const revokeInvite = async (workspaceId: string, email: string, callerId: string) => {
+  const workspace = await prisma.workspace.findUnique({ where: { id: workspaceId } });
+  if (!workspace) return { error: "not_found" as const };
+
+  const caller = await prisma.workspaceMember.findUnique({
+    where: { user_id_workspace_id: { user_id: callerId, workspace_id: workspaceId } },
+  });
+  if (!caller || caller.role !== WORKSPACE_ROLES.ADMIN) return { error: "forbidden" as const };
+
+  await prisma.workspace.update({
+    where: { id: workspaceId },
+    data: { invited_emails: { set: workspace.invited_emails.filter((e: any) => e !== email) } },
+  });
+  return { error: null };
+};
+
+// ─── removeMember ──────────────────────────────────────────────────────────
+
+export const removeMember = async (workspaceId: string, memberId: string, callerId: string) => {
+  const caller = await prisma.workspaceMember.findUnique({
+    where: { user_id_workspace_id: { user_id: callerId, workspace_id: workspaceId } },
+  });
+  if (!caller || caller.role !== WORKSPACE_ROLES.ADMIN) return { error: "forbidden" as const };
+
+  const target = await prisma.workspaceMember.findUnique({
+    where: { user_id_workspace_id: { user_id: memberId, workspace_id: workspaceId } },
+  });
+  if (!target) return { error: "not_found" as const };
+
+  await prisma.workspaceMember.delete({
+    where: { user_id_workspace_id: { user_id: memberId, workspace_id: workspaceId } },
+  });
+  return { error: null };
+};
+
+// ─── changeMemberRole ──────────────────────────────────────────────────────
+
+export const changeMemberRole = async (
+  workspaceId: string,
+  memberId: string,
+  role: string,
+  callerId: string,
+) => {
+  const caller = await prisma.workspaceMember.findUnique({
+    where: { user_id_workspace_id: { user_id: callerId, workspace_id: workspaceId } },
+  });
+  if (!caller || caller.role !== WORKSPACE_ROLES.ADMIN) return { error: "forbidden" as const };
+
+  const target = await prisma.workspaceMember.findUnique({
+    where: { user_id_workspace_id: { user_id: memberId, workspace_id: workspaceId } },
+  });
+  if (!target) return { error: "not_found" as const };
+
+  await prisma.workspaceMember.update({
+    where: { user_id_workspace_id: { user_id: memberId, workspace_id: workspaceId } },
+    data: { role: role as any },
+  });
   return { error: null };
 };
