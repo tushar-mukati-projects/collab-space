@@ -1,7 +1,8 @@
-import "dotenv/config";
-import { Server } from "@hocuspocus/server";
+import { Hocuspocus } from "@hocuspocus/server";
 import { Database } from "@hocuspocus/extension-database";
+import { WebSocketServer } from "ws";
 import pg from "pg";
+import type { Server as HttpServer } from "http";
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
@@ -17,10 +18,8 @@ pool
   )
   .catch(console.error);
 
-const port = Number(process.env.COLLAB_PORT ?? 1234);
-
-const server = new Server({
-  port,
+const hocuspocus = new Hocuspocus({
+  quiet: true,
   async onAuthenticate(data: any) {
     const { token } = data;
     if (!token) throw new Error("Authentication required");
@@ -53,4 +52,9 @@ const server = new Server({
   ],
 });
 
-server.listen(port).then(() => console.log(`Hocuspocus running on ws://localhost:${port}`));
+export const startCollab = (server: HttpServer) => {
+  const wss = new WebSocketServer({ server, path: "/collab" });
+  wss.on("connection", (ws, req) => {
+    hocuspocus.handleConnection(ws, req);
+  });
+};

@@ -207,6 +207,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   );
 
   const handleContentChange = (value: string) => {
+    if (collabConfig) return; // Yjs/Hocuspocus handles persistence
     debouncedSaveContent(value);
   };
 
