@@ -21,14 +21,14 @@ const navLinks = [
 ];
 
 const navItemBase =
-  "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200";
+  "flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium transition-all duration-200";
 
 const statusDot: Record<string, string> = {
-  backlog: "bg-gray-400",
+  backlog: "bg-zinc-400",
   todo: "bg-blue-400",
-  "in-progress": "bg-yellow-400",
-  "in-review": "bg-purple-400",
-  done: "bg-green-500",
+  "in-progress": "bg-amber-400",
+  "in-review": "bg-violet-400",
+  done: "bg-emerald-400",
 };
 
 interface LeftNavProps {
@@ -75,7 +75,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
           onClick={onClose}
           className="hover:bg-accent/60 flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-all duration-200"
         >
-          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500/25 to-indigo-600/15 text-xs font-bold text-indigo-500">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary text-[11px] font-bold text-primary-foreground shadow-sm shadow-primary/20">
             {wsInitials}
           </span>
           <span className="truncate text-sm font-semibold tracking-tight">
@@ -254,14 +254,14 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
                 className={cn(
                   navItemBase,
                   isActive
-                    ? "bg-primary/8 text-foreground font-semibold"
+                    ? "bg-primary/10 text-foreground font-semibold"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
               >
                 {isActive && (
-                  <span className="absolute left-0 h-5 w-[3px] rounded-r-full bg-indigo-500" />
+                  <span className="absolute left-0 h-5 w-[3px] rounded-r-full bg-primary" />
                 )}
-                <link.icon className={cn("size-4 shrink-0", isActive && "text-indigo-500")} />
+                <link.icon className={cn("size-4 shrink-0", isActive && "text-primary")} />
                 {link.label}
               </Link>
             );
@@ -280,11 +280,11 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
           className={cn(
             navItemBase,
             pathname === "/settings"
-              ? "bg-primary/8 text-foreground font-semibold"
+              ? "bg-primary/10 text-foreground font-semibold"
               : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
           )}
         >
-          <Settings className={cn("size-4 shrink-0", pathname === "/settings" && "text-indigo-500")} />
+          <Settings className={cn("size-4 shrink-0", pathname === "/settings" && "text-primary")} />
           Settings
         </button>
         <button
@@ -295,7 +295,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
           }}
           className={cn(
             navItemBase,
-            "text-muted-foreground hover:bg-destructive/8 hover:text-destructive",
+            "text-muted-foreground hover:bg-destructive/10 hover:text-destructive",
           )}
         >
           <LogOut className="size-4 shrink-0" />

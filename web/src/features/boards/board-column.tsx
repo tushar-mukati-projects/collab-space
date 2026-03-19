@@ -65,7 +65,7 @@ export const BoardColumn = ({
         ref={setNodeRef}
         className={cn(
           "flex flex-1 flex-col gap-2 overflow-y-auto rounded-b-xl px-2 pt-1 pb-2 transition-all duration-200",
-          isOver && "bg-indigo-500/5 ring-indigo-500/20 rounded-xl ring-2 ring-inset scale-[1.01]",
+          isOver && "bg-primary/5 ring-primary/20 rounded-xl ring-2 ring-inset scale-[1.01]",
         )}
       >
         <SortableContext items={tickets.map((t) => t.id)} strategy={verticalListSortingStrategy}>

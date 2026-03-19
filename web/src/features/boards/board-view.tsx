@@ -103,7 +103,7 @@ export const BoardView = () => {
       {showCreateInput && (
         <div className="mb-4 flex items-center gap-2 animate-fade-in">
           <input
-            className="bg-background focus:ring-ring/30 rounded-lg border px-3 py-1.5 text-sm outline-none transition-all focus:ring-2 focus:border-indigo-400"
+            className="bg-background focus:ring-ring/30 rounded-lg border px-3 py-1.5 text-sm outline-none transition-all focus:ring-2 focus:border-primary"
             placeholder="Board name..."
             value={newBoardName}
             onChange={(e) => setNewBoardName(e.target.value)}

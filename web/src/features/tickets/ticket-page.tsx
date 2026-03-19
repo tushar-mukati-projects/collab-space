@@ -310,7 +310,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-semibold">Properties</h4>
           {updateTicketMutation.isPending && (
-            <span className="flex items-center gap-1 text-[11px] text-indigo-500 save-indicator">
+            <span className="flex items-center gap-1 text-[11px] text-primary save-indicator">
               <Loader2 className="size-3 animate-spin" />
               Updating...
             </span>
@@ -532,7 +532,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
               <button
                 type="button"
                 onClick={() => router.push(`/ticket/${parentTicket.id}`)}
-                className="text-foreground hover:text-indigo-500 truncate text-left text-sm font-medium transition-colors"
+                className="text-foreground hover:text-primary truncate text-left text-sm font-medium transition-colors"
               >
                 {parentTicket.title}
               </button>

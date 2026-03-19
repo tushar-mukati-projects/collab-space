@@ -50,7 +50,7 @@ export default function OnboardingPage() {
     <div className="w-full max-w-md px-4 animate-fade-in">
       {/* Header */}
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/25 to-indigo-600/15 text-lg font-bold text-indigo-500">
+        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary/20 text-lg font-bold text-primary">
           CS
         </div>
         <h1 className="text-xl font-bold tracking-tight">Welcome, {firstName}!</h1>
@@ -87,7 +87,7 @@ export default function OnboardingPage() {
           <Users className="size-4" />
           Join workspace
           {invitations.length > 0 && (
-            <span className="bg-indigo-500 text-white absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-[9px] font-bold animate-fade-in-scale">
+            <span className="bg-primary text-white absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-[9px] font-bold animate-fade-in-scale">
               {invitations.length}
             </span>
           )}
@@ -112,15 +112,15 @@ export default function OnboardingPage() {
           </div>
 
           {/* Plan card */}
-          <div className="border-border rounded-xl border p-4 transition-all hover:border-indigo-500/30 hover:shadow-sm">
+          <div className="border-border rounded-xl border p-4 transition-all hover:border-primary/30 hover:shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-500">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
                 <Sparkles className="size-4" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">Pro Plan</span>
-                  <Badge className="bg-indigo-500/15 text-[10px] text-indigo-600 dark:text-indigo-400">
+                  <Badge className="bg-primary/15 text-[10px] text-primary">
                     Default
                   </Badge>
                 </div>
@@ -138,7 +138,7 @@ export default function OnboardingPage() {
           >
             {createWorkspaceMutation.isPending ? (
               <>
-                <Loader2 className="size-4 animate-spin text-indigo-200" />
+                <Loader2 className="size-4 animate-spin text-primary-foreground/60" />
                 Creating...
               </>
             ) : (
@@ -184,7 +184,7 @@ export default function OnboardingPage() {
               {invitations.map((inv, i) => (
                 <div
                   key={inv.id}
-                  className="border-border flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-indigo-500/30 hover:shadow-sm animate-fade-in"
+                  className="border-border flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-primary/30 hover:shadow-sm animate-fade-in"
                   style={{ animationDelay: `${i * 80}ms` }}
                 >
                   <Image
@@ -208,7 +208,7 @@ export default function OnboardingPage() {
                     disabled={joinWorkspaceMutation.isPending}
                   >
                     {joinWorkspaceMutation.isPending ? (
-                      <Loader2 className="size-3.5 animate-spin text-indigo-200" />
+                      <Loader2 className="size-3.5 animate-spin text-primary-foreground/60" />
                     ) : (
                       <CheckCircle2 className="size-3.5" />
                     )}

@@ -92,7 +92,7 @@ export const TopNav = () => {
                 onChange={(e) => handleTitleChange(e.target.value)}
                 onBlur={handleTitleBlur}
                 onKeyDown={handleTitleKeyDown}
-                className="text-foreground min-w-0 flex-1 rounded-md border border-indigo-400/50 bg-indigo-500/5 px-2 py-0.5 font-medium outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                className="text-foreground min-w-0 flex-1 rounded-lg border border-primary/40 bg-primary/5 px-2 py-0.5 font-medium outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
                 autoFocus
               />
             ) : (
@@ -108,7 +108,7 @@ export const TopNav = () => {
 
             {/* Save status indicator */}
             {updateTicketMutation.isPending && (
-              <Loader2 className="ml-1 size-3.5 shrink-0 animate-spin text-indigo-500" />
+              <Loader2 className="ml-1 size-3.5 shrink-0 animate-spin text-primary" />
             )}
             {updateTicketMutation.isSuccess && !updateTicketMutation.isPending && (
               <span className="ml-1 flex items-center gap-0.5 text-xs text-emerald-500 animate-fade-in">

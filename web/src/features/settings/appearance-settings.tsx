@@ -158,12 +158,12 @@ export const AppearanceSettings = () => {
                   className={cn(
                     "relative flex flex-col items-center gap-3 rounded-xl border-2 p-4 transition-all duration-200",
                     isSelected
-                      ? "border-indigo-500 bg-indigo-500/5 shadow-sm"
-                      : "border-border hover:border-indigo-500/40 hover:bg-muted/50 hover:-translate-y-0.5",
+                      ? "border-primary bg-primary/5 shadow-sm"
+                      : "border-border hover:border-primary/40 hover:bg-muted/50 hover:-translate-y-0.5",
                   )}
                 >
                   {isSelected && (
-                    <div className="bg-indigo-500 absolute top-2 right-2 flex size-5 items-center justify-center rounded-full animate-fade-in-scale">
+                    <div className="bg-primary absolute top-2 right-2 flex size-5 items-center justify-center rounded-full animate-fade-in-scale">
                       <Check className="text-white size-3" />
                     </div>
                   )}
@@ -200,7 +200,7 @@ export const AppearanceSettings = () => {
                           option.value === "dark" ? "bg-zinc-600" : "bg-zinc-300",
                         )}
                       />
-                      <div className="ml-auto h-1.5 w-3 rounded-full bg-indigo-500" />
+                      <div className="ml-auto h-1.5 w-3 rounded-full bg-primary" />
                     </div>
                   </div>
                   <div className="flex flex-col items-center gap-0.5">
@@ -236,7 +236,7 @@ export const AppearanceSettings = () => {
                   className={cn(
                     "group flex flex-col items-center gap-1.5 rounded-xl border-2 px-4 py-3 transition-all duration-200",
                     isSelected
-                      ? "border-indigo-500 bg-indigo-500/5 shadow-sm"
+                      ? "border-primary bg-primary/5 shadow-sm"
                       : "hover:border-border border-transparent hover:-translate-y-0.5",
                   )}
                 >
@@ -273,12 +273,12 @@ export const AppearanceSettings = () => {
                   className={cn(
                     "relative flex flex-col items-start gap-2 rounded-xl border-2 p-4 text-left transition-all duration-200",
                     isSelected
-                      ? "border-indigo-500 bg-indigo-500/5 shadow-sm"
-                      : "border-border hover:border-indigo-500/40 hover:bg-muted/50 hover:-translate-y-0.5",
+                      ? "border-primary bg-primary/5 shadow-sm"
+                      : "border-border hover:border-primary/40 hover:bg-muted/50 hover:-translate-y-0.5",
                   )}
                 >
                   {isSelected && (
-                    <div className="bg-indigo-500 absolute top-2 right-2 flex size-5 items-center justify-center rounded-full animate-fade-in-scale">
+                    <div className="bg-primary absolute top-2 right-2 flex size-5 items-center justify-center rounded-full animate-fade-in-scale">
                       <Check className="text-white size-3" />
                     </div>
                   )}

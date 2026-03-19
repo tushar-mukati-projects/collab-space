@@ -125,12 +125,12 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
         <DropdownMenuTrigger
           className={cn(
             "border-border hover:bg-accent inline-flex h-7 items-center gap-1 rounded-md border bg-transparent px-2.5 text-xs font-medium transition-colors",
-            (filters.statuses?.length ?? 0) > 0 && "border-indigo-400 text-indigo-500",
+            (filters.statuses?.length ?? 0) > 0 && "border-primary text-primary",
           )}
         >
           Status
           {(filters.statuses?.length ?? 0) > 0 && (
-            <span className="rounded-full bg-indigo-500 px-1 text-[10px] text-white">
+            <span className="rounded-full bg-primary px-1 text-[10px] text-white">
               {filters.statuses!.length}
             </span>
           )}
@@ -154,12 +154,12 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
         <DropdownMenuTrigger
           className={cn(
             "border-border hover:bg-accent inline-flex h-7 items-center gap-1 rounded-md border bg-transparent px-2.5 text-xs font-medium transition-colors",
-            (filters.priorities?.length ?? 0) > 0 && "border-indigo-400 text-indigo-500",
+            (filters.priorities?.length ?? 0) > 0 && "border-primary text-primary",
           )}
         >
           Priority
           {(filters.priorities?.length ?? 0) > 0 && (
-            <span className="rounded-full bg-indigo-500 px-1 text-[10px] text-white">
+            <span className="rounded-full bg-primary px-1 text-[10px] text-white">
               {filters.priorities!.length}
             </span>
           )}
@@ -183,12 +183,12 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
         <DropdownMenuTrigger
           className={cn(
             "border-border hover:bg-accent inline-flex h-7 items-center gap-1 rounded-md border bg-transparent px-2.5 text-xs font-medium transition-colors",
-            (filters.assignees?.length ?? 0) > 0 && "border-indigo-400 text-indigo-500",
+            (filters.assignees?.length ?? 0) > 0 && "border-primary text-primary",
           )}
         >
           Assignee
           {(filters.assignees?.length ?? 0) > 0 && (
-            <span className="rounded-full bg-indigo-500 px-1 text-[10px] text-white">
+            <span className="rounded-full bg-primary px-1 text-[10px] text-white">
               {filters.assignees!.length}
             </span>
           )}
@@ -212,12 +212,12 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
         <DropdownMenuTrigger
           className={cn(
             "border-border hover:bg-accent inline-flex h-7 items-center gap-1 rounded-md border bg-transparent px-2.5 text-xs font-medium transition-colors",
-            (filters.labels?.length ?? 0) > 0 && "border-indigo-400 text-indigo-500",
+            (filters.labels?.length ?? 0) > 0 && "border-primary text-primary",
           )}
         >
           Labels
           {(filters.labels?.length ?? 0) > 0 && (
-            <span className="rounded-full bg-indigo-500 px-1 text-[10px] text-white">
+            <span className="rounded-full bg-primary px-1 text-[10px] text-white">
               {filters.labels!.length}
             </span>
           )}

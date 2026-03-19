@@ -66,7 +66,7 @@ export const NotificationPanel = ({ variant = "icon" }: NotificationPanelProps) 
               }
               className={cn(
                 "hover:bg-accent/60 flex w-full items-start gap-3 px-3 py-2.5 text-left transition-all animate-fade-in",
-                !notification.read && "bg-indigo-500/[0.04]",
+                !notification.read && "bg-primary/[0.04]",
               )}
               style={{ animationDelay: `${i * 30}ms` }}
             >
@@ -74,7 +74,7 @@ export const NotificationPanel = ({ variant = "icon" }: NotificationPanelProps) 
                 <span
                   className={cn(
                     "size-1.5 rounded-full transition-colors",
-                    notification.read ? "bg-transparent" : "bg-indigo-500",
+                    notification.read ? "bg-transparent" : "bg-primary",
                   )}
                 />
               </div>

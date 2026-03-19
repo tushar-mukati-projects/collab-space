@@ -24,14 +24,14 @@ const resolveTheme = (pref: "light" | "dark" | "system"): "light" | "dark" => {
 
 const LoadingSplash = () => (
   <div className="bg-background flex h-screen items-center justify-center">
-    <div className="flex flex-col items-center gap-4 animate-fade-in">
-      <div className="flex size-10 items-center justify-center rounded-xl bg-indigo-500/20">
-        <span className="text-sm font-bold text-indigo-500">CS</span>
+    <div className="flex flex-col items-center gap-5 animate-fade-in">
+      <div className="flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
+        <span className="text-sm font-bold">CS</span>
       </div>
-      <div className="flex items-center gap-1.5">
-        <div className="size-1.5 rounded-full bg-indigo-500/60 animate-pulse" />
-        <div className="size-1.5 rounded-full bg-indigo-500/40 animate-pulse [animation-delay:150ms]" />
-        <div className="size-1.5 rounded-full bg-indigo-500/20 animate-pulse [animation-delay:300ms]" />
+      <div className="flex items-center gap-2">
+        <div className="size-1.5 rounded-full bg-primary/70 animate-pulse" />
+        <div className="size-1.5 rounded-full bg-primary/50 animate-pulse [animation-delay:150ms]" />
+        <div className="size-1.5 rounded-full bg-primary/30 animate-pulse [animation-delay:300ms]" />
       </div>
     </div>
   </div>
