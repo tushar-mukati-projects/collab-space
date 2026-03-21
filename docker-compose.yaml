@@ -1,0 +1,22 @@
+services:
+  server:
+    build: ./server
+    ports:
+      - "4000:4000"
+    env_file: ./server/.env
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_YmVsb3ZlZC1iZWV0bGUtOTMuY2xlcmsuYWNjb3VudHMuZGV2JA
+        NEXT_PUBLIC_API_URL: http://localhost:4000/api
+        NEXT_PUBLIC_COLLAB_URL: ws://localhost:4000/collab
+    ports:
+      - "3000:3000"
+    environment:
+      - CLERK_SECRET_KEY=REDACTED
+    depends_on:
+      - server
+    restart: unless-stopped

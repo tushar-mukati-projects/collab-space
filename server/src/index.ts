@@ -25,6 +25,7 @@ app.use(
     secretKey: process.env.CLERK_SECRET_KEY,
   }),
 );
+app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/api", authMiddleware, workspaceMiddleware, routes);
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);

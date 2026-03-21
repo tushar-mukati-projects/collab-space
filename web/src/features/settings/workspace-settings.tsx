@@ -20,14 +20,9 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useQueryClient } from "@tanstack/react-query";
-import { useFetchWorkspaceSettings, useUpdateWorkspaceSettings } from "@/hooks/settings";
+import { useUpdateWorkspaceSettings } from "@/hooks/settings";
+import { useFetchWorkspace } from "@/hooks/workspace";
 import { useInviteToWorkspace } from "@/hooks/workspace";
-
-const roleBadgeStyles: Record<string, string> = {
-  admin: "bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400",
-  member: "bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400",
-};
-
 const planBadgeStyles: Record<string, string> = {
   free: "bg-zinc-500/15 text-zinc-600 dark:bg-zinc-500/20 dark:text-zinc-400",
   pro: "bg-indigo-500/15 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400",
@@ -37,15 +32,15 @@ const planBadgeStyles: Record<string, string> = {
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const WorkspaceSkeleton = () => (
-  <div className="flex flex-col gap-6 animate-fade-in">
+  <div className="animate-fade-in flex flex-col gap-6">
     {[1, 2].map((i) => (
-      <div key={i} className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <div className="skeleton-shimmer h-5 w-24 rounded bg-muted" />
-        <div className="skeleton-shimmer h-3 w-48 rounded bg-muted" />
-        <div className="h-px bg-border" />
+      <div key={i} className="border-border bg-card space-y-4 rounded-xl border p-6">
+        <div className="skeleton-shimmer bg-muted h-5 w-24 rounded" />
+        <div className="skeleton-shimmer bg-muted h-3 w-48 rounded" />
+        <div className="bg-border h-px" />
         <div className="space-y-3">
-          <div className="skeleton-shimmer h-8 w-full rounded-lg bg-muted" />
-          <div className="skeleton-shimmer h-8 w-full rounded-lg bg-muted" />
+          <div className="skeleton-shimmer bg-muted h-8 w-full rounded-lg" />
+          <div className="skeleton-shimmer bg-muted h-8 w-full rounded-lg" />
         </div>
       </div>
     ))}
@@ -54,7 +49,7 @@ const WorkspaceSkeleton = () => (
 
 export const WorkspaceSettings = () => {
   const queryClient = useQueryClient();
-  const { data: workspace, isLoading } = useFetchWorkspaceSettings();
+  const { data: workspace, isLoading } = useFetchWorkspace();
   const updateWorkspaceMutation = useUpdateWorkspaceSettings();
   const inviteMutation = useInviteToWorkspace(workspace?.id ?? "");
   const [workspaceName, setWorkspaceName] = React.useState("");
@@ -142,7 +137,7 @@ export const WorkspaceSettings = () => {
   const invitedCount = workspace.invited_emails?.length ?? 0;
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
+    <div className="animate-fade-in flex flex-col gap-6">
       {/* General */}
       <Card>
         <CardHeader>
@@ -151,7 +146,10 @@ export const WorkspaceSettings = () => {
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <div className="flex items-center gap-4">
-            <Avatar size="lg" className="size-14 rounded-xl ring-2 ring-background after:rounded-xl">
+            <Avatar
+              size="lg"
+              className="ring-background size-14 rounded-xl ring-2 after:rounded-xl"
+            >
               <AvatarImage src={workspace.logo} alt={workspace.name} />
               <AvatarFallback className="rounded-xl text-lg">
                 {workspace.name
@@ -221,7 +219,7 @@ export const WorkspaceSettings = () => {
                 Invite
               </Button>
             </div>
-            {emailError && <p className="text-destructive text-xs animate-fade-in">{emailError}</p>}
+            {emailError && <p className="text-destructive animate-fade-in text-xs">{emailError}</p>}
           </div>
 
           <Separator />
@@ -287,7 +285,7 @@ export const WorkspaceSettings = () => {
                       <SelectItem value="member">Member</SelectItem>
                     </SelectContent>
                   </Select>
-                  {(
+                  {
                     <Button
                       variant="ghost"
                       size="icon-sm"
@@ -298,7 +296,7 @@ export const WorkspaceSettings = () => {
                     >
                       <X className="size-3.5" />
                     </Button>
-                  )}
+                  }
                 </div>
               ))}
             </div>

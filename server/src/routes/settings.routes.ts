@@ -2,9 +2,7 @@ import { Router } from "express";
 import { validate } from "../middleware/validate.js";
 import { updateProfileSchema, updateWorkspaceSettingsSchema } from "../schemas/settings.schema.js";
 import {
-  getProfileHandler,
   updateProfileHandler,
-  getWorkspaceSettingsHandler,
   updateWorkspaceSettingsHandler,
   getNotificationPrefsHandler,
   updateNotificationPrefsHandler,
@@ -14,9 +12,7 @@ import {
 } from "../controllers/settings.controller.js";
 
 const router = Router();
-router.get("/profile", getProfileHandler);
 router.patch("/profile", validate(updateProfileSchema), updateProfileHandler);
-router.get("/workspace", getWorkspaceSettingsHandler);
 router.patch("/workspace", validate(updateWorkspaceSettingsSchema), updateWorkspaceSettingsHandler);
 router.get("/notifications", getNotificationPrefsHandler);
 router.patch("/notifications", updateNotificationPrefsHandler);

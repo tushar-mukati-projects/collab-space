@@ -1,21 +1,6 @@
 import { prisma } from "../db.js";
 import { WORKSPACE_ROLES } from "../constants.js";
 
-// ─── Profile ────────────────────────────────────────────────────────────────
-
-export const getProfile = async (userId: string, membership: { role: string }) => {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) return null;
-
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    avatar: user.avatar,
-    role: membership.role,
-  };
-};
-
 export const updateProfile = async (userId: string, data: { name?: string; email?: string }) => {
   const updateData: Record<string, string> = {};
   if (data.name !== undefined) updateData.name = data.name;
@@ -58,24 +43,6 @@ const toWorkspaceDTO = (workspace: {
       role: m.role,
     })),
   };
-};
-
-export const getWorkspaceSettings = async (workspaceId: string) => {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
-    include: {
-      members: {
-        include: {
-          user: {
-            select: { id: true, name: true, email: true, avatar: true },
-          },
-        },
-      },
-    },
-  });
-
-  if (!workspace) return null;
-  return toWorkspaceDTO(workspace);
 };
 
 export const updateWorkspaceSettings = async (
