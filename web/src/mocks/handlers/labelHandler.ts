@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockLabels } from "../data";
+import { mockUrl } from "../config";
 import type { Label, CreateLabelInput, UpdateLabelInput } from "@/types";
 
 const _labels: Label[] = structuredClone(mockLabels);
@@ -9,12 +10,12 @@ const generateId = (): string => {
 };
 
 export const labelHandlers = [
-  http.get("/api/labels", async () => {
+  http.get(mockUrl("/labels"), async () => {
     await delay(200);
     return HttpResponse.json(_labels);
   }),
 
-  http.post("/api/labels", async ({ request }) => {
+  http.post(mockUrl("/labels"), async ({ request }) => {
     await delay(300);
     const input = (await request.json()) as CreateLabelInput;
     const label: Label = {
@@ -26,7 +27,7 @@ export const labelHandlers = [
     return HttpResponse.json(label, { status: 201 });
   }),
 
-  http.patch("/api/labels/:id", async ({ params, request }) => {
+  http.patch(mockUrl("/labels/:id"), async ({ params, request }) => {
     await delay(200);
     const idx = _labels.findIndex((l) => l.id === params.id);
     if (idx === -1) return new HttpResponse(null, { status: 404 });
@@ -37,7 +38,7 @@ export const labelHandlers = [
     return HttpResponse.json(label);
   }),
 
-  http.delete("/api/labels/:id", async ({ params }) => {
+  http.delete(mockUrl("/labels/:id"), async ({ params }) => {
     await delay(200);
     const idx = _labels.findIndex((l) => l.id === params.id);
     if (idx === -1) return new HttpResponse(null, { status: 404 });

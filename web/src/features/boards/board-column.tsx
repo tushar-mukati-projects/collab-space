@@ -1,9 +1,6 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { useDroppable } from "@dnd-kit/core";
-import { cn } from "@/lib/utils";
 import { BoardCard } from "./board-card";
 import type { TicketSummary, BoardColumn as BoardColumnType, Label } from "@/types";
 
@@ -13,7 +10,6 @@ interface BoardColumnProps {
   labelMap?: Map<string, Label>;
   onCardClick?: (ticketId: string) => void;
   onAddTicket?: () => void;
-  isOverlay?: boolean;
 }
 
 export const BoardColumn = ({
@@ -22,20 +18,9 @@ export const BoardColumn = ({
   labelMap,
   onCardClick,
   onAddTicket,
-  isOverlay,
 }: BoardColumnProps) => {
-  const { setNodeRef, isOver } = useDroppable({
-    id: column.id,
-    data: { type: "column", column },
-  });
-
   return (
-    <div
-      className={cn(
-        "flex h-full w-[300px] min-w-[300px] flex-col rounded-xl",
-        isOverlay && "opacity-80",
-      )}
-    >
+    <div className="flex h-full w-[300px] min-w-[300px] flex-col rounded-xl">
       <div className="flex items-center justify-between rounded-t-xl px-3 py-2.5">
         <div className="flex items-center gap-2">
           <span
@@ -59,23 +44,15 @@ export const BoardColumn = ({
         )}
       </div>
 
-      <div
-        ref={setNodeRef}
-        className={cn(
-          "flex flex-1 flex-col gap-2 overflow-y-auto rounded-b-xl px-2 pt-1 pb-2 transition-all duration-200",
-          isOver && "bg-primary/5 ring-primary/20 scale-[1.01] rounded-xl ring-2 ring-inset",
-        )}
-      >
-        <SortableContext items={tickets.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-          {tickets.map((ticket) => (
-            <BoardCard
-              key={ticket.id}
-              ticket={ticket}
-              labelMap={labelMap}
-              onCardClick={onCardClick}
-            />
-          ))}
-        </SortableContext>
+      <div className="flex flex-1 flex-col gap-2 overflow-y-auto rounded-b-xl px-2 pt-1 pb-2">
+        {tickets.map((ticket) => (
+          <BoardCard
+            key={ticket.id}
+            ticket={ticket}
+            labelMap={labelMap}
+            onCardClick={onCardClick}
+          />
+        ))}
 
         {tickets.length === 0 && (
           <div className="border-border flex flex-1 items-center justify-center rounded-xl border border-dashed py-8 transition-colors">

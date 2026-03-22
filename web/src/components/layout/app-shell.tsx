@@ -62,10 +62,10 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
   }, [appearance?.theme, setTheme]);
 
   useEffect(() => {
-    if (isSignedIn && !hasWorkspace && !isOnboardingRoute && !isAuthRoute) {
-      router.replace("/onboarding");
-    } else if (isSignedIn && hasWorkspace && isOnboardingRoute) {
+    if (isSignedIn && hasWorkspace && (isAuthRoute || isOnboardingRoute)) {
       router.replace("/boards");
+    } else if (isSignedIn && !hasWorkspace && !isOnboardingRoute && !isAuthRoute) {
+      router.replace("/onboarding");
     }
   }, [isSignedIn, hasWorkspace, pathname, isAuthRoute, isOnboardingRoute, router]);
 

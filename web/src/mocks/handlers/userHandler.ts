@@ -1,11 +1,12 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockUsers } from "../data";
+import { mockUrl } from "../config";
 import type { User } from "@/types";
 
 const _users: User[] = structuredClone(mockUsers);
 
 export const userHandlers = [
-  http.get("/api/users/me", async () => {
+  http.get(mockUrl("/users/me"), async () => {
     await delay(200);
     const currentUser = _users[0];
     return HttpResponse.json({
@@ -18,12 +19,12 @@ export const userHandlers = [
     });
   }),
 
-  http.get("/api/users", async () => {
+  http.get(mockUrl("/users"), async () => {
     await delay(200);
     return HttpResponse.json(_users);
   }),
 
-  http.get("/api/users/:id", async ({ params }) => {
+  http.get(mockUrl("/users/:id"), async ({ params }) => {
     await delay(200);
     const user = _users.find((u) => u.id === params.id);
     if (!user) {

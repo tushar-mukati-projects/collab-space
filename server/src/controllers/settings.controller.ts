@@ -1,38 +1,13 @@
 import type { Request, Response } from "express";
 import { validated } from "../types.js";
-import { updateProfileSchema, updateWorkspaceSettingsSchema } from "../schemas/settings.schema.js";
 import { prisma } from "../db.js";
-import { WORKSPACE_ROLES } from "../constants.js";
 import {
-  updateProfile,
-  updateWorkspaceSettings,
   getNotificationPrefs,
   updateNotificationPrefs,
   getAppearancePrefs,
   updateAppearancePrefs,
 } from "../services/settings.service.js";
 
-const getMemberRole = async (userId: string, workspaceId: string) => {
-  const m = await prisma.workspaceMember.findFirst({
-    where: { user_id: userId, workspace_id: workspaceId },
-    select: { role: true },
-  });
-  return m?.role ?? WORKSPACE_ROLES.MEMBER;
-};
-
-export const updateProfileHandler = async (req: Request, res: Response) => {
-  const { body, userId, workspaceId } = validated(req, updateProfileSchema);
-  const u = await updateProfile(userId, body);
-  const role = await getMemberRole(userId, workspaceId);
-  res.json({ id: u.id, name: u.name, email: u.email, avatar: u.avatar, role });
-};
-export const updateWorkspaceSettingsHandler = async (req: Request, res: Response) => {
-  const { body, userId, workspaceId } = validated(req, updateWorkspaceSettingsSchema);
-  const role = await getMemberRole(userId, workspaceId);
-  const r = await updateWorkspaceSettings(workspaceId, body, role);
-  if ("error" in r && r.error === "forbidden") return res.status(403).json({ error: "Forbidden" });
-  res.json(r);
-};
 export const getNotificationPrefsHandler = async (req: Request, res: Response) => {
   const { userId, workspaceId } = validated(req);
   res.json(await getNotificationPrefs(userId, workspaceId));

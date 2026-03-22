@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from "msw";
 import { _tickets, _comments, _activities, recalculateBoardCounts } from "../store";
+import { mockUrl } from "../config";
 import type {
   Ticket,
   TicketSummary,
@@ -31,7 +32,7 @@ const toSummary = (ticket: Ticket): TicketSummary => {
 };
 
 export const ticketHandlers = [
-  http.get("/api/tickets", async ({ request }) => {
+  http.get(mockUrl("/tickets"), async ({ request }) => {
     await delay(300);
     const url = new URL(request.url);
     const assignees = url.searchParams.getAll("assignees");
@@ -77,7 +78,7 @@ export const ticketHandlers = [
     return HttpResponse.json(results.map(toSummary));
   }),
 
-  http.get("/api/tickets/:id", async ({ params }) => {
+  http.get(mockUrl("/tickets/:id"), async ({ params }) => {
     await delay(200);
     const ticket = _tickets.find((t) => t.id === params.id);
     if (!ticket) {
@@ -86,7 +87,7 @@ export const ticketHandlers = [
     return HttpResponse.json(ticket);
   }),
 
-  http.post("/api/tickets", async ({ request }) => {
+  http.post(mockUrl("/tickets"), async ({ request }) => {
     await delay(300);
     const input = (await request.json()) as CreateTicketInput;
     const now = new Date().toISOString();
@@ -129,7 +130,7 @@ export const ticketHandlers = [
     return HttpResponse.json(ticket, { status: 201 });
   }),
 
-  http.patch("/api/tickets/:id", async ({ params, request }) => {
+  http.patch(mockUrl("/tickets/:id"), async ({ params, request }) => {
     await delay(300);
     const idx = _tickets.findIndex((t) => t.id === params.id);
     if (idx === -1) {
@@ -154,7 +155,7 @@ export const ticketHandlers = [
     return HttpResponse.json(ticket);
   }),
 
-  http.delete("/api/tickets/:id", async ({ params }) => {
+  http.delete(mockUrl("/tickets/:id"), async ({ params }) => {
     await delay(200);
     const idx = _tickets.findIndex((t) => t.id === params.id);
     if (idx === -1) {
@@ -172,21 +173,21 @@ export const ticketHandlers = [
     return HttpResponse.json({ success: true });
   }),
 
-  http.get("/api/tickets/:id/activities", async ({ params }) => {
+  http.get(mockUrl("/tickets/:id/activities"), async ({ params }) => {
     await delay(200);
     const ticketId = params.id as string;
     const filtered = _activities.filter((a) => a.ticket_id === ticketId);
     return HttpResponse.json(filtered);
   }),
 
-  http.get("/api/tickets/:id/comments", async ({ params }) => {
+  http.get(mockUrl("/tickets/:id/comments"), async ({ params }) => {
     await delay(200);
     const ticketId = params.id as string;
     const filtered = _comments.filter((c) => c.ticket_id === ticketId);
     return HttpResponse.json(filtered);
   }),
 
-  http.post("/api/tickets/:id/comments", async ({ params, request }) => {
+  http.post(mockUrl("/tickets/:id/comments"), async ({ params, request }) => {
     await delay(300);
     const ticketId = params.id as string;
     const input = (await request.json()) as Omit<CreateCommentInput, "ticket_id">;

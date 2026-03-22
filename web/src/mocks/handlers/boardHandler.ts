@@ -1,21 +1,22 @@
 import { http, HttpResponse, delay } from "msw";
-import { _boards, _tickets, recalculateBoardCounts } from "../store";
-import type { BoardSummary, MoveTicketInput, CreateBoardInput } from "@/types";
+import { _boards, _tickets } from "../store";
+import { mockUrl } from "../config";
+import type { BoardSummary, CreateBoardInput } from "@/types";
 
 export const boardHandlers = [
-  http.get("/api/boards", async () => {
+  http.get(mockUrl("/boards"), async () => {
     await delay(300);
     return HttpResponse.json(_boards);
   }),
 
-  http.get("/api/boards/:id", async ({ params }) => {
+  http.get(mockUrl("/boards/:id"), async ({ params }) => {
     await delay(200);
     const board = _boards.find((b) => b.id === params.id);
     if (!board) return new HttpResponse(null, { status: 404 });
     return HttpResponse.json(board);
   }),
 
-  http.post("/api/boards", async ({ request }) => {
+  http.post(mockUrl("/boards"), async ({ request }) => {
     await delay(300);
     const input = (await request.json()) as CreateBoardInput;
     const newBoard: BoardSummary = {
@@ -30,26 +31,7 @@ export const boardHandlers = [
     return HttpResponse.json(newBoard, { status: 201 });
   }),
 
-  http.patch("/api/boards/move-ticket", async ({ request }) => {
-    await delay(200);
-    const input = (await request.json()) as MoveTicketInput;
-
-    const ticket = _tickets.find((t) => t.id === input.ticket_id);
-    if (!ticket) return new HttpResponse(null, { status: 404 });
-
-    ticket.status = input.to_status;
-    ticket.updated_at = new Date().toISOString();
-
-    if (ticket.parent_type === "board" && ticket.parent_id) {
-      recalculateBoardCounts(ticket.parent_id);
-    }
-
-    const boardId = ticket.parent_type === "board" ? ticket.parent_id : null;
-    const board = _boards.find((b) => b.id === boardId);
-    return HttpResponse.json(board ?? { success: true });
-  }),
-
-  http.delete("/api/boards/:id", async ({ params }) => {
+  http.delete(mockUrl("/boards/:id"), async ({ params }) => {
     await delay(200);
     const idx = _boards.findIndex((b) => b.id === params.id);
     if (idx === -1) return new HttpResponse(null, { status: 404 });

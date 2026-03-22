@@ -1,20 +1,6 @@
 "use client";
 
 import * as React from "react";
-import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  KeyboardSensor,
-  closestCorners,
-  useSensor,
-  useSensors,
-  type DragStartEvent,
-  type DragEndEvent,
-  type DragOverEvent,
-} from "@dnd-kit/core";
-import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { useMoveTicket } from "@/hooks/board";
 import { useFetchLabels } from "@/hooks/labels";
 import { useFetchUsers } from "@/hooks/users";
 import { useTickets } from "@/hooks/tickets";
@@ -29,7 +15,6 @@ import type {
   Label,
 } from "@/types";
 import { BoardColumn } from "./board-column";
-import { BoardCard } from "./board-card";
 import { CreateTicketDialog } from "@/features/tickets/create-ticket-dialog";
 import { Search, X, ChevronDown } from "lucide-react";
 import {
@@ -247,7 +232,6 @@ interface BoardColumnsProps {
 }
 
 export const BoardColumns = ({ board, onCardClick }: BoardColumnsProps) => {
-  const moveTicketMutation = useMoveTicket();
   const { data: labels = [] } = useFetchLabels();
   const { data: users = [] } = useFetchUsers();
 
@@ -264,20 +248,7 @@ export const BoardColumns = ({ board, onCardClick }: BoardColumnsProps) => {
     return map;
   }, [labels]);
 
-  const serverColumns = React.useMemo(() => buildColumns(tickets), [tickets]);
-
-  const [dragColumns, setDragColumns] = React.useState<BoardColumnType[] | null>(null);
-  const localColumns = dragColumns ?? serverColumns;
-
-  const setLocalColumns = (
-    updater: BoardColumnType[] | ((prev: BoardColumnType[]) => BoardColumnType[]),
-  ) => {
-    if (typeof updater === "function") {
-      setDragColumns((prev) => updater(prev ?? serverColumns));
-    } else {
-      setDragColumns(updater);
-    }
-  };
+  const columns = React.useMemo(() => buildColumns(tickets), [tickets]);
 
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [createInitialStatus, setCreateInitialStatus] = React.useState<TicketStatus>("backlog");
@@ -286,123 +257,6 @@ export const BoardColumns = ({ board, onCardClick }: BoardColumnsProps) => {
     setCreateInitialStatus(status);
     setCreateDialogOpen(true);
   };
-
-  const [activeId, setActiveId] = React.useState<string | null>(null);
-
-  const ticketMap = React.useMemo(() => {
-    const map = new Map<string, TicketSummary>();
-    for (const col of localColumns) {
-      for (const t of col.tickets) {
-        map.set(t.id, t);
-      }
-    }
-    return map;
-  }, [localColumns]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
-
-  const findColumnByTicketId = (ticketId: string): BoardColumnType | undefined =>
-    localColumns.find((col) => col.tickets.some((t) => t.id === ticketId));
-
-  const moveTicketLocal = (
-    ticketId: string,
-    fromColumnId: string,
-    toColumnId: string,
-    newIndex: number,
-  ) => {
-    setLocalColumns((prev) => {
-      const next = prev.map((col) => ({ ...col, tickets: [...col.tickets] }));
-      const fromCol = next.find((c) => c.id === fromColumnId);
-      const toCol = next.find((c) => c.id === toColumnId);
-      if (!fromCol || !toCol) return prev;
-      const ticketIdx = fromCol.tickets.findIndex((t) => t.id === ticketId);
-      if (ticketIdx === -1) return prev;
-      const [ticket] = fromCol.tickets.splice(ticketIdx, 1);
-      const destColDef = COLUMN_DEFS.find((d) => `col_${d.status}` === toColumnId);
-      if (destColDef) ticket.status = destColDef.status;
-      toCol.tickets.splice(newIndex, 0, ticket);
-      return next;
-    });
-  };
-
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  };
-
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    if (!over) return;
-    const activeTicketId = active.id as string;
-    const overId = over.id as string;
-    const fromColumn = findColumnByTicketId(activeTicketId);
-    if (!fromColumn) return;
-
-    let toColumn: BoardColumnType | undefined;
-    let overIndex: number;
-
-    const overIsColumn = localColumns.some((col) => col.id === overId);
-    if (overIsColumn) {
-      toColumn = localColumns.find((col) => col.id === overId);
-      overIndex = toColumn ? toColumn.tickets.length : 0;
-    } else {
-      toColumn = findColumnByTicketId(overId);
-      overIndex = toColumn ? toColumn.tickets.findIndex((t) => t.id === overId) : 0;
-      if (overIndex === -1) overIndex = 0;
-    }
-
-    if (!toColumn || fromColumn.id === toColumn.id) return;
-    moveTicketLocal(activeTicketId, fromColumn.id, toColumn.id, overIndex);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActiveId(null);
-    if (!over) return;
-
-    const activeTicketId = active.id as string;
-    const overId = over.id as string;
-    const fromColumn = findColumnByTicketId(activeTicketId);
-    if (!fromColumn) return;
-
-    const overIsColumn = localColumns.some((col) => col.id === overId);
-    if (overIsColumn) {
-      const toColumn = localColumns.find((col) => col.id === overId);
-      if (toColumn && fromColumn.id !== toColumn.id) {
-        moveTicketLocal(activeTicketId, fromColumn.id, toColumn.id, toColumn.tickets.length);
-      }
-    } else {
-      const toColumn = findColumnByTicketId(overId);
-      if (!toColumn) return;
-      const overIndex = toColumn.tickets.findIndex((t) => t.id === overId);
-      if (fromColumn.id === toColumn.id) {
-        const activeIndex = fromColumn.tickets.findIndex((t) => t.id === activeTicketId);
-        if (activeIndex !== overIndex) {
-          moveTicketLocal(activeTicketId, fromColumn.id, toColumn.id, overIndex);
-        }
-      }
-    }
-
-    const finalColumn = findColumnByTicketId(activeTicketId);
-    if (finalColumn) {
-      const ticketIndex = finalColumn.tickets.findIndex((t) => t.id === activeTicketId);
-      moveTicketMutation.mutate(
-        {
-          ticket_id: activeTicketId,
-          to_status: finalColumn.status,
-          index: ticketIndex >= 0 ? ticketIndex : 0,
-        },
-        {
-          onSuccess: () => setDragColumns(null),
-          onError: () => setDragColumns(null),
-        },
-      );
-    }
-  };
-
-  const activeTicket = activeId ? ticketMap.get(activeId) : undefined;
 
   return (
     <>
@@ -441,32 +295,16 @@ export const BoardColumns = ({ board, onCardClick }: BoardColumnsProps) => {
           </div>
         ) : (
           <div className="flex gap-4 pt-2 pb-4" style={{ minWidth: "fit-content" }}>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCorners}
-              onDragStart={handleDragStart}
-              onDragOver={handleDragOver}
-              onDragEnd={handleDragEnd}
-            >
-              {localColumns.map((column) => (
-                <BoardColumn
-                  key={column.id}
-                  column={column}
-                  tickets={column.tickets}
-                  labelMap={labelMap}
-                  onCardClick={onCardClick}
-                  onAddTicket={() => handleAddTicket(column.status)}
-                />
-              ))}
-
-              <DragOverlay>
-                {activeTicket ? (
-                  <div className="w-[276px]">
-                    <BoardCard ticket={activeTicket} labelMap={labelMap} />
-                  </div>
-                ) : null}
-              </DragOverlay>
-            </DndContext>
+            {columns.map((column) => (
+              <BoardColumn
+                key={column.id}
+                column={column}
+                tickets={column.tickets}
+                labelMap={labelMap}
+                onCardClick={onCardClick}
+                onAddTicket={() => handleAddTicket(column.status)}
+              />
+            ))}
           </div>
         )}
         <ScrollBar orientation="horizontal" />

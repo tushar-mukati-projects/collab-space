@@ -2,18 +2,7 @@
 
 import * as React from "react";
 import { format } from "date-fns";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import {
-  CalendarIcon,
-  GripVertical,
-  AlertCircle,
-  ArrowUp,
-  ArrowDown,
-  Minus,
-  Circle,
-  Star,
-} from "lucide-react";
+import { CalendarIcon, AlertCircle, ArrowUp, ArrowDown, Minus, Circle, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFetchFavorites, useToggleFavorite } from "@/hooks/favorites";
 import type { TicketSummary, TicketPriority, Label } from "@/types";
@@ -44,24 +33,14 @@ interface BoardCardProps {
 }
 
 export const BoardCard = ({ ticket, labelMap, onCardClick }: BoardCardProps) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: ticket.id,
-    data: { type: "card", ticket },
-  });
   const { data: favorites = [] } = useFetchFavorites();
   const toggleFavorite = useToggleFavorite();
 
   const isFavorited = favorites.some((f) => f.ticket_id === ticket.id);
 
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   const handleClick = (e: React.MouseEvent) => {
-    if (isDragging) return;
     const target = e.target as HTMLElement;
-    if (target.closest("[data-drag-handle]") || target.closest("[data-fav-btn]")) return;
+    if (target.closest("[data-fav-btn]")) return;
     onCardClick?.(ticket.id);
   };
 
@@ -72,25 +51,12 @@ export const BoardCard = ({ ticket, labelMap, onCardClick }: BoardCardProps) => 
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
       className={cn(
         "group border-border bg-card relative cursor-pointer rounded-xl border p-3 transition-all duration-200",
         "hover:border-border/70 hover:-translate-y-0.5 hover:shadow-md",
-        isDragging && "ring-primary/20 rotate-1 opacity-50 shadow-lg ring-2",
       )}
       onClick={handleClick}
     >
-      <button
-        type="button"
-        data-drag-handle
-        className="hover:bg-muted absolute top-1/2 left-1 -translate-y-1/2 cursor-grab rounded-md p-0.5 opacity-0 transition-all duration-200 group-hover:opacity-60 hover:!opacity-100 active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="text-muted-foreground size-3.5" />
-      </button>
-
       <button
         type="button"
         data-fav-btn
@@ -111,7 +77,7 @@ export const BoardCard = ({ ticket, labelMap, onCardClick }: BoardCardProps) => 
         />
       </button>
 
-      <div className="space-y-2 pl-3">
+      <div className="space-y-2">
         <div className="flex items-center gap-2">
           <PriorityIcon priority={ticket.priority} className="size-3.5" />
         </div>

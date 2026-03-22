@@ -1,6 +1,7 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockFavorites } from "../data/favorites";
 import { _tickets } from "../store";
+import { mockUrl } from "../config";
 import type { Favorite } from "@/types";
 
 const _favorites: Favorite[] = structuredClone(mockFavorites);
@@ -10,12 +11,12 @@ const generateId = (prefix: string): string => {
 };
 
 export const favoriteHandlers = [
-  http.get("/api/favorites", async () => {
+  http.get(mockUrl("/favorites"), async () => {
     await delay(200);
     return HttpResponse.json(_favorites);
   }),
 
-  http.post("/api/favorites", async ({ request }) => {
+  http.post(mockUrl("/favorites"), async ({ request }) => {
     await delay(200);
     const { ticket_id } = (await request.json()) as { ticket_id: string };
 

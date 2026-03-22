@@ -1,5 +1,4 @@
 import { prisma } from "../db.js";
-import { serializeStatus, deserializeStatus } from "../utils.js";
 
 interface BoardRow {
   id: string;
@@ -95,65 +94,6 @@ export const createBoard = async (name: string, workspaceId: string) => {
     in_review: 0,
     done: 0,
   });
-};
-
-export const moveTicket = async (
-  ticketId: string,
-  status: string,
-  userId: string,
-  workspaceId: string,
-): Promise<
-  { error: "ticket_not_found" | "board_not_found" } | { data: ReturnType<typeof serializeBoard> }
-> => {
-  const dbStatus = deserializeStatus(status);
-
-  const ticket = await prisma.ticket.findFirst({
-    where: { id: ticketId, workspace_id: workspaceId },
-  });
-
-  if (!ticket) return { error: "ticket_not_found" };
-
-  const oldStatus = serializeStatus(ticket.status);
-
-  await prisma.ticket.update({
-    where: { id: ticketId },
-    data: { status: dbStatus },
-  });
-
-  await prisma.activity.create({
-    data: {
-      type: "ticket_status_changed",
-      message: `Status changed from ${oldStatus} to ${status}`,
-      user_id: userId,
-      ticket_id: ticketId,
-    },
-  });
-
-  let boardId: string | null = null;
-  if (ticket.parent_type === "board" && ticket.parent_id) {
-    boardId = ticket.parent_id;
-  } else if (ticket.parent_type === "ticket" && ticket.parent_id) {
-    let current = ticket;
-    while (current.parent_type === "ticket" && current.parent_id) {
-      const parent = await prisma.ticket.findUnique({
-        where: { id: current.parent_id },
-      });
-      if (!parent) break;
-      current = parent;
-    }
-    if (current.parent_type === "board" && current.parent_id) {
-      boardId = current.parent_id;
-    }
-  }
-
-  const board = await prisma.board.findFirst({
-    where: { id: boardId ?? undefined, workspace_id: workspaceId },
-  });
-
-  if (!board) return { error: "board_not_found" };
-
-  const ticket_counts = await computeTicketCounts(board.id);
-  return { data: serializeBoard(board, ticket_counts) };
 };
 
 export const deleteBoard = async (id: string, workspaceId: string) => {

@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockMeetings } from "../data";
+import { mockUrl } from "../config";
 import type { Meeting, CreateMeetingInput } from "@/types";
 
 const _meetings: Meeting[] = structuredClone(mockMeetings);
@@ -9,12 +10,12 @@ const generateId = (prefix: string): string => {
 };
 
 export const meetingHandlers = [
-  http.get("/api/meetings", async () => {
+  http.get(mockUrl("/meetings"), async () => {
     await delay(300);
     return HttpResponse.json(_meetings);
   }),
 
-  http.get("/api/meetings/:id", async ({ params }) => {
+  http.get(mockUrl("/meetings/:id"), async ({ params }) => {
     await delay(200);
     const meeting = _meetings.find((m) => m.id === params.id);
     if (!meeting) {
@@ -23,7 +24,7 @@ export const meetingHandlers = [
     return HttpResponse.json(meeting);
   }),
 
-  http.post("/api/meetings", async ({ request }) => {
+  http.post(mockUrl("/meetings"), async ({ request }) => {
     await delay(300);
     const input = (await request.json()) as CreateMeetingInput;
     const meeting: Meeting = {
@@ -42,7 +43,7 @@ export const meetingHandlers = [
     return HttpResponse.json(meeting, { status: 201 });
   }),
 
-  http.patch("/api/meetings/:id", async ({ params, request }) => {
+  http.patch(mockUrl("/meetings/:id"), async ({ params, request }) => {
     await delay(200);
     const meeting = _meetings.find((m) => m.id === params.id);
     if (!meeting) {
@@ -58,7 +59,7 @@ export const meetingHandlers = [
     return HttpResponse.json(meeting);
   }),
 
-  http.delete("/api/meetings/:id", async ({ params }) => {
+  http.delete(mockUrl("/meetings/:id"), async ({ params }) => {
     await delay(200);
     const idx = _meetings.findIndex((m) => m.id === params.id);
     if (idx === -1) {

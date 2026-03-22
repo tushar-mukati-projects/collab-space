@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Save, UserPlus, X, Loader2, Mail, Check } from "lucide-react";
+import { UserPlus, X, Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { axiosInstance } from "@/lib/axios";
@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useQueryClient } from "@tanstack/react-query";
-import { useUpdateWorkspaceSettings } from "@/hooks/settings";
 import { useFetchWorkspace } from "@/hooks/workspace";
 import { useInviteToWorkspace } from "@/hooks/workspace";
 const planBadgeStyles: Record<string, string> = {
@@ -50,27 +49,12 @@ const WorkspaceSkeleton = () => (
 export const WorkspaceSettings = () => {
   const queryClient = useQueryClient();
   const { data: workspace, isLoading } = useFetchWorkspace();
-  const updateWorkspaceMutation = useUpdateWorkspaceSettings();
   const inviteMutation = useInviteToWorkspace(workspace?.id ?? "");
-  const [workspaceName, setWorkspaceName] = React.useState("");
   const [inviteEmail, setInviteEmail] = React.useState("");
   const [emailError, setEmailError] = React.useState("");
   const [memberTab, setMemberTab] = React.useState<"members" | "invited">("members");
 
-  React.useEffect(() => {
-    if (workspace) setWorkspaceName(workspace.name);
-  }, [workspace]);
-
   const invalidateWs = () => queryClient.invalidateQueries({ queryKey: ["settings", "workspace"] });
-
-  const handleSave = async () => {
-    try {
-      await updateWorkspaceMutation.mutateAsync({ name: workspaceName });
-      toast.success("Workspace updated successfully");
-    } catch {
-      toast.error("Failed to update workspace");
-    }
-  };
 
   const handleInvite = async () => {
     const email = inviteEmail.trim().toLowerCase();
@@ -165,13 +149,10 @@ export const WorkspaceSettings = () => {
           <Separator />
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="ws-name">Workspace Name</Label>
-              <Input
-                id="ws-name"
-                value={workspaceName}
-                onChange={(e) => setWorkspaceName(e.target.value)}
-                placeholder="Workspace name"
-              />
+              <Label>Workspace Name</Label>
+              <div className="border-input bg-muted/50 text-foreground flex h-8 items-center rounded-lg border px-2.5 text-sm">
+                {workspace.name}
+              </div>
             </div>
             <div className="flex flex-col gap-1.5">
               <Label>Current Plan</Label>
@@ -335,19 +316,6 @@ export const WorkspaceSettings = () => {
           )}
         </CardContent>
       </Card>
-
-      <div className="flex items-center justify-end gap-2">
-        <Button onClick={handleSave} disabled={updateWorkspaceMutation.isPending}>
-          {updateWorkspaceMutation.isPending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : updateWorkspaceMutation.isSuccess ? (
-            <Check className="size-4" />
-          ) : (
-            <Save className="size-4" />
-          )}
-          {updateWorkspaceMutation.isPending ? "Saving..." : "Save Changes"}
-        </Button>
-      </div>
     </div>
   );
 };

@@ -207,12 +207,6 @@ export interface CreateBoardInput {
   name: string;
 }
 
-export interface MoveTicketInput {
-  ticket_id: string;
-  to_status: TicketStatus;
-  index: number;
-}
-
 export interface CreateLabelInput {
   name: string;
   color: string;

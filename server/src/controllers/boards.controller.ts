@@ -1,13 +1,7 @@
 import type { Request, Response } from "express";
 import { validated } from "../types.js";
-import { createBoardSchema, getBoardSchema, moveTicketSchema } from "../schemas/boards.schema.js";
-import {
-  listBoards,
-  createBoard,
-  getBoard,
-  moveTicket as moveTicketSvc,
-  deleteBoard,
-} from "../services/board.service.js";
+import { createBoardSchema, getBoardSchema } from "../schemas/boards.schema.js";
+import { listBoards, createBoard, getBoard, deleteBoard } from "../services/board.service.js";
 
 export const list = async (req: Request, res: Response) => {
   const { workspaceId } = validated(req);
@@ -30,17 +24,6 @@ export const getOne = async (req: Request, res: Response) => {
   const b = await getBoard(id, workspaceId);
   if (!b) return res.status(404).json({ error: "Board not found" });
   res.json(b);
-};
-
-export const moveTicket = async (req: Request, res: Response) => {
-  const {
-    body: { ticket_id, to_status },
-    userId,
-    workspaceId,
-  } = validated(req, moveTicketSchema);
-  const r = await moveTicketSvc(ticket_id, to_status, userId, workspaceId);
-  if ("error" in r) return res.status(404).json({ error: r.error });
-  res.json(r);
 };
 
 export const remove = async (req: Request, res: Response) => {

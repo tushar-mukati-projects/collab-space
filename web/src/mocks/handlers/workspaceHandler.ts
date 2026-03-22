@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from "msw";
 import { _workspaces } from "../store";
+import { mockUrl } from "../config";
 import type { Workspace } from "@/types";
 
 const generateId = (prefix: string): string => {
@@ -7,7 +8,7 @@ const generateId = (prefix: string): string => {
 };
 
 export const workspaceHandlers = [
-  http.get("/api/workspace", async () => {
+  http.get(mockUrl("/workspace"), async () => {
     await delay(200);
     const workspace = _workspaces[0];
     if (!workspace) {
@@ -16,7 +17,7 @@ export const workspaceHandlers = [
     return HttpResponse.json(workspace);
   }),
 
-  http.post("/api/workspaces", async ({ request }) => {
+  http.post(mockUrl("/workspaces"), async ({ request }) => {
     await delay(400);
     const { name } = (await request.json()) as { name: string };
     const slug = name
@@ -43,7 +44,7 @@ export const workspaceHandlers = [
     return HttpResponse.json(workspace, { status: 201 });
   }),
 
-  http.get("/api/workspaces/invitations", async ({ request }) => {
+  http.get(mockUrl("/workspaces/invitations"), async ({ request }) => {
     await delay(300);
     const url = new URL(request.url);
     const email = url.searchParams.get("email")?.toLowerCase();
@@ -65,7 +66,7 @@ export const workspaceHandlers = [
     );
   }),
 
-  http.post("/api/workspaces/:id/join", async ({ params, request }) => {
+  http.post(mockUrl("/workspaces/:id/join"), async ({ params, request }) => {
     await delay(400);
     const ws = _workspaces.find((w) => w.id === params.id);
     if (!ws) {
@@ -84,7 +85,7 @@ export const workspaceHandlers = [
     return HttpResponse.json(ws);
   }),
 
-  http.post("/api/workspaces/:id/invite", async ({ params, request }) => {
+  http.post(mockUrl("/workspaces/:id/invite"), async ({ params, request }) => {
     await delay(300);
     const ws = _workspaces.find((w) => w.id === params.id);
     if (!ws) {
@@ -99,7 +100,7 @@ export const workspaceHandlers = [
     return HttpResponse.json({ success: true });
   }),
 
-  http.post("/api/workspaces/:id/revoke-invite", async ({ params, request }) => {
+  http.post(mockUrl("/workspaces/:id/revoke-invite"), async ({ params, request }) => {
     await delay(300);
     const ws = _workspaces.find((w) => w.id === params.id);
     if (!ws) {
@@ -113,7 +114,7 @@ export const workspaceHandlers = [
     return HttpResponse.json({ success: true });
   }),
 
-  http.delete("/api/workspaces/:id/members/:memberId", async ({ params }) => {
+  http.delete(mockUrl("/workspaces/:id/members/:memberId"), async ({ params }) => {
     await delay(300);
     const ws = _workspaces.find((w) => w.id === params.id);
     if (!ws) {
@@ -129,7 +130,7 @@ export const workspaceHandlers = [
     return HttpResponse.json({ success: true });
   }),
 
-  http.patch("/api/workspaces/:id/members/:memberId", async ({ params, request }) => {
+  http.patch(mockUrl("/workspaces/:id/members/:memberId"), async ({ params, request }) => {
     await delay(300);
     const ws = _workspaces.find((w) => w.id === params.id);
     if (!ws) {

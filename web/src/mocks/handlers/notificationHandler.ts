@@ -1,16 +1,17 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockNotifications } from "../data";
+import { mockUrl } from "../config";
 import type { Notification } from "@/types";
 
 const _notifications: Notification[] = structuredClone(mockNotifications);
 
 export const notificationHandlers = [
-  http.get("/api/notifications", async () => {
+  http.get(mockUrl("/notifications"), async () => {
     await delay(300);
     return HttpResponse.json(_notifications);
   }),
 
-  http.patch("/api/notifications", async ({ request }) => {
+  http.patch(mockUrl("/notifications"), async ({ request }) => {
     await delay(200);
     const body = (await request.json()) as { ids: string[]; status: { read: boolean } };
     for (const notif of _notifications) {
@@ -22,12 +23,12 @@ export const notificationHandlers = [
     return HttpResponse.json(updated);
   }),
 
-  http.post("/api/notifications/subscribe", async () => {
+  http.post(mockUrl("/notifications/subscribe"), async () => {
     await delay(200);
     return HttpResponse.json({ success: true });
   }),
 
-  http.delete("/api/notifications/subscribe", async () => {
+  http.delete(mockUrl("/notifications/subscribe"), async () => {
     await delay(200);
     return HttpResponse.json({ success: true });
   }),
