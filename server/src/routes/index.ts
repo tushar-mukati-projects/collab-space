@@ -10,6 +10,7 @@ import meetings from "./meetings.routes.js";
 import notifications from "./notifications.routes.js";
 import favorites from "./favorites.routes.js";
 import settings from "./settings.routes.js";
+import billing from "./billing.routes.js";
 
 const router = Router();
 
@@ -24,5 +25,6 @@ router.use("/meetings", meetings);
 router.use("/notifications", notifications);
 router.use("/favorites", favorites);
 router.use("/settings", settings);
+router.use("/billing", billing);
 
 export { router as routes };

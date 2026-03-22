@@ -7,6 +7,6 @@ export const mockWorkspace: Workspace = {
   slug: "collabspace-hq",
   logo: "https://ui-avatars.com/api/?name=CS&background=6366f1&color=fff&bold=true",
   members: mockUsers,
-  plan: "pro",
+  plan: "free",
   invited_emails: ["newuser@example.com", "jane@acme.io"],
 };

@@ -262,3 +262,31 @@ export interface PushSubscriptionInput {
   p256dh: string;
   auth: string;
 }
+
+export type SubscriptionStatus =
+  | "none"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "trialing"
+  | "incomplete";
+
+export interface SubscriptionInfo {
+  plan: WorkspacePlan;
+  status: SubscriptionStatus;
+  current_period_end: string | null;
+  member_count: number;
+  has_subscription: boolean;
+}
+
+export interface CheckoutInput {
+  plan: "pro" | "enterprise";
+}
+
+export interface CheckoutResponse {
+  url: string;
+}
+
+export interface PortalResponse {
+  url: string;
+}

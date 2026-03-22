@@ -102,10 +102,16 @@ model Workspace {
   name           String
   slug           String        @unique
   logo           String        @default("")
-  plan           WorkspacePlan @default(pro)
+  plan           WorkspacePlan @default(free)
   invited_emails String[]      @default([])
   created_at     DateTime      @default(now())
   updated_at     DateTime      @updatedAt
+
+  // Stripe billing
+  stripe_customer_id     String?  @unique
+  stripe_subscription_id String?  @unique
+  subscription_status    String   @default("none") // none, active, past_due, canceled, trialing, incomplete
+  current_period_end     DateTime?
 
   members            WorkspaceMember[]
   boards             Board[]

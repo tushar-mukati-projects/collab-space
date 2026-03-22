@@ -20,3 +20,12 @@ services:
     depends_on:
       - server
     restart: unless-stopped
+
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    command: listen --forward-to http://server:4000/api/billing/webhook --api-key ${STRIPE_SECRET_KEY}
+    depends_on:
+      - server
+    environment:
+      - STRIPE_API_KEY=${STRIPE_SECRET_KEY}
+    restart: unless-stopped

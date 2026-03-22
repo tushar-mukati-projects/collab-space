@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { UserPlus, X, Loader2, Mail } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { UserPlus, X, Loader2, Mail, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { axiosInstance } from "@/lib/axios";
@@ -47,6 +48,7 @@ const WorkspaceSkeleton = () => (
 );
 
 export const WorkspaceSettings = () => {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { data: workspace, isLoading } = useFetchWorkspace();
   const inviteMutation = useInviteToWorkspace(workspace?.id ?? "");
@@ -160,6 +162,16 @@ export const WorkspaceSettings = () => {
                 <Badge className={planBadgeStyles[workspace.plan] ?? planBadgeStyles.free}>
                   {workspace.plan.charAt(0).toUpperCase() + workspace.plan.slice(1)}
                 </Badge>
+                {workspace.plan === "free" && (
+                  <button
+                    type="button"
+                    onClick={() => router.push("/settings?tab=billing")}
+                    className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                  >
+                    <Zap className="size-3" />
+                    Upgrade
+                  </button>
+                )}
               </div>
             </div>
           </div>

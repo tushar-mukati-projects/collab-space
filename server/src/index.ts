@@ -7,6 +7,7 @@ import { config } from "./config.js";
 import { authMiddleware, workspaceMiddleware } from "./middleware/auth.js";
 import { routes } from "./routes/index.js";
 import { startCollab } from "./collab-server.js";
+import { webhook as stripeWebhook } from "./controllers/billing.controller.js";
 import type { Request, Response, NextFunction } from "express";
 
 const app = express();
@@ -18,6 +19,10 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
+
+// Stripe webhook needs raw body — must be before express.json()
+app.post("/api/billing/webhook", express.raw({ type: "application/json" }), stripeWebhook);
+
 app.use(express.json());
 app.use(
   clerkMiddleware({

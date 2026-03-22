@@ -8,6 +8,7 @@ import { labelHandlers } from "./labelHandler";
 import { statusHandlers } from "./statusHandler";
 import { settingsHandlers } from "./settingsHandler";
 import { favoriteHandlers } from "./favoriteHandler";
+import { billingHandlers } from "./billingHandler";
 
 export const handlers = [
   ...userHandlers,
@@ -20,4 +21,5 @@ export const handlers = [
   ...statusHandlers,
   ...settingsHandlers,
   ...favoriteHandlers,
+  ...billingHandlers,
 ];

@@ -1,14 +1,20 @@
 "use client";
 
 import * as React from "react";
-import { User, Building2, Bell, Palette } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { User, Building2, Bell, Palette, CreditCard } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ProfileSettings } from "./profile-settings";
 import { WorkspaceSettings } from "./workspace-settings";
 import { NotificationSettings } from "./notification-settings";
 import { AppearanceSettings } from "./appearance-settings";
+import { BillingSettings } from "./billing-settings";
 
 export const SettingsView = () => {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const defaultTab = tabParam === "billing" ? "billing" : "profile";
+
   return (
     <div className="flex h-full flex-col">
       <div className="border-border bg-background/80 border-b px-4 py-3 backdrop-blur-sm">
@@ -17,7 +23,7 @@ export const SettingsView = () => {
 
       <div className="flex-1 overflow-y-auto px-3 py-6 sm:px-4">
         <div className="animate-fade-in mx-auto max-w-2xl">
-          <Tabs defaultValue="profile">
+          <Tabs defaultValue={defaultTab}>
             <TabsList className="mb-6 w-full sm:w-auto">
               <TabsTrigger value="profile">
                 <User className="size-4" />
@@ -26,6 +32,10 @@ export const SettingsView = () => {
               <TabsTrigger value="workspace">
                 <Building2 className="size-4" />
                 <span className="hidden sm:inline">Workspace</span>
+              </TabsTrigger>
+              <TabsTrigger value="billing">
+                <CreditCard className="size-4" />
+                <span className="hidden sm:inline">Billing</span>
               </TabsTrigger>
               <TabsTrigger value="notifications">
                 <Bell className="size-4" />
@@ -42,6 +52,9 @@ export const SettingsView = () => {
             </TabsContent>
             <TabsContent value="workspace">
               <WorkspaceSettings />
+            </TabsContent>
+            <TabsContent value="billing">
+              <BillingSettings />
             </TabsContent>
             <TabsContent value="notifications">
               <NotificationSettings />

@@ -84,7 +84,7 @@ export const createWorkspace = async (
       name,
       slug,
       logo,
-      plan: "pro",
+      plan: "free",
       members: {
         create: {
           user_id: userId,
