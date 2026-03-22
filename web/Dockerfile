@@ -30,4 +30,4 @@ ENV HOSTNAME=0.0.0.0
 
 EXPOSE 3000
 
-CMD ["bun", ".next/standalone/server.js"]
+CMD ["bun", "server.js"]
