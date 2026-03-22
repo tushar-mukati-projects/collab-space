@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import { config } from "../config.js";
 import { prisma } from "../db.js";
+import { logger } from "../logger.js";
 
 const stripe = new Stripe(config.STRIPE_SECRET_KEY);
 
@@ -47,6 +48,7 @@ const getOrCreateCustomer = async (workspaceId: string) => {
     data: { stripe_customer_id: customer.id },
   });
 
+  logger.info("Stripe customer created", { customerId: customer.id, workspaceId });
   return customer.id;
 };
 
@@ -74,6 +76,7 @@ export const createCheckoutSession = async (workspaceId: string, plan: string) =
     },
   });
 
+  logger.info("Checkout session created", { workspaceId, plan, members: workspace._count.members });
   return { url: session.url };
 };
 
@@ -139,6 +142,7 @@ export const handleWebhookEvent = async (event: Stripe.Event) => {
             current_period_end: getSubscriptionPeriodEnd(subscription),
           },
         });
+        logger.info("Subscription activated", { workspaceId, plan, subscriptionId: subscription.id });
       }
       break;
     }
@@ -166,6 +170,7 @@ export const handleWebhookEvent = async (event: Stripe.Event) => {
           current_period_end: periodEnd,
         },
       });
+      logger.info("Subscription updated", { workspaceId, status: effectiveStatus, plan });
       break;
     }
 
@@ -183,6 +188,7 @@ export const handleWebhookEvent = async (event: Stripe.Event) => {
           current_period_end: null,
         },
       });
+      logger.info("Subscription deleted, reverted to free", { workspaceId });
       break;
     }
 
@@ -201,6 +207,7 @@ export const handleWebhookEvent = async (event: Stripe.Event) => {
         where: { id: workspaceId },
         data: { subscription_status: "past_due" },
       });
+      logger.warn("Invoice payment failed", { workspaceId, subscriptionId });
       break;
     }
   }

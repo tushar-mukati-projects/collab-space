@@ -8,6 +8,7 @@ import {
   constructWebhookEvent,
   handleWebhookEvent,
 } from "../services/billing.service.js";
+import { logger } from "../logger.js";
 
 export const checkout = async (req: Request, res: Response) => {
   const {
@@ -39,10 +40,11 @@ export const webhook = async (req: Request, res: Response) => {
 
   try {
     const event = await constructWebhookEvent(req.body, signature);
+    logger.info("Stripe webhook received", { type: event.type, id: event.id });
     await handleWebhookEvent(event);
     res.json({ received: true });
   } catch (err: any) {
-    console.error("Stripe webhook error:", err.message);
+    logger.error("Stripe webhook failed", { error: err.message });
     res.status(400).json({ error: `Webhook Error: ${err.message}` });
   }
 };

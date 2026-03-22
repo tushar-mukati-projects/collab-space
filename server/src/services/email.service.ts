@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { logger } from "../logger.js";
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST ?? "smtp.gmail.com",
@@ -20,9 +21,7 @@ interface SendEmailOptions {
 
 const sendEmail = async (options: SendEmailOptions): Promise<{ success: boolean }> => {
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.log(`[Email] No SMTP credentials — logging instead:`);
-    console.log(`  To: ${options.to}`);
-    console.log(`  Subject: ${options.subject}`);
+    logger.warn("SMTP not configured, skipping email", { to: options.to, subject: options.subject });
     return { success: true };
   }
 
@@ -33,9 +32,10 @@ const sendEmail = async (options: SendEmailOptions): Promise<{ success: boolean 
       subject: options.subject,
       html: options.html,
     });
+    logger.info("Email sent", { to: options.to, subject: options.subject });
     return { success: true };
-  } catch (err) {
-    console.error("[Email] Send failed:", err);
+  } catch (err: any) {
+    logger.error("Email send failed", { to: options.to, error: err.message });
     return { success: false };
   }
 };

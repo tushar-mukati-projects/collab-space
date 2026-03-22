@@ -4,6 +4,7 @@ import cors from "cors";
 import { createServer } from "http";
 import { clerkMiddleware } from "@clerk/express";
 import { config } from "./config.js";
+import { logger } from "./logger.js";
 import { authMiddleware, workspaceMiddleware } from "./middleware/auth.js";
 import { routes } from "./routes/index.js";
 import { startCollab } from "./collab-server.js";
@@ -20,6 +21,13 @@ app.use(
   }),
 );
 
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  if (req.path !== "/api/health") {
+    logger.http(`${req.method} ${req.path}`, { ip: req.ip });
+  }
+  next();
+});
+
 // Stripe webhook needs raw body — must be before express.json()
 app.post("/api/billing/webhook", express.raw({ type: "application/json" }), stripeWebhook);
 
@@ -33,7 +41,7 @@ app.use(
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/api", authMiddleware, workspaceMiddleware, routes);
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error(err);
+  logger.error("Unhandled error", { error: err.message, stack: err.stack });
   res.status(500).json({ error: "Internal server error" });
 });
 
@@ -41,6 +49,6 @@ const server = createServer(app);
 startCollab(server);
 
 server.listen(config.PORT, () => {
-  console.log(`Server running on http://localhost:${config.PORT}`);
-  console.log(`Collab WebSocket on ws://localhost:${config.PORT}/collab`);
+  logger.info(`Server started on port ${config.PORT}`);
+  logger.info(`WebSocket available at /collab`);
 });

@@ -1,5 +1,6 @@
 import { prisma } from "../db.js";
 import { WORKSPACE_ROLES } from "../constants.js";
+import { logger } from "../logger.js";
 
 type ClerkUser = { id: string; email: string; name: string; avatar: string };
 
@@ -119,6 +120,7 @@ export const createWorkspace = async (
     },
   });
 
+  logger.info("Workspace created", { workspaceId: workspace.id, name, userId });
   return workspace;
 };
 
@@ -185,6 +187,7 @@ export const joinWorkspace = async (
     return updated;
   });
 
+  logger.info("User joined workspace", { workspaceId, userId });
   return { error: null, workspace: updatedWorkspace };
 };
 
@@ -215,6 +218,7 @@ export const inviteToWorkspace = async (workspaceId: string, email: string, invi
         invited_emails: { push: email },
       },
     });
+    logger.info("User invited to workspace", { workspaceId, email, inviterId });
   }
 
   return { error: null };
@@ -250,6 +254,7 @@ export const removeMember = async (workspaceId: string, memberId: string, caller
   await prisma.workspaceMember.delete({
     where: { user_id_workspace_id: { user_id: memberId, workspace_id: workspaceId } },
   });
+  logger.info("Member removed from workspace", { workspaceId, memberId, callerId });
   return { error: null };
 };
 
@@ -273,5 +278,6 @@ export const changeMemberRole = async (
     where: { user_id_workspace_id: { user_id: memberId, workspace_id: workspaceId } },
     data: { role: role as any },
   });
+  logger.info("Member role changed", { workspaceId, memberId, role, callerId });
   return { error: null };
 };

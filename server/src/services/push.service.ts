@@ -1,4 +1,5 @@
 import { prisma } from "../db.js";
+import { logger } from "../logger.js";
 
 export const savePushSubscription = async (
   userId: string,
@@ -40,10 +41,7 @@ export const sendPushToUser = async (userId: string, title: string, body: string
   const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 
   if (!vapidPublicKey || !vapidPrivateKey) {
-    console.log("[Push] No VAPID keys configured — skipping push notification");
-    console.log(`  Would send to ${subscriptions.length} subscription(s):`);
-    console.log(`  Title: ${title}`);
-    console.log(`  Body: ${body}`);
+    logger.warn("VAPID keys not configured, skipping push notification", { userId });
     return;
   }
 
@@ -51,10 +49,10 @@ export const sendPushToUser = async (userId: string, title: string, body: string
 
   for (const sub of subscriptions) {
     try {
-      console.log(`[Push] Sending to endpoint: ${sub.endpoint.slice(0, 50)}...`);
-      console.log(`  Payload: ${payload}`);
-    } catch (err) {
-      console.error("[Push] Failed to send:", err);
+      void sub;
+      void payload;
+    } catch (err: any) {
+      logger.error("Push notification failed", { userId, endpoint: sub.endpoint, error: err.message });
     }
   }
 };

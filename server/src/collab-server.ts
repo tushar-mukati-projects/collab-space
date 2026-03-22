@@ -3,6 +3,7 @@ import { Database } from "@hocuspocus/extension-database";
 import { WebSocketServer } from "ws";
 import pg from "pg";
 import type { Server as HttpServer } from "http";
+import { logger } from "./logger.js";
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
@@ -16,7 +17,8 @@ pool
       name TEXT PRIMARY KEY, data BYTEA NOT NULL, updated_at TIMESTAMPTZ DEFAULT NOW()
     )`,
   )
-  .catch(console.error);
+  .then(() => logger.info("Collab documents table ready"))
+  .catch((err) => logger.error("Failed to create collab_documents table", { error: err.message }));
 
 const hocuspocus = new Hocuspocus({
   quiet: true,
@@ -30,7 +32,11 @@ const hocuspocus = new Hocuspocus({
       'SELECT 1 FROM "WorkspaceMember" WHERE user_id = $1 AND workspace_id = $2 LIMIT 1',
       [userId, workspaceId],
     );
-    if (r.rowCount === 0) throw new Error("Not a workspace member");
+    if (r.rowCount === 0) {
+      logger.warn("Collab auth failed: not a workspace member", { userId, workspaceId });
+      throw new Error("Not a workspace member");
+    }
+    logger.debug("Collab auth success", { userId, workspaceId });
     return { user: { id: userId, workspaceId } };
   },
   extensions: [
@@ -55,6 +61,7 @@ const hocuspocus = new Hocuspocus({
 export const startCollab = (server: HttpServer) => {
   const wss = new WebSocketServer({ server, path: "/collab" });
   wss.on("connection", (ws, req) => {
+    logger.debug("New collab WebSocket connection", { url: req.url });
     hocuspocus.handleConnection(ws, req);
   });
 };
