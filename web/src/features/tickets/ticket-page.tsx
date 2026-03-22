@@ -63,10 +63,6 @@ import { useFetchLabels } from "@/hooks/labels";
 import { useFetchFavorites, useToggleFavorite } from "@/hooks/favorites";
 import type { Ticket, TicketStatus, TicketPriority, User, Label, Comment, Activity } from "@/types";
 
-// ---------------------------------------------------------------------------
-// Status / priority options
-// ---------------------------------------------------------------------------
-
 const statusOptions: {
   value: TicketStatus;
   label: string;
@@ -93,10 +89,6 @@ const priorityOptions: {
   { value: "none", label: "None", icon: Circle, color: "text-muted-foreground" },
 ];
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 const getUserInitials = (name: string) => {
   return name
     .split(" ")
@@ -104,10 +96,7 @@ const getUserInitials = (name: string) => {
     .join("");
 };
 
-type TicketPropertyDraft = Pick<
-  Ticket,
-  "status" | "priority" | "assignee" | "labels" | "due_date"
->;
+type TicketPropertyDraft = Pick<Ticket, "status" | "priority" | "assignee" | "labels" | "due_date">;
 
 const createPropertyDraft = (ticket: Ticket): TicketPropertyDraft => ({
   status: ticket.status,
@@ -125,16 +114,14 @@ const propertyDraftEquals = (left: TicketPropertyDraft, right: TicketPropertyDra
   left.labels.length === right.labels.length &&
   left.labels.every((labelId, index) => labelId === right.labels[index]);
 
-const PropertyField = ({
-  icon: Icon,
-  label,
-  children,
-}: {
+interface PropertyFieldProps {
   icon: React.ElementType;
   label: string;
   children: React.ReactNode;
-}) => (
-  <div className="rounded-2xl border border-border/60 bg-card/80 p-3 shadow-xs">
+}
+
+const PropertyField = ({ icon: Icon, label, children }: PropertyFieldProps) => (
+  <div className="border-border/60 bg-card/80 rounded-2xl border p-3 shadow-xs">
     <div className="text-muted-foreground mb-2 flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] uppercase">
       <Icon className="size-3.5" />
       <span>{label}</span>
@@ -143,46 +130,38 @@ const PropertyField = ({
   </div>
 );
 
-// ---------------------------------------------------------------------------
-// Skeleton loader
-// ---------------------------------------------------------------------------
-
 const TicketSkeleton = () => (
-  <div className="flex h-full animate-fade-in">
+  <div className="animate-fade-in flex h-full">
     <div className="flex flex-1 flex-col">
       <div className="border-border flex items-center justify-between border-b px-4 py-2">
-        <div className="skeleton-shimmer h-4 w-16 rounded bg-muted" />
+        <div className="skeleton-shimmer bg-muted h-4 w-16 rounded" />
         <div className="flex gap-2">
-          <div className="skeleton-shimmer h-6 w-14 rounded bg-muted" />
-          <div className="skeleton-shimmer h-6 w-14 rounded bg-muted" />
+          <div className="skeleton-shimmer bg-muted h-6 w-14 rounded" />
+          <div className="skeleton-shimmer bg-muted h-6 w-14 rounded" />
         </div>
       </div>
       <div className="flex-1 p-8">
         <div className="mx-auto max-w-6xl space-y-4">
-          <div className="skeleton-shimmer h-6 w-3/4 rounded bg-muted" />
-          <div className="skeleton-shimmer h-4 w-full rounded bg-muted" />
-          <div className="skeleton-shimmer h-4 w-2/3 rounded bg-muted" />
-          <div className="skeleton-shimmer h-32 w-full rounded-xl bg-muted" />
+          <div className="skeleton-shimmer bg-muted h-6 w-3/4 rounded" />
+          <div className="skeleton-shimmer bg-muted h-4 w-full rounded" />
+          <div className="skeleton-shimmer bg-muted h-4 w-2/3 rounded" />
+          <div className="skeleton-shimmer bg-muted h-32 w-full rounded-xl" />
         </div>
       </div>
     </div>
     <div className="border-border hidden w-95 border-l lg:block">
       <div className="space-y-4 p-4">
-        <div className="skeleton-shimmer h-5 w-24 rounded bg-muted" />
+        <div className="skeleton-shimmer bg-muted h-5 w-24 rounded" />
         {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="flex items-center gap-3">
-            <div className="skeleton-shimmer h-4 w-20 rounded bg-muted" />
-            <div className="skeleton-shimmer h-7 w-28 rounded-lg bg-muted" />
+            <div className="skeleton-shimmer bg-muted h-4 w-20 rounded" />
+            <div className="skeleton-shimmer bg-muted h-7 w-28 rounded-lg" />
           </div>
         ))}
       </div>
     </div>
   </div>
 );
-
-// ---------------------------------------------------------------------------
-// Main component
-// ---------------------------------------------------------------------------
 
 interface TicketPageProps {
   ticketId: string;
@@ -207,7 +186,6 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   const toggleFavMutation = useToggleFavorite();
   const isFavorited = favorites.some((f) => f.ticket_id === ticketId);
 
-  // Collaboration config
   const collabConfig = React.useMemo(() => {
     const collabUrl = process.env.NEXT_PUBLIC_COLLAB_URL;
     if (!collabUrl || !clerkUser?.id || !workspace) return undefined;
@@ -224,7 +202,6 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
     };
   }, [ticketId, clerkUser, workspace]);
 
-  // Parent ticket (only fetched when this ticket is a sub-ticket)
   const parentTicketId = ticket?.parent_type === "ticket" ? (ticket.parent_id ?? "") : "";
   const { data: parentTicket } = useFetchTicket(parentTicketId, fetchEnabled);
 
@@ -235,9 +212,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   const [commentText, setCommentText] = React.useState("");
   const [labelsOpen, setLabelsOpen] = React.useState(false);
   const [saveStatus, setSaveStatus] = React.useState<"idle" | "saving" | "saved">("idle");
-  const [propertiesSaveStatus, setPropertiesSaveStatus] = React.useState<"idle" | "saved">(
-    "idle",
-  );
+  const [propertiesSaveStatus, setPropertiesSaveStatus] = React.useState<"idle" | "saved">("idle");
   const [detailsOpen, setDetailsOpen] = React.useState(false);
   const [createSubOpen, setCreateSubOpen] = React.useState(false);
   const [dueDateOpen, setDueDateOpen] = React.useState(false);
@@ -349,7 +324,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
 
   if (!ticket) {
     return (
-      <div className="flex h-96 flex-col items-center justify-center gap-3 animate-fade-in">
+      <div className="animate-fade-in flex h-96 flex-col items-center justify-center gap-3">
         <p className="text-muted-foreground text-sm">Ticket not found.</p>
         <Button variant="outline" size="sm" onClick={() => router.push("/boards")}>
           <ArrowLeft className="size-4" />
@@ -363,7 +338,9 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   const isPropertiesDirty = !propertyDraftEquals(currentProperties, createPropertyDraft(ticket));
   const isPropertiesSaving = propertyUpdateMutation.isPending;
   const showPropertyActions = isPropertiesDirty || isPropertiesSaving;
-  const selectedDate = currentProperties.due_date ? new Date(currentProperties.due_date) : undefined;
+  const selectedDate = currentProperties.due_date
+    ? new Date(currentProperties.due_date)
+    : undefined;
   const selectedLabels = currentProperties.labels
     .map((labelId) => labelMap.get(labelId))
     .filter((label): label is Label => Boolean(label));
@@ -433,15 +410,10 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
     "rounded-2xl border border-border/70 bg-background/98 p-2 shadow-xl";
   const propertyItemClassName = "min-h-10 rounded-xl px-2 py-2 text-sm";
 
-  // ---------------------------------------------------------------------------
-  // Properties + Activity panel
-  // ---------------------------------------------------------------------------
-
   const propertiesPanel = (
     <div className="space-y-6 p-4">
-      {/* Properties section */}
       <div className="space-y-4">
-        <div className="rounded-2xl border border-border/60 bg-card/80 p-4 shadow-xs">
+        <div className="border-border/60 bg-card/80 rounded-2xl border p-4 shadow-xs">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-1">
               <h4 className="text-sm font-semibold">Properties</h4>
@@ -461,9 +433,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
                     <span className="size-1.5 rounded-full bg-amber-500" />
                     Unsaved changes
                   </>
-                ) : (
-                  null
-                )}
+                ) : null}
               </div>
             </div>
 
@@ -491,7 +461,12 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
         </div>
 
         <div className="relative">
-          <div className={cn("space-y-3 transition-opacity", isPropertiesSaving && "pointer-events-none opacity-45")}>
+          <div
+            className={cn(
+              "space-y-3 transition-opacity",
+              isPropertiesSaving && "pointer-events-none opacity-45",
+            )}
+          >
             <PropertyField icon={CircleDot} label="Status">
               <Select
                 value={currentProperties.status}
@@ -505,7 +480,11 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
                   {statusOptions.map((opt) => {
                     const Icon = opt.icon;
                     return (
-                      <SelectItem key={opt.value} value={opt.value} className={propertyItemClassName}>
+                      <SelectItem
+                        key={opt.value}
+                        value={opt.value}
+                        className={propertyItemClassName}
+                      >
                         <Icon className={cn("size-3.5", opt.color)} />
                         {opt.label}
                       </SelectItem>
@@ -528,7 +507,11 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
                   {priorityOptions.map((opt) => {
                     const Icon = opt.icon;
                     return (
-                      <SelectItem key={opt.value} value={opt.value} className={propertyItemClassName}>
+                      <SelectItem
+                        key={opt.value}
+                        value={opt.value}
+                        className={propertyItemClassName}
+                      >
                         <Icon className={cn("size-3.5", opt.color)} />
                         {opt.label}
                       </SelectItem>
@@ -588,7 +571,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
             </PropertyField>
 
             <PropertyField icon={UserIcon} label="Created by">
-              <div className="border-border/60 flex min-h-10 items-center gap-2 rounded-xl border bg-background px-3">
+              <div className="border-border/60 bg-background flex min-h-10 items-center gap-2 rounded-xl border px-3">
                 {(() => {
                   const creator = userMap.get(ticket.created_by);
 
@@ -619,7 +602,11 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
               >
                 <PopoverTrigger
                   render={
-                    <Button variant="outline" size="sm" className="h-auto min-h-10 w-full justify-start rounded-xl border-border/60 bg-background px-3 py-2 text-left shadow-none hover:bg-accent/30" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-border/60 bg-background hover:bg-accent/30 h-auto min-h-10 w-full justify-start rounded-xl px-3 py-2 text-left shadow-none"
+                    />
                   }
                 >
                   {selectedLabels.length === 0 ? (
@@ -629,7 +616,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
                       {visibleLabels.map((label) => (
                         <span
                           key={label.id}
-                          className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-muted/35 px-2 py-0.5 text-[11px] font-medium"
+                          className="border-border/60 bg-muted/35 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium"
                         >
                           <span
                             className="size-2 rounded-full"
@@ -646,7 +633,10 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
                     </div>
                   )}
                 </PopoverTrigger>
-                <PopoverContent align="start" className={cn("w-64 gap-0", propertyContentClassName)}>
+                <PopoverContent
+                  align="start"
+                  className={cn("w-64 gap-0", propertyContentClassName)}
+                >
                   <div className="border-border/60 mb-2 border-b px-1 pb-2">
                     <p className="text-sm font-semibold">Labels</p>
                     <p className="text-muted-foreground text-[11px]">
@@ -687,7 +677,11 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
               >
                 <PopoverTrigger
                   render={
-                    <Button variant="outline" size="sm" className="h-10 w-full justify-start rounded-xl border-border/60 bg-background px-3 text-left shadow-none hover:bg-accent/30" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-border/60 bg-background hover:bg-accent/30 h-10 w-full justify-start rounded-xl px-3 text-left shadow-none"
+                    />
                   }
                 >
                   <CalendarIcon className="text-muted-foreground size-3.5" />
@@ -697,7 +691,10 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
                       : "Set a due date"}
                   </span>
                 </PopoverTrigger>
-                <PopoverContent align="start" className={cn("w-auto p-2", propertyContentClassName)}>
+                <PopoverContent
+                  align="start"
+                  className={cn("w-auto p-2", propertyContentClassName)}
+                >
                   <Calendar
                     mode="single"
                     selected={selectedDate}
@@ -727,7 +724,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
                 <button
                   type="button"
                   onClick={() => router.push(`/ticket/${parentTicket.id}`)}
-                  className="border-border/60 text-foreground hover:border-primary/35 hover:bg-accent flex min-h-10 w-full items-center gap-2 rounded-xl border bg-background px-3 text-left text-sm font-medium transition-colors"
+                  className="border-border/60 text-foreground hover:border-primary/35 hover:bg-accent bg-background flex min-h-10 w-full items-center gap-2 rounded-xl border px-3 text-left text-sm font-medium transition-colors"
                 >
                   <CornerDownRight className="text-muted-foreground size-3.5 rotate-180" />
                   <span className="truncate">{parentTicket.title}</span>
@@ -737,8 +734,8 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
           </div>
 
           {isPropertiesSaving && (
-            <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-background/70 backdrop-blur-[2px]">
-              <div className="flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1.5 text-xs font-medium shadow-sm">
+            <div className="bg-background/70 absolute inset-0 flex items-center justify-center rounded-2xl backdrop-blur-[2px]">
+              <div className="border-border/70 bg-background flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium shadow-sm">
                 <Loader2 className="size-3.5 animate-spin" />
                 Saving properties...
               </div>
@@ -749,7 +746,6 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
 
       <Separator />
 
-      {/* Sub-tickets */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-semibold">Sub-tickets</h4>
@@ -787,10 +783,6 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
     </div>
   );
 
-  // ---------------------------------------------------------------------------
-  // Activity & Comments
-  // ---------------------------------------------------------------------------
-
   const activitySection = (
     <div className="space-y-4">
       <h4 className="text-sm font-semibold">Activity</h4>
@@ -805,7 +797,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
             const comment = item.data as Comment;
             const author = userMap.get(comment.author_id);
             return (
-              <div key={item.id} className="flex gap-3 animate-fade-in">
+              <div key={item.id} className="animate-fade-in flex gap-3">
                 <Avatar size="sm">
                   {author && (
                     <>
@@ -850,7 +842,6 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
         })}
       </div>
 
-      {/* Add comment */}
       <div className="flex gap-2 pt-2">
         <Input
           placeholder="Add a comment..."
@@ -881,19 +872,17 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
 
   return (
     <div className="flex h-full">
-      {/* Left column — title + markdown content */}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        {/* Toolbar bar */}
-        <div className="border-border bg-background/80 backdrop-blur-sm flex shrink-0 items-center justify-between border-b px-4 py-2">
+        <div className="border-border bg-background/80 flex shrink-0 items-center justify-between border-b px-4 py-2 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             {saveStatus === "saving" && (
-              <span className="text-muted-foreground flex items-center gap-1.5 text-xs save-indicator">
+              <span className="text-muted-foreground save-indicator flex items-center gap-1.5 text-xs">
                 <Loader2 className="size-3 animate-spin" />
                 Saving...
               </span>
             )}
             {saveStatus === "saved" && (
-              <span className="flex items-center gap-1 text-xs text-emerald-500 animate-fade-in">
+              <span className="animate-fade-in flex items-center gap-1 text-xs text-emerald-500">
                 <Check className="size-3" />
                 Saved
               </span>
@@ -955,7 +944,6 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
 
         <ScrollArea className="min-h-0 flex-1">
           <div className="mx-auto w-full max-w-6xl py-4 sm:px-10 lg:px-16 lg:py-6">
-            {/* Rich text editor */}
             <TicketEditor
               key={collabConfig ? `${ticketId}-collab` : ticketId}
               initialContent={ticket.content ?? ""}
@@ -964,7 +952,6 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
               collaboration={collabConfig}
             />
 
-            {/* Activity & Comments — below editor */}
             <div className="px-4 sm:px-0">
               <Separator className="my-6" />
               {activitySection}
@@ -973,12 +960,10 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
         </ScrollArea>
       </div>
 
-      {/* Desktop right column — properties & activity */}
       <div className="border-border hidden w-95 flex-col border-l lg:flex">
         <ScrollArea className="flex-1">{propertiesPanel}</ScrollArea>
       </div>
 
-      {/* Mobile details sheet (bottom drawer) */}
       <Sheet open={detailsOpen} onOpenChange={setDetailsOpen}>
         <SheetContent side="bottom" className="flex max-h-[88vh] flex-col p-0">
           <SheetHeader className="border-border shrink-0 border-b px-4 py-3">
@@ -988,7 +973,6 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
         </SheetContent>
       </Sheet>
 
-      {/* Create sub-ticket dialog */}
       <CreateTicketDialog
         open={createSubOpen}
         onOpenChange={setCreateSubOpen}

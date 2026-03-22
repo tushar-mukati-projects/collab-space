@@ -21,9 +21,6 @@ export const validate = <T extends ZodSchema>(schema: T) => {
   };
 };
 
-// Elysia-like: schema + handler in one call, types flow automatically
-// Usage: router.post("/", ...endpoint(schema, async (data, req, res) => { ... }))
-
 export const endpoint = <T extends ZodSchema>(
   schema: T,
   handler: (data: z.infer<T>, req: WorkspaceRequest, res: Response) => Promise<any>,

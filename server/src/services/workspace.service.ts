@@ -3,8 +3,6 @@ import { WORKSPACE_ROLES } from "../constants.js";
 
 type ClerkUser = { id: string; email: string; name: string; avatar: string };
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
 const upsertUser = (user: ClerkUser) => {
   return prisma.user.upsert({
     where: { id: user.id },
@@ -20,8 +18,6 @@ const upsertUser = (user: ClerkUser) => {
     },
   });
 };
-
-// ─── getUserWorkspaceWithMembers ────────────────────────────────────────────
 
 export const getUserWorkspaceWithMembers = async (userId: string) => {
   const membership = await prisma.workspaceMember.findFirst({
@@ -61,8 +57,6 @@ export const getUserWorkspaceWithMembers = async (userId: string) => {
     })),
   };
 };
-
-// ─── createWorkspace ────────────────────────────────────────────────────────
 
 export const createWorkspace = async (
   name: string,
@@ -128,8 +122,6 @@ export const createWorkspace = async (
   return workspace;
 };
 
-// ─── getInvitations ─────────────────────────────────────────────────────────
-
 export const getInvitations = async (email: string) => {
   const workspaces = await prisma.workspace.findMany({
     where: {
@@ -151,8 +143,6 @@ export const getInvitations = async (email: string) => {
     member_count: w._count.members,
   }));
 };
-
-// ─── joinWorkspace ──────────────────────────────────────────────────────────
 
 export const joinWorkspace = async (
   workspaceId: string,
@@ -197,8 +187,6 @@ export const joinWorkspace = async (
 
   return { error: null, workspace: updatedWorkspace };
 };
-
-// ─── inviteToWorkspace ──────────────────────────────────────────────────────
 
 export const inviteToWorkspace = async (workspaceId: string, email: string, inviterId: string) => {
   const workspace = await prisma.workspace.findUnique({
@@ -248,8 +236,6 @@ export const revokeInvite = async (workspaceId: string, email: string, callerId:
   return { error: null };
 };
 
-// ─── removeMember ──────────────────────────────────────────────────────────
-
 export const removeMember = async (workspaceId: string, memberId: string, callerId: string) => {
   const caller = await prisma.workspaceMember.findUnique({
     where: { user_id_workspace_id: { user_id: callerId, workspace_id: workspaceId } },
@@ -266,8 +252,6 @@ export const removeMember = async (workspaceId: string, memberId: string, caller
   });
   return { error: null };
 };
-
-// ─── changeMemberRole ──────────────────────────────────────────────────────
 
 export const changeMemberRole = async (
   workspaceId: string,

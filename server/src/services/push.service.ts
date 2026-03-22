@@ -7,7 +7,6 @@ export const savePushSubscription = async (
   p256dh: string,
   auth: string,
 ) => {
-  // Upsert by endpoint to avoid duplicates
   await prisma.pushSubscription.upsert({
     where: { endpoint },
     create: {
@@ -48,14 +47,10 @@ export const sendPushToUser = async (userId: string, title: string, body: string
     return;
   }
 
-  // For production, use web-push library. For now, use the Fetch-based approach.
   const payload = JSON.stringify({ title, body, url: url ?? "/" });
 
   for (const sub of subscriptions) {
     try {
-      // In production, this would use the web-push library with VAPID signing.
-      // For now, we log the attempt. The client-side Notification API handles
-      // browser notifications directly without a push server.
       console.log(`[Push] Sending to endpoint: ${sub.endpoint.slice(0, 50)}...`);
       console.log(`  Payload: ${payload}`);
     } catch (err) {

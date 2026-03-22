@@ -14,8 +14,6 @@ export const updateProfile = async (userId: string, data: { name?: string; email
   return user;
 };
 
-// ─── Workspace ──────────────────────────────────────────────────────────────
-
 const toWorkspaceDTO = (workspace: {
   id: string;
   name: string;
@@ -80,8 +78,6 @@ export const updateWorkspaceSettings = async (
   return toWorkspaceDTO(workspace);
 };
 
-// ─── Notification Preferences ───────────────────────────────────────────────
-
 export const getNotificationPrefs = async (userId: string, workspaceId: string) => {
   const prefs = await prisma.notificationPrefs.upsert({
     where: {
@@ -139,8 +135,6 @@ export const updateNotificationPrefs = async (
     push_enabled: prefs.push_enabled,
   };
 };
-
-// ─── Appearance Preferences ─────────────────────────────────────────────────
 
 export const getAppearancePrefs = async (userId: string, workspaceId: string) => {
   const prefs = await prisma.appearancePrefs.upsert({

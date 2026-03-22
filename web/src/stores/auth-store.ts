@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-// Tracks onboarding state only — auth is handled by Clerk.
 interface OnboardingState {
   hasCompletedOnboarding: boolean;
   workspaceName: string | null;

@@ -14,11 +14,9 @@ export const usePushSubscribe = () => {
         throw new Error("Notification permission denied");
       }
 
-      // Register service worker if not already
       const registration = await navigator.serviceWorker.register("/sw.js");
       await navigator.serviceWorker.ready;
 
-      // Get or create push subscription
       let subscription = await registration.pushManager.getSubscription();
       if (!subscription) {
         const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;

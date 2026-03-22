@@ -68,14 +68,13 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Workspace header */}
       <div className="shrink-0 px-3 pt-4 pb-3">
         <Link
           href="/boards"
           onClick={onClose}
           className="hover:bg-accent/60 flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-all duration-200"
         >
-          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary text-[11px] font-bold text-primary-foreground shadow-sm shadow-primary/20">
+          <span className="bg-primary text-primary-foreground shadow-primary/20 flex size-7 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold shadow-sm">
             {wsInitials}
           </span>
           <span className="truncate text-sm font-semibold tracking-tight">
@@ -84,9 +83,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
         </Link>
       </div>
 
-      {/* Scrollable middle section */}
       <div className="min-h-0 flex-1 space-y-1 overflow-y-auto px-2 pb-2">
-        {/* Search + Inbox */}
         <div className="space-y-0.5">
           <button
             type="button"
@@ -108,7 +105,6 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
 
           <NotificationPanel variant="nav" />
 
-          {/* My Tickets panel */}
           <Popover>
             <PopoverTrigger
               render={
@@ -174,7 +170,6 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
           </Popover>
         </div>
 
-        {/* Favorites popover */}
         <Popover>
           <PopoverTrigger
             render={
@@ -190,7 +185,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
             <Star className="size-4 shrink-0" />
             <span>Favorites</span>
             {favorites.length > 0 && (
-              <span className="bg-amber-500/10 text-amber-500 ml-auto rounded-full px-1.5 py-0 text-[10px] font-semibold">
+              <span className="ml-auto rounded-full bg-amber-500/10 px-1.5 py-0 text-[10px] font-semibold text-amber-500">
                 {favorites.length}
               </span>
             )}
@@ -200,7 +195,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
               <div className="border-border flex shrink-0 items-center border-b px-3 py-2.5">
                 <h2 className="text-sm font-semibold">Favorites</h2>
                 {favorites.length > 0 && (
-                  <span className="bg-amber-500/10 text-amber-500 ml-2 rounded-full px-1.5 py-0 text-[10px] font-semibold">
+                  <span className="ml-2 rounded-full bg-amber-500/10 px-1.5 py-0 text-[10px] font-semibold text-amber-500">
                     {favorites.length}
                   </span>
                 )}
@@ -239,10 +234,8 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
           </PopoverContent>
         </Popover>
 
-        {/* Separator */}
-        <div className="!my-3 mx-3 h-px bg-border" />
+        <div className="bg-border mx-3 !my-3 h-px" />
 
-        {/* Nav links */}
         <div className="space-y-0.5">
           {navLinks.map((link) => {
             const isActive = pathname.startsWith(link.href);
@@ -259,7 +252,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
                 )}
               >
                 {isActive && (
-                  <span className="absolute left-0 h-5 w-[3px] rounded-r-full bg-primary" />
+                  <span className="bg-primary absolute left-0 h-5 w-[3px] rounded-r-full" />
                 )}
                 <link.icon className={cn("size-4 shrink-0", isActive && "text-primary")} />
                 {link.label}
@@ -269,7 +262,6 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
         </div>
       </div>
 
-      {/* Settings + Log out (fixed at bottom) */}
       <div className="border-border shrink-0 space-y-0.5 border-t px-2 py-2">
         <button
           type="button"
@@ -305,7 +297,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
 
       <div className="border-border shrink-0 border-t px-2 py-2">
         <div className={cn(navItemBase, "text-muted-foreground cursor-default")}>
-          <Avatar size="sm" className="shrink-0 ring-2 ring-background">
+          <Avatar size="sm" className="ring-background shrink-0 ring-2">
             <AvatarImage src={currentUserAvatar} />
             <AvatarFallback className="text-xs">{initials ?? "?"}</AvatarFallback>
           </Avatar>

@@ -1,7 +1,6 @@
 import { mockTickets, mockComments, mockActivities, mockBoards, mockWorkspace } from "./data";
 import type { Ticket, Comment, Activity, BoardSummary, Workspace } from "@/types";
 
-// Shared mutable state used by all mock handlers
 export const _tickets: Ticket[] = structuredClone(mockTickets);
 export const _comments: Comment[] = structuredClone(mockComments);
 export const _activities: Activity[] = structuredClone(mockActivities);

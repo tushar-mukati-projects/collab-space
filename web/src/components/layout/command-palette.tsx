@@ -47,10 +47,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import type { TicketStatus, TicketPriority, TicketFilters } from "@/types";
 
-// ---------------------------------------------------------------------------
-// Options
-// ---------------------------------------------------------------------------
-
 const statusOpts: { value: TicketStatus; label: string; icon: React.ElementType; color: string }[] =
   [
     { value: "backlog", label: "Backlog", icon: CircleDashed, color: "text-muted-foreground" },
@@ -81,10 +77,6 @@ const statusDot: Record<string, string> = {
   done: "bg-green-500",
 };
 
-// ---------------------------------------------------------------------------
-// Navigation / action entries
-// ---------------------------------------------------------------------------
-
 const navigationEntries = [
   { label: "Go to Board", path: "/boards", icon: Columns3 },
   { label: "Go to Meetings", path: "/meetings", icon: Video },
@@ -95,10 +87,6 @@ const actionEntries = [
   { label: "Create Ticket", icon: TicketPlus, shortcut: "T" },
   { label: "Schedule Meeting", icon: CalendarPlus, shortcut: "M" },
 ];
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
 
 export const CommandPalette = () => {
   const open = useUIStore((s) => s.commandPaletteOpen);
@@ -116,13 +104,11 @@ export const CommandPalette = () => {
   const { data: users = [] } = useFetchUsers();
   const { data: labels = [] } = useFetchLabels();
 
-  // Debounce search term
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 250);
     return () => clearTimeout(t);
   }, [search]);
 
-  // Reset on close
   React.useEffect(() => {
     if (!open) {
       setSearch("");
@@ -135,7 +121,6 @@ export const CommandPalette = () => {
     }
   }, [open]);
 
-  // Build filters
   const hasFilters =
     statuses.length > 0 || priorities.length > 0 || assignees.length > 0 || labelIds.length > 0;
   const activeFilterCount =
@@ -187,7 +172,6 @@ export const CommandPalette = () => {
       className="sm:max-w-xl"
     >
       <Command>
-        {/* Search input row */}
         <div className="flex items-center gap-1 px-2 pt-2">
           <div className="flex-1">
             <CommandInput
@@ -216,10 +200,8 @@ export const CommandPalette = () => {
           </button>
         </div>
 
-        {/* Filter bar */}
         {filtersOpen && (
           <div className="border-border flex flex-wrap items-center gap-1.5 border-t px-3 py-2">
-            {/* Status filter */}
             <DropdownMenu>
               <DropdownMenuTrigger
                 className={cn(
@@ -257,7 +239,6 @@ export const CommandPalette = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Priority filter */}
             <DropdownMenu>
               <DropdownMenuTrigger
                 className={cn(
@@ -297,7 +278,6 @@ export const CommandPalette = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Assignee filter */}
             <DropdownMenu>
               <DropdownMenuTrigger
                 className={cn(
@@ -333,7 +313,6 @@ export const CommandPalette = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Labels filter */}
             <Popover>
               <PopoverTrigger
                 render={
@@ -379,7 +358,6 @@ export const CommandPalette = () => {
               </PopoverContent>
             </Popover>
 
-            {/* Clear filters */}
             {hasFilters && (
               <button
                 type="button"
@@ -394,7 +372,6 @@ export const CommandPalette = () => {
         )}
 
         <CommandList className={cn(shouldSearch && "max-h-80")}>
-          {/* Ticket results — shown when searching or filtering */}
           {shouldSearch && (
             <>
               {tickets.length === 0 ? (
@@ -428,10 +405,8 @@ export const CommandPalette = () => {
             </>
           )}
 
-          {/* When not searching — show default empty */}
           {!shouldSearch && <CommandEmpty>Type to search tickets...</CommandEmpty>}
 
-          {/* Navigation group */}
           <CommandGroup heading="Navigation">
             {navigationEntries.map((entry) => {
               const Icon = entry.icon;
@@ -446,7 +421,6 @@ export const CommandPalette = () => {
 
           <CommandSeparator />
 
-          {/* Actions group */}
           <CommandGroup heading="Actions">
             {actionEntries.map((entry) => {
               const Icon = entry.icon;

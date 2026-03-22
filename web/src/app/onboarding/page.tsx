@@ -47,10 +47,9 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="w-full max-w-md px-4 animate-fade-in">
-      {/* Header */}
+    <div className="animate-fade-in w-full max-w-md px-4">
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-primary/20 text-lg font-bold text-primary">
+        <div className="bg-primary/20 text-primary mx-auto mb-4 flex size-12 items-center justify-center rounded-xl text-lg font-bold">
           CS
         </div>
         <h1 className="text-xl font-bold tracking-tight">Welcome, {firstName}!</h1>
@@ -59,7 +58,6 @@ export default function OnboardingPage() {
         </p>
       </div>
 
-      {/* Tabs */}
       <div className="border-border mb-6 flex rounded-xl border p-1">
         <button
           type="button"
@@ -87,16 +85,15 @@ export default function OnboardingPage() {
           <Users className="size-4" />
           Join workspace
           {invitations.length > 0 && (
-            <span className="bg-primary text-white absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-[9px] font-bold animate-fade-in-scale">
+            <span className="bg-primary animate-fade-in-scale absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-[9px] font-bold text-white">
               {invitations.length}
             </span>
           )}
         </button>
       </div>
 
-      {/* Create workspace tab */}
       {tab === "create" && (
-        <form onSubmit={handleCreate} className="flex flex-col gap-5 animate-fade-in">
+        <form onSubmit={handleCreate} className="animate-fade-in flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="ws-name">Workspace name</Label>
             <Input
@@ -111,18 +108,15 @@ export default function OnboardingPage() {
             </p>
           </div>
 
-          {/* Plan card */}
-          <div className="border-border rounded-xl border p-4 transition-all hover:border-primary/30 hover:shadow-sm">
+          <div className="border-border hover:border-primary/30 rounded-xl border p-4 transition-all hover:shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+              <div className="bg-primary/15 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
                 <Sparkles className="size-4" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">Pro Plan</span>
-                  <Badge className="bg-primary/15 text-[10px] text-primary">
-                    Default
-                  </Badge>
+                  <Badge className="bg-primary/15 text-primary text-[10px]">Default</Badge>
                 </div>
                 <p className="text-muted-foreground text-xs">
                   Unlimited boards, tickets, and members
@@ -138,7 +132,7 @@ export default function OnboardingPage() {
           >
             {createWorkspaceMutation.isPending ? (
               <>
-                <Loader2 className="size-4 animate-spin text-primary-foreground/60" />
+                <Loader2 className="text-primary-foreground/60 size-4 animate-spin" />
                 Creating...
               </>
             ) : (
@@ -151,19 +145,21 @@ export default function OnboardingPage() {
         </form>
       )}
 
-      {/* Join workspace tab */}
       {tab === "join" && (
-        <div className="flex flex-col gap-4 animate-fade-in">
+        <div className="animate-fade-in flex flex-col gap-4">
           {invitationsLoading ? (
             <div className="flex flex-col gap-3 py-4">
               {[1, 2].map((i) => (
-                <div key={i} className="border-border flex items-center gap-3 rounded-xl border p-4">
-                  <div className="skeleton-shimmer size-10 shrink-0 rounded-lg bg-muted" />
+                <div
+                  key={i}
+                  className="border-border flex items-center gap-3 rounded-xl border p-4"
+                >
+                  <div className="skeleton-shimmer bg-muted size-10 shrink-0 rounded-lg" />
                   <div className="flex-1 space-y-2">
-                    <div className="skeleton-shimmer h-4 w-32 rounded bg-muted" />
-                    <div className="skeleton-shimmer h-3 w-44 rounded bg-muted" />
+                    <div className="skeleton-shimmer bg-muted h-4 w-32 rounded" />
+                    <div className="skeleton-shimmer bg-muted h-3 w-44 rounded" />
                   </div>
-                  <div className="skeleton-shimmer h-8 w-16 rounded-lg bg-muted" />
+                  <div className="skeleton-shimmer bg-muted h-8 w-16 rounded-lg" />
                 </div>
               ))}
             </div>
@@ -184,7 +180,7 @@ export default function OnboardingPage() {
               {invitations.map((inv, i) => (
                 <div
                   key={inv.id}
-                  className="border-border flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-primary/30 hover:shadow-sm animate-fade-in"
+                  className="border-border hover:border-primary/30 animate-fade-in flex items-center gap-3 rounded-xl border p-4 transition-all hover:shadow-sm"
                   style={{ animationDelay: `${i * 80}ms` }}
                 >
                   <Image
@@ -208,7 +204,7 @@ export default function OnboardingPage() {
                     disabled={joinWorkspaceMutation.isPending}
                   >
                     {joinWorkspaceMutation.isPending ? (
-                      <Loader2 className="size-3.5 animate-spin text-primary-foreground/60" />
+                      <Loader2 className="text-primary-foreground/60 size-3.5 animate-spin" />
                     ) : (
                       <CheckCircle2 className="size-3.5" />
                     )}

@@ -40,10 +40,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-// ---------------------------------------------------------------------------
-// Static column definitions — drives the visual layout
-// ---------------------------------------------------------------------------
-
 const COLUMN_DEFS: { status: TicketStatus; name: string; color: string }[] = [
   { status: "backlog", name: "Backlog", color: "#6b7280" },
   { status: "todo", name: "Todo", color: "#3b82f6" },
@@ -79,10 +75,6 @@ const buildColumns = (tickets: TicketSummary[]): BoardColumnType[] => {
   }));
 };
 
-// ---------------------------------------------------------------------------
-// Filter bar
-// ---------------------------------------------------------------------------
-
 interface FilterBarProps {
   filters: TicketFilters;
   onFiltersChange: (f: TicketFilters) => void;
@@ -107,7 +99,6 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
 
   return (
     <div className="flex flex-wrap items-center gap-2 py-2">
-      {/* Search */}
       <div className="relative">
         <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
         <input
@@ -120,7 +111,6 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
         />
       </div>
 
-      {/* Status filter */}
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
@@ -130,7 +120,7 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
         >
           Status
           {(filters.statuses?.length ?? 0) > 0 && (
-            <span className="rounded-full bg-primary px-1 text-[10px] text-white">
+            <span className="bg-primary rounded-full px-1 text-[10px] text-white">
               {filters.statuses!.length}
             </span>
           )}
@@ -149,7 +139,6 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Priority filter */}
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
@@ -159,7 +148,7 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
         >
           Priority
           {(filters.priorities?.length ?? 0) > 0 && (
-            <span className="rounded-full bg-primary px-1 text-[10px] text-white">
+            <span className="bg-primary rounded-full px-1 text-[10px] text-white">
               {filters.priorities!.length}
             </span>
           )}
@@ -178,7 +167,6 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Assignee filter */}
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
@@ -188,7 +176,7 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
         >
           Assignee
           {(filters.assignees?.length ?? 0) > 0 && (
-            <span className="rounded-full bg-primary px-1 text-[10px] text-white">
+            <span className="bg-primary rounded-full px-1 text-[10px] text-white">
               {filters.assignees!.length}
             </span>
           )}
@@ -207,7 +195,6 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Labels filter */}
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
@@ -217,7 +204,7 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
         >
           Labels
           {(filters.labels?.length ?? 0) > 0 && (
-            <span className="rounded-full bg-primary px-1 text-[10px] text-white">
+            <span className="bg-primary rounded-full px-1 text-[10px] text-white">
               {filters.labels!.length}
             </span>
           )}
@@ -240,7 +227,6 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Clear filters */}
       {activeCount > 0 && (
         <button
           type="button"
@@ -254,10 +240,6 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
     </div>
   );
 };
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
 
 interface BoardColumnsProps {
   board: BoardSummary;
@@ -282,10 +264,8 @@ export const BoardColumns = ({ board, onCardClick }: BoardColumnsProps) => {
     return map;
   }, [labels]);
 
-  // Columns from server data
   const serverColumns = React.useMemo(() => buildColumns(tickets), [tickets]);
 
-  // Local override during drag (null = use server columns)
   const [dragColumns, setDragColumns] = React.useState<BoardColumnType[] | null>(null);
   const localColumns = dragColumns ?? serverColumns;
 
@@ -299,7 +279,6 @@ export const BoardColumns = ({ board, onCardClick }: BoardColumnsProps) => {
     }
   };
 
-  // Create ticket dialog state
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [createInitialStatus, setCreateInitialStatus] = React.useState<TicketStatus>("backlog");
 
@@ -435,22 +414,25 @@ export const BoardColumns = ({ board, onCardClick }: BoardColumnsProps) => {
       />
       <ScrollArea className="flex-1">
         {ticketsLoading ? (
-          <div className="flex gap-4 pt-2 pb-4 animate-fade-in" style={{ minWidth: "fit-content" }}>
+          <div className="animate-fade-in flex gap-4 pt-2 pb-4" style={{ minWidth: "fit-content" }}>
             {COLUMN_DEFS.map((col) => (
               <div key={col.status} className="w-[300px] shrink-0 space-y-3">
                 <div className="flex items-center gap-2 px-1 py-2.5">
-                  <span className="inline-block size-2.5 rounded-full" style={{ backgroundColor: col.color, opacity: 0.4 }} />
-                  <div className="skeleton-shimmer h-3.5 w-20 rounded bg-muted" />
-                  <div className="skeleton-shimmer size-5 rounded-full bg-muted" />
+                  <span
+                    className="inline-block size-2.5 rounded-full"
+                    style={{ backgroundColor: col.color, opacity: 0.4 }}
+                  />
+                  <div className="skeleton-shimmer bg-muted h-3.5 w-20 rounded" />
+                  <div className="skeleton-shimmer bg-muted size-5 rounded-full" />
                 </div>
                 {[1, 2].map((i) => (
                   <div key={i} className="border-border bg-card space-y-2.5 rounded-xl border p-3">
-                    <div className="skeleton-shimmer h-3.5 w-5 rounded bg-muted" />
-                    <div className="skeleton-shimmer h-4 w-3/4 rounded bg-muted" />
-                    <div className="skeleton-shimmer h-3 w-1/2 rounded bg-muted" />
+                    <div className="skeleton-shimmer bg-muted h-3.5 w-5 rounded" />
+                    <div className="skeleton-shimmer bg-muted h-4 w-3/4 rounded" />
+                    <div className="skeleton-shimmer bg-muted h-3 w-1/2 rounded" />
                     <div className="flex gap-1">
-                      <div className="skeleton-shimmer h-4 w-12 rounded-full bg-muted" />
-                      <div className="skeleton-shimmer h-4 w-10 rounded-full bg-muted" />
+                      <div className="skeleton-shimmer bg-muted h-4 w-12 rounded-full" />
+                      <div className="skeleton-shimmer bg-muted h-4 w-10 rounded-full" />
                     </div>
                   </div>
                 ))}

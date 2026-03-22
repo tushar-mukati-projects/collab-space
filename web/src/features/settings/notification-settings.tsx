@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Mail, Smartphone, Loader2, Bell, Send } from "lucide-react";
+import { Mail, Smartphone, Loader2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -41,18 +41,18 @@ export const NotificationSettings = () => {
 
   if (isLoading || !prefs) {
     return (
-      <div className="flex flex-col gap-6 animate-fade-in">
+      <div className="animate-fade-in flex flex-col gap-6">
         {[1, 2].map((i) => (
-          <div key={i} className="rounded-xl border border-border bg-card p-6 space-y-4">
-            <div className="skeleton-shimmer h-5 w-36 rounded bg-muted" />
-            <div className="skeleton-shimmer h-3 w-56 rounded bg-muted" />
+          <div key={i} className="border-border bg-card space-y-4 rounded-xl border p-6">
+            <div className="skeleton-shimmer bg-muted h-5 w-36 rounded" />
+            <div className="skeleton-shimmer bg-muted h-3 w-56 rounded" />
             <div className="space-y-3">
               {[1, 2, 3].map((j) => (
                 <div key={j} className="flex items-center gap-3">
-                  <div className="skeleton-shimmer size-4 rounded bg-muted" />
+                  <div className="skeleton-shimmer bg-muted size-4 rounded" />
                   <div className="flex-1 space-y-1">
-                    <div className="skeleton-shimmer h-4 w-40 rounded bg-muted" />
-                    <div className="skeleton-shimmer h-3 w-64 rounded bg-muted" />
+                    <div className="skeleton-shimmer bg-muted h-4 w-40 rounded" />
+                    <div className="skeleton-shimmer bg-muted h-3 w-64 rounded" />
                   </div>
                 </div>
               ))}
@@ -65,14 +65,16 @@ export const NotificationSettings = () => {
 
   const togglePreference = (key: string) => {
     const currentValue = prefs[key as keyof typeof prefs] as boolean;
-    updatePrefsMutation.mutate({ [key]: !currentValue }, {
-      onSuccess: () => toast.success("Notification preferences updated"),
-    });
+    updatePrefsMutation.mutate(
+      { [key]: !currentValue },
+      {
+        onSuccess: () => toast.success("Notification preferences updated"),
+      },
+    );
   };
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
-      {/* Notification types */}
+    <div className="animate-fade-in flex flex-col gap-6">
       <Card>
         <CardHeader>
           <CardTitle>Notification Preferences</CardTitle>
@@ -102,14 +104,12 @@ export const NotificationSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Delivery channels with inline test buttons */}
       <Card>
         <CardHeader>
           <CardTitle>Delivery Channels</CardTitle>
           <CardDescription>Control how you receive your notifications.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-1">
-          {/* Email */}
           <div className="flex items-center gap-3 rounded-lg px-3 py-3">
             <div className="cursor-pointer" onClick={() => togglePreference("email_enabled")}>
               <Checkbox
@@ -151,7 +151,6 @@ export const NotificationSettings = () => {
 
           <Separator />
 
-          {/* Push */}
           <div className="flex items-center gap-3 rounded-lg px-3 py-3">
             <div className="cursor-pointer" onClick={() => togglePreference("push_enabled")}>
               <Checkbox
@@ -204,15 +203,13 @@ export const NotificationSettings = () => {
   );
 };
 
-const TestButton = ({
-  type,
-  label,
-  onClick,
-}: {
+interface TestButtonProps {
   type: string;
   label: string;
   onClick: () => Promise<void>;
-}) => {
+}
+
+const TestButton = ({ type, label, onClick }: TestButtonProps) => {
   const [loading, setLoading] = React.useState(false);
 
   const handleClick = async (e: React.MouseEvent) => {

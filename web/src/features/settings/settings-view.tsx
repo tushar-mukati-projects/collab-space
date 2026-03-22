@@ -11,14 +11,12 @@ import { AppearanceSettings } from "./appearance-settings";
 export const SettingsView = () => {
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="border-border bg-background/80 backdrop-blur-sm border-b px-4 py-3">
+      <div className="border-border bg-background/80 border-b px-4 py-3 backdrop-blur-sm">
         <h2 className="text-lg font-bold tracking-tight">Settings</h2>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto px-3 py-6 sm:px-4">
-        <div className="mx-auto max-w-2xl animate-fade-in">
+        <div className="animate-fade-in mx-auto max-w-2xl">
           <Tabs defaultValue="profile">
             <TabsList className="mb-6 w-full sm:w-auto">
               <TabsTrigger value="profile">

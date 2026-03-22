@@ -18,10 +18,6 @@ import { cn } from "@/lib/utils";
 import { useFetchFavorites, useToggleFavorite } from "@/hooks/favorites";
 import type { TicketSummary, TicketPriority, Label } from "@/types";
 
-// ---------------------------------------------------------------------------
-// Priority icon
-// ---------------------------------------------------------------------------
-
 const priorityConfig: Record<TicketPriority, { icon: React.ElementType; color: string }> = {
   urgent: { icon: AlertCircle, color: "text-red-500" },
   high: { icon: ArrowUp, color: "text-orange-500" },
@@ -30,21 +26,16 @@ const priorityConfig: Record<TicketPriority, { icon: React.ElementType; color: s
   none: { icon: Circle, color: "text-muted-foreground" },
 };
 
-const PriorityIcon = ({
-  priority,
-  className,
-}: {
+interface PriorityIconProps {
   priority: TicketPriority;
   className?: string;
-}) => {
+}
+
+const PriorityIcon = ({ priority, className }: PriorityIconProps) => {
   const cfg = priorityConfig[priority];
   const Icon = cfg.icon;
   return <Icon className={cn("size-4", cfg.color, className)} />;
 };
-
-// ---------------------------------------------------------------------------
-// Board card
-// ---------------------------------------------------------------------------
 
 interface BoardCardProps {
   ticket: TicketSummary;
@@ -85,23 +76,21 @@ export const BoardCard = ({ ticket, labelMap, onCardClick }: BoardCardProps) => 
       style={style}
       className={cn(
         "group border-border bg-card relative cursor-pointer rounded-xl border p-3 transition-all duration-200",
-        "hover:border-border/70 hover:shadow-md hover:-translate-y-0.5",
-        isDragging && "ring-primary/20 opacity-50 shadow-lg ring-2 rotate-1",
+        "hover:border-border/70 hover:-translate-y-0.5 hover:shadow-md",
+        isDragging && "ring-primary/20 rotate-1 opacity-50 shadow-lg ring-2",
       )}
       onClick={handleClick}
     >
-      {/* Drag handle */}
       <button
         type="button"
         data-drag-handle
-        className="absolute top-1/2 left-1 -translate-y-1/2 cursor-grab rounded-md p-0.5 opacity-0 transition-all duration-200 group-hover:opacity-60 hover:!opacity-100 hover:bg-muted active:cursor-grabbing"
+        className="hover:bg-muted absolute top-1/2 left-1 -translate-y-1/2 cursor-grab rounded-md p-0.5 opacity-0 transition-all duration-200 group-hover:opacity-60 hover:!opacity-100 active:cursor-grabbing"
         {...attributes}
         {...listeners}
       >
         <GripVertical className="text-muted-foreground size-3.5" />
       </button>
 
-      {/* Favorite star */}
       <button
         type="button"
         data-fav-btn
@@ -109,8 +98,8 @@ export const BoardCard = ({ ticket, labelMap, onCardClick }: BoardCardProps) => 
         className={cn(
           "absolute top-2 right-2 rounded-md p-0.5 transition-all duration-200",
           isFavorited
-            ? "opacity-100 scale-100"
-            : "opacity-0 scale-90 group-hover:opacity-60 group-hover:scale-100 hover:!opacity-100",
+            ? "scale-100 opacity-100"
+            : "scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-60 hover:!opacity-100",
           toggleFavorite.isPending && "pointer-events-none animate-pulse",
         )}
       >
@@ -123,15 +112,12 @@ export const BoardCard = ({ ticket, labelMap, onCardClick }: BoardCardProps) => 
       </button>
 
       <div className="space-y-2 pl-3">
-        {/* Priority */}
         <div className="flex items-center gap-2">
           <PriorityIcon priority={ticket.priority} className="size-3.5" />
         </div>
 
-        {/* Title */}
         <p className="line-clamp-2 text-sm leading-snug font-medium">{ticket.title}</p>
 
-        {/* Colorful label pills */}
         {ticket.labels.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {ticket.labels.map((labelId) => {
@@ -157,7 +143,6 @@ export const BoardCard = ({ ticket, labelMap, onCardClick }: BoardCardProps) => 
           </div>
         )}
 
-        {/* Bottom row: due date */}
         <div className="flex items-center justify-between">
           {ticket.due_date ? (
             <span className="text-muted-foreground flex items-center gap-1 text-[11px]">

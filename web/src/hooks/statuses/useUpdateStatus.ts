@@ -3,16 +3,15 @@ import { axiosInstance } from "@/lib/axios";
 import { API_ROUTES, QUERY_KEYS } from "./constants";
 import type { StatusDefinition } from "@/types";
 
+interface UpdateStatusParams {
+  id: string;
+  data: Partial<Pick<StatusDefinition, "name" | "color">>;
+}
+
 export const useUpdateStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: Partial<Pick<StatusDefinition, "name" | "color">>;
-    }) => {
+    mutationFn: async ({ id, data }: UpdateStatusParams) => {
       const response = await axiosInstance.patch<StatusDefinition>(API_ROUTES.status(id), data);
       return response.data;
     },

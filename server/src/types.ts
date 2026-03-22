@@ -19,7 +19,6 @@ export interface WorkspaceRequest extends AuthedRequest {
 
 type Context = { userId: string; workspaceId: string };
 
-// With schema: returns parsed data + context
 export const validated: {
   <T extends ZodSchema>(req: Request, schema: T): z.infer<T> & Context;
   (req: Request): Context;

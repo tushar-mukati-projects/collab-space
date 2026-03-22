@@ -60,14 +60,12 @@ export const TopNav = () => {
 
   return (
     <>
-      {/* Top bar: always on mobile; on desktop only when on a ticket page */}
       <header
         className={cn(
-          "border-border bg-background/80 backdrop-blur-sm flex h-12 shrink-0 items-center gap-2 border-b px-3",
+          "border-border bg-background/80 flex h-12 shrink-0 items-center gap-2 border-b px-3 backdrop-blur-sm",
           !ticketId && "sm:hidden",
         )}
       >
-        {/* Mobile hamburger */}
         <Button
           variant="ghost"
           size="icon-sm"
@@ -78,10 +76,11 @@ export const TopNav = () => {
           <Menu className="size-5" />
         </Button>
 
-        {/* Breadcrumb — ticket pages only */}
         {ticketId && (
           <div className="text-muted-foreground ml-auto flex min-w-0 flex-1 items-center gap-1 text-sm sm:ml-0">
-            <span className="hidden shrink-0 opacity-70 sm:inline">{workspace?.name ?? "CollabSpace"}</span>
+            <span className="hidden shrink-0 opacity-70 sm:inline">
+              {workspace?.name ?? "CollabSpace"}
+            </span>
             <ChevronRight className="hidden size-3 shrink-0 opacity-40 sm:block" />
             <span className="hidden shrink-0 opacity-70 sm:inline">ticket</span>
             <ChevronRight className="hidden size-3 shrink-0 opacity-40 sm:block" />
@@ -92,7 +91,7 @@ export const TopNav = () => {
                 onChange={(e) => handleTitleChange(e.target.value)}
                 onBlur={handleTitleBlur}
                 onKeyDown={handleTitleKeyDown}
-                className="text-foreground min-w-0 flex-1 rounded-lg border border-primary/40 bg-primary/5 px-2 py-0.5 font-medium outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="text-foreground border-primary/40 bg-primary/5 focus:border-primary focus:ring-primary/20 min-w-0 flex-1 rounded-lg border px-2 py-0.5 font-medium transition-all outline-none focus:ring-2"
                 autoFocus
               />
             ) : (
@@ -106,12 +105,11 @@ export const TopNav = () => {
               </button>
             )}
 
-            {/* Save status indicator */}
             {updateTicketMutation.isPending && (
-              <Loader2 className="ml-1 size-3.5 shrink-0 animate-spin text-primary" />
+              <Loader2 className="text-primary ml-1 size-3.5 shrink-0 animate-spin" />
             )}
             {updateTicketMutation.isSuccess && !updateTicketMutation.isPending && (
-              <span className="ml-1 flex items-center gap-0.5 text-xs text-emerald-500 animate-fade-in">
+              <span className="animate-fade-in ml-1 flex items-center gap-0.5 text-xs text-emerald-500">
                 <Check className="size-3" />
                 Saved
               </span>
@@ -120,7 +118,6 @@ export const TopNav = () => {
         )}
       </header>
 
-      {/* Mobile nav drawer */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" showCloseButton={false} className="w-64 p-0">
           <LeftNav onClose={() => setMobileOpen(false)} />

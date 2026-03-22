@@ -1,19 +1,11 @@
-FROM oven/bun:1 AS base
+FROM oven/bun:1
 WORKDIR /app
 
-FROM base AS deps
 COPY package.json bun.lock ./
-COPY prisma ./prisma/
-COPY prisma.config.ts ./
 RUN bun install --frozen-lockfile
-RUN bun prisma generate
 
-FROM base AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN bun prisma generate
 
 EXPOSE 4000
 ENV PORT=4000

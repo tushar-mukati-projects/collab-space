@@ -35,7 +35,7 @@ export const ProfileSettings = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
+    <div className="animate-fade-in flex flex-col gap-6">
       <Card>
         <CardHeader>
           <CardTitle>Profile Information</CardTitle>
@@ -43,7 +43,7 @@ export const ProfileSettings = () => {
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <div className="flex items-center gap-4">
-            <Avatar size="lg" className="size-16 ring-2 ring-background">
+            <Avatar size="lg" className="ring-background size-16 ring-2">
               <AvatarImage src={user?.avatar} alt={user?.name ?? "User"} />
               <AvatarFallback className="text-lg">
                 {user?.name

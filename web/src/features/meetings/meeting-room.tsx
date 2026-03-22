@@ -50,7 +50,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
   const [elapsedSeconds, setElapsedSeconds] = React.useState(0);
   const [mediaError, setMediaError] = React.useState<string | null>(null);
 
-  // Media refs
   const localStreamRef = React.useRef<MediaStream | null>(null);
   const screenStreamRef = React.useRef<MediaStream | null>(null);
   const localVideoElRef = React.useRef<HTMLVideoElement | null>(null);
@@ -67,7 +66,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
     if (node && screenStreamRef.current) node.srcObject = screenStreamRef.current;
   };
 
-  // Duration timer
   React.useEffect(() => {
     const interval = setInterval(() => {
       setElapsedSeconds((prev) => prev + 1);
@@ -75,12 +73,10 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-scroll chat
   React.useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
-  // Auto-start camera/mic on mount
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -107,8 +103,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
       screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     };
   }, []);
-
-  // -- Media controls --
 
   const toggleCamera = async () => {
     if (isCameraOn) {
@@ -187,14 +181,11 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
           setIsScreenSharing(false);
         };
         setIsScreenSharing(true);
-      } catch {
-        // User cancelled
-      }
+      } catch {}
     }
   };
 
   const handleLeave = () => {
-    // Stop all media tracks
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     localStreamRef.current = null;
@@ -252,7 +243,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  // Determine grid layout — screen share gets priority display
   const showScreenShareMain = isScreenSharing;
   const participantCount = participants.length;
   const gridCols = showScreenShareMain
@@ -265,7 +255,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
 
   return (
     <div className="flex h-full flex-col" style={{ background: "#111" }}>
-      {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
           <Button
@@ -285,7 +274,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Recording indicator */}
           {isRecording && (
             <div className="flex items-center gap-1.5 rounded-full bg-red-500/20 px-2.5 py-1">
               <span className="relative flex size-2">
@@ -296,14 +284,12 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
             </div>
           )}
 
-          {/* Media error indicator */}
           {mediaError && (
             <div className="max-w-xs rounded-full bg-amber-500/20 px-3 py-1">
               <span className="truncate text-xs text-amber-400">{mediaError}</span>
             </div>
           )}
 
-          {/* Duration */}
           <div className="rounded-full bg-zinc-800 px-3 py-1">
             <span className="font-mono text-xs text-zinc-300">
               {formatDuration(elapsedSeconds)}
@@ -312,14 +298,10 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
         </div>
       </div>
 
-      {/* Main content area */}
       <div className="flex flex-1 gap-0 overflow-hidden">
-        {/* Video grid */}
         <div className={cn("flex-1 p-3 transition-all", sidePanel ? "pr-0" : "")}>
           {showScreenShareMain ? (
-            // Screen share layout: screen share takes main area, participants in strip
             <div className="flex h-full flex-col gap-2">
-              {/* Screen share — main */}
               <div className="relative flex-1 overflow-hidden rounded-xl bg-zinc-900 ring-2 ring-indigo-500/60">
                 <video
                   ref={screenVideoRef}
@@ -331,9 +313,7 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
                   <span className="text-xs text-zinc-200">Your screen</span>
                 </div>
               </div>
-              {/* Participant strip */}
               <div className="flex h-28 shrink-0 gap-2 overflow-x-auto">
-                {/* Self view */}
                 <div className="relative flex w-40 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-900 ring-2 ring-indigo-500/60">
                   {isCameraOn ? (
                     <video
@@ -360,7 +340,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
                     </div>
                   )}
                 </div>
-                {/* Other participants */}
                 {participants
                   .filter((u) => u.id !== currentUserId)
                   .map((user) => (
@@ -385,7 +364,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
               </div>
             </div>
           ) : (
-            // Normal grid layout
             <div
               className={cn(
                 "grid h-full gap-2",
@@ -404,7 +382,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
                       "bg-zinc-900",
                     )}
                   >
-                    {/* Real video for current user when camera is on */}
                     {isCurrentUser && isCameraOn ? (
                       <video
                         ref={localVideoRef}
@@ -414,7 +391,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
                         className="size-full -scale-x-100 object-cover"
                       />
                     ) : (
-                      /* Avatar placeholder when camera is off */
                       <div className="flex flex-col items-center gap-3">
                         <Avatar size="lg" className="size-16 ring-0 after:ring-0">
                           <AvatarImage src={user.avatar} alt={user.name} />
@@ -434,7 +410,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
                       </div>
                     )}
 
-                    {/* Name label overlay */}
                     <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-1 backdrop-blur-sm">
                       <span className="text-xs text-zinc-200">
                         {isCurrentUser ? "You" : user.name.split(" ")[0]}
@@ -442,7 +417,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
                       {isCurrentUser && !isMicOn && <MicOff className="size-3 text-red-400" />}
                     </div>
 
-                    {/* Pin indicator for current user */}
                     {isCurrentUser && (
                       <div className="absolute top-2 right-2">
                         <Badge className="bg-indigo-500/20 px-1.5 py-0 text-[10px] text-indigo-300">
@@ -457,10 +431,8 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
           )}
         </div>
 
-        {/* Side panel */}
         {sidePanel && (
           <div className="flex w-80 shrink-0 flex-col border-l border-zinc-800 bg-zinc-900/80">
-            {/* Panel header */}
             <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
               <span className="text-sm font-medium text-white">
                 {sidePanel === "chat" ? "In-call Messages" : "Participants"}
@@ -477,7 +449,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
 
             {sidePanel === "chat" && (
               <div className="flex flex-1 flex-col overflow-hidden">
-                {/* Messages */}
                 <ScrollArea className="flex-1 p-3">
                   <div className="flex flex-col gap-3">
                     {chatMessages.length === 0 && (
@@ -537,7 +508,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
                   </div>
                 </ScrollArea>
 
-                {/* Chat input */}
                 <form onSubmit={handleSendMessage} className="border-t border-zinc-800 p-3">
                   <div className="flex gap-2">
                     <Input
@@ -623,9 +593,7 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
         )}
       </div>
 
-      {/* Bottom control bar */}
       <div className="flex items-center justify-center gap-2 border-t border-zinc-800 bg-zinc-900/80 px-4 py-3">
-        {/* Mic toggle */}
         <Button
           variant="ghost"
           size="icon-lg"
@@ -640,7 +608,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
           {isMicOn ? <Mic className="size-5" /> : <MicOff className="size-5" />}
         </Button>
 
-        {/* Camera toggle */}
         <Button
           variant="ghost"
           size="icon-lg"
@@ -655,7 +622,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
           {isCameraOn ? <Camera className="size-5" /> : <CameraOff className="size-5" />}
         </Button>
 
-        {/* Screen share */}
         <Button
           variant="ghost"
           size="icon-lg"
@@ -672,7 +638,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
 
         <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-700" />
 
-        {/* Chat toggle */}
         <Button
           variant="ghost"
           size="icon-lg"
@@ -692,7 +657,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
           )}
         </Button>
 
-        {/* Participants toggle */}
         <Button
           variant="ghost"
           size="icon-lg"
@@ -709,7 +673,6 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
 
         <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-700" />
 
-        {/* Leave call */}
         <Button
           variant="ghost"
           size="icon-lg"

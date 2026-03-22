@@ -36,7 +36,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
   useKeyboardShortcuts();
 
   useEffect(() => {
-    if (appearance?.theme) setTheme(resolveTheme(appearance.theme));
+    if (appearance?.theme) setTheme(resolveTheme(appearance.theme as "light" | "dark" | "system"));
   }, [appearance?.theme, setTheme]);
 
   useEffect(() => {

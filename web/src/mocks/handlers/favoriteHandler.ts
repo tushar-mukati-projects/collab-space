@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockFavorites } from "../data/favorites";
+import { _tickets } from "../store";
 import type { Favorite } from "@/types";
 
 const _favorites: Favorite[] = structuredClone(mockFavorites);
@@ -25,11 +26,12 @@ export const favoriteHandlers = [
       return HttpResponse.json({ action: "removed", id: removed.id });
     }
 
+    const ticket = _tickets.find((t) => t.id === ticket_id);
     const favorite: Favorite = {
       id: generateId("fav"),
       ticket_id,
-      title: "Ticket",
-      status: "todo",
+      title: ticket?.title ?? "Ticket",
+      status: ticket?.status ?? "todo",
       created_at: new Date().toISOString(),
     };
     _favorites.push(favorite);

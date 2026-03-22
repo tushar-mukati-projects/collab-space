@@ -36,13 +36,11 @@ const _appearancePrefs: AppearancePreferences = {
 };
 
 export const settingsHandlers = [
-  // GET /api/settings/profile
   http.get("/api/settings/profile", async () => {
     await delay(200);
     return HttpResponse.json(_currentUser);
   }),
 
-  // PATCH /api/settings/profile
   http.patch("/api/settings/profile", async ({ request }) => {
     await delay(300);
     const updates = (await request.json()) as Partial<User>;
@@ -51,13 +49,11 @@ export const settingsHandlers = [
     return HttpResponse.json(_currentUser);
   }),
 
-  // GET /api/settings/workspace
   http.get("/api/settings/workspace", async () => {
     await delay(200);
     return HttpResponse.json(_workspace);
   }),
 
-  // PATCH /api/settings/workspace
   http.patch("/api/settings/workspace", async ({ request }) => {
     await delay(300);
     const updates = (await request.json()) as Partial<Workspace>;
@@ -65,13 +61,11 @@ export const settingsHandlers = [
     return HttpResponse.json(_workspace);
   }),
 
-  // GET /api/settings/notifications
   http.get("/api/settings/notifications", async () => {
     await delay(200);
     return HttpResponse.json(_notificationPrefs);
   }),
 
-  // PATCH /api/settings/notifications
   http.patch("/api/settings/notifications", async ({ request }) => {
     await delay(300);
     const updates = (await request.json()) as Partial<NotificationPreferences>;
@@ -79,17 +73,20 @@ export const settingsHandlers = [
     return HttpResponse.json(_notificationPrefs);
   }),
 
-  // GET /api/settings/appearance
   http.get("/api/settings/appearance", async () => {
     await delay(200);
     return HttpResponse.json(_appearancePrefs);
   }),
 
-  // PATCH /api/settings/appearance
   http.patch("/api/settings/appearance", async ({ request }) => {
     await delay(300);
     const updates = (await request.json()) as Partial<AppearancePreferences>;
     Object.assign(_appearancePrefs, updates);
     return HttpResponse.json(_appearancePrefs);
+  }),
+
+  http.post("/api/settings/test-email", async () => {
+    await delay(500);
+    return HttpResponse.json({ success: true, sent_to: _currentUser.email });
   }),
 ];

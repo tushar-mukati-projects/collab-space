@@ -6,8 +6,6 @@ import {
   deserializeParentType,
 } from "../utils.js";
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
 export interface TicketListFilters {
   assignees?: string[];
   created_by?: string[];
@@ -44,8 +42,6 @@ export interface UpdateTicketData {
   parent_id?: string;
   parent_type?: string | null;
 }
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 const serializeTicketFull = (ticket: {
   id: string;
@@ -91,8 +87,6 @@ const fullTicketInclude = {
   labels: { select: { id: true } },
   comments: { select: { id: true } },
 } as const;
-
-// ─── Service functions ──────────────────────────────────────────────────────
 
 export const listTickets = async (workspaceId: string, filters: TicketListFilters) => {
   const where: Record<string, unknown> = {
@@ -144,7 +138,6 @@ export const listTickets = async (workspaceId: string, filters: TicketListFilter
     orderBy: { created_at: "desc" },
   });
 
-  // Count sub-tickets for each ticket (parent_type = "ticket", parent_id = ticket.id)
   const ticketIds = tickets.map((t: any) => t.id);
   const subCounts =
     ticketIds.length > 0
@@ -181,7 +174,6 @@ export const getTicket = async (id: string, workspaceId: string) => {
     return null;
   }
 
-  // Fetch sub-ticket IDs manually (no self-referential relation)
   const subTickets = await prisma.ticket.findMany({
     where: { parent_id: id, parent_type: "ticket" },
     select: { id: true },
@@ -194,7 +186,6 @@ export const getTicket = async (id: string, workspaceId: string) => {
 };
 
 export const createTicket = async (data: CreateTicketData, userId: string, workspaceId: string) => {
-  // Resolve parent_id and parent_type
   const resolvedParentId = data.parent_id ?? null;
   const resolvedParentType = data.parent_type ? deserializeParentType(data.parent_type) : null;
 
@@ -219,7 +210,6 @@ export const createTicket = async (data: CreateTicketData, userId: string, works
     include: fullTicketInclude,
   });
 
-  // Create activity record
   await prisma.activity.create({
     data: {
       type: "ticket_created",
@@ -243,7 +233,6 @@ export const updateTicket = async (
     return null;
   }
 
-  // Build update data — only include fields that are present
   const updateData: Record<string, unknown> = {};
 
   if (data.title !== undefined) updateData.title = data.title;
@@ -270,7 +259,6 @@ export const updateTicket = async (
     include: fullTicketInclude,
   });
 
-  // If status changed, create activity
   if (data.status !== undefined && deserializeStatus(data.status) !== existing.status) {
     await prisma.activity.create({
       data: {
@@ -300,7 +288,6 @@ export const deleteTicket = async (id: string, workspaceId: string) => {
 };
 
 export const listComments = async (ticketId: string, workspaceId: string) => {
-  // Verify ticket exists and belongs to this workspace
   const ticket = await prisma.ticket.findUnique({
     where: { id: ticketId },
     select: { workspace_id: true },
@@ -330,7 +317,6 @@ export const createComment = async (
   authorId: string,
   workspaceId: string,
 ) => {
-  // Verify ticket exists and belongs to this workspace
   const ticket = await prisma.ticket.findUnique({
     where: { id: ticketId },
     select: { workspace_id: true },
@@ -348,7 +334,6 @@ export const createComment = async (
     },
   });
 
-  // Create activity record
   await prisma.activity.create({
     data: {
       type: "comment_added",
@@ -368,7 +353,6 @@ export const createComment = async (
 };
 
 export const listActivities = async (ticketId: string, workspaceId: string) => {
-  // Verify ticket exists and belongs to this workspace
   const ticket = await prisma.ticket.findUnique({
     where: { id: ticketId },
     select: { workspace_id: true },

@@ -57,17 +57,14 @@ const StatusBadge = ({ status }: { status: Meeting["status"] }) => {
   );
 };
 
-const MeetingCard = ({
-  meeting,
-  users,
-  onJoin,
-  index,
-}: {
+interface MeetingCardProps {
   meeting: Meeting;
   users: User[];
   onJoin: () => void;
   index: number;
-}) => {
+}
+
+const MeetingCard = ({ meeting, users, onJoin, index }: MeetingCardProps) => {
   const participants = meeting.participants
     .map((id) => users.find((u) => u.id === id))
     .filter(Boolean) as User[];
@@ -77,7 +74,7 @@ const MeetingCard = ({
 
   return (
     <div
-      className="group border-border bg-card hover:bg-accent/30 flex items-center justify-between rounded-xl border p-4 transition-all duration-200 hover:shadow-sm hover:-translate-y-0.5 animate-fade-in"
+      className="group border-border bg-card hover:bg-accent/30 animate-fade-in flex items-center justify-between rounded-xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <div className="flex flex-1 items-center gap-4">
@@ -145,8 +142,7 @@ export const MeetingList = ({
   return (
     <div className="h-full overflow-y-auto">
       <div className="mx-auto max-w-6xl p-4 sm:p-6">
-        {/* Header */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 animate-fade-in">
+        <div className="animate-fade-in mb-6 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold tracking-tight">Meetings</h1>
             <span className="bg-muted text-muted-foreground rounded-lg px-2 py-0.5 text-xs font-medium">
@@ -159,7 +155,6 @@ export const MeetingList = ({
           </Button>
         </div>
 
-        {/* Upcoming */}
         {upcomingMeetings.length > 0 && (
           <div className="mb-8">
             <h3 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
@@ -179,7 +174,6 @@ export const MeetingList = ({
           </div>
         )}
 
-        {/* Past */}
         {pastMeetings.length > 0 && (
           <div>
             <h3 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
@@ -200,7 +194,7 @@ export const MeetingList = ({
         )}
 
         {meetings.length === 0 && (
-          <div className="flex h-64 flex-col items-center justify-center gap-3 text-center animate-fade-in">
+          <div className="animate-fade-in flex h-64 flex-col items-center justify-center gap-3 text-center">
             <div className="bg-muted flex size-12 items-center justify-center rounded-full">
               <Video className="text-muted-foreground size-6" />
             </div>

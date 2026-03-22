@@ -3,13 +3,11 @@ import { _boards, _tickets, recalculateBoardCounts } from "../store";
 import type { BoardSummary, MoveTicketInput, CreateBoardInput } from "@/types";
 
 export const boardHandlers = [
-  // GET /api/boards — returns board summaries
   http.get("/api/boards", async () => {
     await delay(300);
     return HttpResponse.json(_boards);
   }),
 
-  // GET /api/boards/:id — returns board summary (no tickets; fetch via GET /api/tickets?parent_id=id&parent_type=board)
   http.get("/api/boards/:id", async ({ params }) => {
     await delay(200);
     const board = _boards.find((b) => b.id === params.id);
@@ -17,7 +15,6 @@ export const boardHandlers = [
     return HttpResponse.json(board);
   }),
 
-  // POST /api/boards — create a new board
   http.post("/api/boards", async ({ request }) => {
     await delay(300);
     const input = (await request.json()) as CreateBoardInput;
@@ -33,7 +30,6 @@ export const boardHandlers = [
     return HttpResponse.json(newBoard, { status: 201 });
   }),
 
-  // PATCH /api/boards/move-ticket — update a ticket's status
   http.patch("/api/boards/move-ticket", async ({ request }) => {
     await delay(200);
     const input = (await request.json()) as MoveTicketInput;
@@ -44,7 +40,6 @@ export const boardHandlers = [
     ticket.status = input.to_status;
     ticket.updated_at = new Date().toISOString();
 
-    // Recalculate counts for the board
     if (ticket.parent_type === "board" && ticket.parent_id) {
       recalculateBoardCounts(ticket.parent_id);
     }
@@ -52,5 +47,17 @@ export const boardHandlers = [
     const boardId = ticket.parent_type === "board" ? ticket.parent_id : null;
     const board = _boards.find((b) => b.id === boardId);
     return HttpResponse.json(board ?? { success: true });
+  }),
+
+  http.delete("/api/boards/:id", async ({ params }) => {
+    await delay(200);
+    const idx = _boards.findIndex((b) => b.id === params.id);
+    if (idx === -1) return new HttpResponse(null, { status: 404 });
+    _boards.splice(idx, 1);
+    const filtered = _tickets.filter(
+      (t) => !(t.parent_type === "board" && t.parent_id === params.id),
+    );
+    _tickets.splice(0, _tickets.length, ...filtered);
+    return HttpResponse.json({ success: true });
   }),
 ];

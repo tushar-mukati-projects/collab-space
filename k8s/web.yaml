@@ -15,8 +15,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: collabspace/web:latest
-          imagePullPolicy: IfNotPresent
+          image: tusharmukati2368/collabspace-web:latest
           ports:
             - containerPort: 3000
           env:

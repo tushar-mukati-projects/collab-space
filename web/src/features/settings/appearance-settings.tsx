@@ -79,14 +79,14 @@ const fontSizeOptions: {
 ];
 
 const AppearanceSkeleton = () => (
-  <div className="flex flex-col gap-6 animate-fade-in">
+  <div className="animate-fade-in flex flex-col gap-6">
     {[1, 2, 3].map((i) => (
-      <div key={i} className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <div className="skeleton-shimmer h-5 w-20 rounded bg-muted" />
-        <div className="skeleton-shimmer h-3 w-48 rounded bg-muted" />
+      <div key={i} className="border-border bg-card space-y-4 rounded-xl border p-6">
+        <div className="skeleton-shimmer bg-muted h-5 w-20 rounded" />
+        <div className="skeleton-shimmer bg-muted h-3 w-48 rounded" />
         <div className="grid gap-3 sm:grid-cols-3">
           {[1, 2, 3].map((j) => (
-            <div key={j} className="skeleton-shimmer h-32 rounded-xl bg-muted" />
+            <div key={j} className="skeleton-shimmer bg-muted h-32 rounded-xl" />
           ))}
         </div>
       </div>
@@ -104,36 +104,42 @@ export const AppearanceSettings = () => {
   }
 
   const handleThemeChange = (theme: Theme) => {
-    updateAppearanceMutation.mutate({ theme }, {
-      onSuccess: () => toast.success(`Theme set to ${theme}`),
-    });
-    // Sync with UI store
+    updateAppearanceMutation.mutate(
+      { theme },
+      {
+        onSuccess: () => toast.success(`Theme set to ${theme}`),
+      },
+    );
     if (theme === "dark") {
       setStoreTheme("dark");
     } else if (theme === "light") {
       setStoreTheme("light");
     } else {
-      // system: use media query
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       setStoreTheme(prefersDark ? "dark" : "light");
     }
   };
 
   const handleAccentChange = (color: string) => {
-    updateAppearanceMutation.mutate({ accent_color: color }, {
-      onSuccess: () => toast.success(`Accent color updated`),
-    });
+    updateAppearanceMutation.mutate(
+      { accent_color: color },
+      {
+        onSuccess: () => toast.success(`Accent color updated`),
+      },
+    );
   };
 
   const handleFontSizeChange = (fontSize: FontSize) => {
-    updateAppearanceMutation.mutate({ font_size: fontSize }, {
-      onSuccess: () => toast.success(`Font size set to ${fontSize}`),
-    });
+    updateAppearanceMutation.mutate(
+      { font_size: fontSize },
+      {
+        onSuccess: () => toast.success(`Font size set to ${fontSize}`),
+      },
+    );
   };
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
-      {/* Theme */}
+    <div className="animate-fade-in flex flex-col gap-6">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -142,7 +148,7 @@ export const AppearanceSettings = () => {
               <CardDescription>Choose your preferred color scheme.</CardDescription>
             </div>
             {updateAppearanceMutation.isPending && (
-              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+              <Loader2 className="text-muted-foreground size-4 animate-spin" />
             )}
           </div>
         </CardHeader>
@@ -163,11 +169,10 @@ export const AppearanceSettings = () => {
                   )}
                 >
                   {isSelected && (
-                    <div className="bg-primary absolute top-2 right-2 flex size-5 items-center justify-center rounded-full animate-fade-in-scale">
-                      <Check className="text-white size-3" />
+                    <div className="bg-primary animate-fade-in-scale absolute top-2 right-2 flex size-5 items-center justify-center rounded-full">
+                      <Check className="size-3 text-white" />
                     </div>
                   )}
-                  {/* Preview */}
                   <div
                     className={cn(
                       "flex h-20 w-full items-end overflow-hidden rounded-lg border",
@@ -200,7 +205,7 @@ export const AppearanceSettings = () => {
                           option.value === "dark" ? "bg-zinc-600" : "bg-zinc-300",
                         )}
                       />
-                      <div className="ml-auto h-1.5 w-3 rounded-full bg-primary" />
+                      <div className="bg-primary ml-auto h-1.5 w-3 rounded-full" />
                     </div>
                   </div>
                   <div className="flex flex-col items-center gap-0.5">
@@ -217,7 +222,6 @@ export const AppearanceSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Accent color */}
       <Card>
         <CardHeader>
           <CardTitle>Accent Color</CardTitle>
@@ -246,7 +250,7 @@ export const AppearanceSettings = () => {
                       color.class,
                     )}
                   >
-                    {isSelected && <Check className="size-4 text-white animate-fade-in-scale" />}
+                    {isSelected && <Check className="animate-fade-in-scale size-4 text-white" />}
                   </div>
                   <span className="text-xs font-medium">{color.name}</span>
                 </button>
@@ -256,7 +260,6 @@ export const AppearanceSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Font size */}
       <Card>
         <CardHeader>
           <CardTitle>Font Size</CardTitle>
@@ -278,11 +281,10 @@ export const AppearanceSettings = () => {
                   )}
                 >
                   {isSelected && (
-                    <div className="bg-primary absolute top-2 right-2 flex size-5 items-center justify-center rounded-full animate-fade-in-scale">
-                      <Check className="text-white size-3" />
+                    <div className="bg-primary animate-fade-in-scale absolute top-2 right-2 flex size-5 items-center justify-center rounded-full">
+                      <Check className="size-3 text-white" />
                     </div>
                   )}
-                  {/* Preview text */}
                   <div
                     className={cn(
                       "bg-muted/50 flex h-12 w-full items-center justify-center rounded-lg",

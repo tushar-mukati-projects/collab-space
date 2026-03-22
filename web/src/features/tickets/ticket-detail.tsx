@@ -40,10 +40,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useFetchFavorites, useToggleFavorite } from "@/hooks/favorites";
 import type { Ticket, TicketStatus, TicketPriority, User, Label, Comment, Activity } from "@/types";
 
-// ---------------------------------------------------------------------------
-// Status / priority options
-// ---------------------------------------------------------------------------
-
 const statusOptions: {
   value: TicketStatus;
   label: string;
@@ -70,20 +66,12 @@ const priorityOptions: {
   { value: "none", label: "None", icon: Circle, color: "text-muted-foreground" },
 ];
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 const getUserInitials = (name: string) => {
   return name
     .split(" ")
     .map((n) => n[0])
     .join("");
 };
-
-// ---------------------------------------------------------------------------
-// Main component
-// ---------------------------------------------------------------------------
 
 interface TicketDetailProps {
   ticket: Ticket;
@@ -116,7 +104,6 @@ export const TicketDetail = ({
   const [commentText, setCommentText] = React.useState("");
   const [labelsOpen, setLabelsOpen] = React.useState(false);
 
-  // Sync when ticket changes
   React.useEffect(() => {
     setTitleValue(ticket.title);
     setDescriptionValue(ticket.description);
@@ -134,7 +121,6 @@ export const TicketDetail = ({
     return map;
   }, [labels]);
 
-  // Merge comments and activities into timeline
   const timeline = React.useMemo(() => {
     const items: {
       id: string;
@@ -187,7 +173,6 @@ export const TicketDetail = ({
 
   return (
     <div className="border-border bg-background flex h-full flex-col border-l">
-      {/* Header */}
       <div className="border-border flex items-center justify-between border-b px-4 py-3">
         <span className="text-muted-foreground font-mono text-xs">{ticket.id}</span>
         <div className="flex items-center gap-1">
@@ -211,7 +196,6 @@ export const TicketDetail = ({
 
       <ScrollArea className="flex-1">
         <div className="space-y-6 p-4">
-          {/* Title */}
           {editingTitle ? (
             <Input
               autoFocus
@@ -237,9 +221,7 @@ export const TicketDetail = ({
             </button>
           )}
 
-          {/* Properties grid */}
           <div className="grid grid-cols-[7rem_1fr] gap-x-2 gap-y-3 text-sm">
-            {/* Status */}
             <span className="text-muted-foreground flex items-center gap-1.5">
               <CircleDot className="size-3.5" />
               Status
@@ -264,7 +246,6 @@ export const TicketDetail = ({
               </SelectContent>
             </Select>
 
-            {/* Priority */}
             <span className="text-muted-foreground flex items-center gap-1.5">
               <AlertCircle className="size-3.5" />
               Priority
@@ -289,7 +270,6 @@ export const TicketDetail = ({
               </SelectContent>
             </Select>
 
-            {/* Assignee */}
             <span className="text-muted-foreground flex items-center gap-1.5">
               <UserIcon className="size-3.5" />
               Assignee
@@ -338,7 +318,6 @@ export const TicketDetail = ({
               </SelectContent>
             </Select>
 
-            {/* Labels */}
             <span className="text-muted-foreground flex items-center gap-1.5">
               <Tag className="size-3.5" />
               Labels
@@ -394,7 +373,6 @@ export const TicketDetail = ({
               </PopoverContent>
             </Popover>
 
-            {/* Due date */}
             <span className="text-muted-foreground flex items-center gap-1.5">
               <CalendarIcon className="size-3.5" />
               Due date
@@ -428,7 +406,6 @@ export const TicketDetail = ({
 
           <Separator />
 
-          {/* Description */}
           <div className="space-y-2">
             <h4 className="text-muted-foreground text-sm font-medium">Description</h4>
             <Textarea
@@ -442,7 +419,6 @@ export const TicketDetail = ({
 
           <Separator />
 
-          {/* Activity / Comments */}
           <div className="space-y-4">
             <h4 className="text-muted-foreground text-sm font-medium">Activity</h4>
 
@@ -480,7 +456,6 @@ export const TicketDetail = ({
                   );
                 }
 
-                // Activity item
                 const activity = item.data as Activity;
                 const actor = userMap.get(activity.user_id);
                 return (
@@ -507,7 +482,6 @@ export const TicketDetail = ({
               })}
             </div>
 
-            {/* Add comment */}
             <div className="flex gap-2 pt-2">
               <Input
                 placeholder="Add a comment..."

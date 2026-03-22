@@ -1,8 +1,6 @@
 import { prisma } from "../db.js";
 import { serializeStatus, deserializeStatus } from "../utils.js";
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
 interface BoardRow {
   id: string;
   name: string;
@@ -58,8 +56,6 @@ const serializeBoard = (
     updated_at: board.updated_at,
   };
 };
-
-// ─── Service functions ──────────────────────────────────────────────────────
 
 export const listBoards = async (workspaceId: string) => {
   const boards = await prisma.board.findMany({
@@ -133,12 +129,10 @@ export const moveTicket = async (
     },
   });
 
-  // Recompute board ticket_counts — find board via parent_id (walk up for sub-tickets)
   let boardId: string | null = null;
   if (ticket.parent_type === "board" && ticket.parent_id) {
     boardId = ticket.parent_id;
   } else if (ticket.parent_type === "ticket" && ticket.parent_id) {
-    // Walk up to find the board
     let current = ticket;
     while (current.parent_type === "ticket" && current.parent_id) {
       const parent = await prisma.ticket.findUnique({

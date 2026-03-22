@@ -36,7 +36,6 @@ interface ScheduleMeetingDialogProps {
   users: User[];
 }
 
-// Generate time slots in 30-min intervals
 const generateTimeSlots = (): { value: string; label: string }[] => {
   const slots: { value: string; label: string }[] = [];
   for (let h = 0; h < 24; h++) {
@@ -110,9 +109,7 @@ export const ScheduleMeetingDialog = ({
 
       resetForm();
       onOpenChange(false);
-    } catch {
-      // mutation error handled by React Query
-    }
+    } catch {}
   };
 
   return (
@@ -124,7 +121,6 @@ export const ScheduleMeetingDialog = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Title */}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="meeting-title">Title</Label>
             <Input
@@ -136,7 +132,6 @@ export const ScheduleMeetingDialog = ({
             />
           </div>
 
-          {/* Description */}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="meeting-desc">Description</Label>
             <Textarea
@@ -148,7 +143,6 @@ export const ScheduleMeetingDialog = ({
             />
           </div>
 
-          {/* Date */}
           <div className="flex flex-col gap-1.5">
             <Label>Date</Label>
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
@@ -180,7 +174,6 @@ export const ScheduleMeetingDialog = ({
             </Popover>
           </div>
 
-          {/* Time pickers */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <Label>Start Time</Label>
@@ -224,10 +217,8 @@ export const ScheduleMeetingDialog = ({
             </div>
           </div>
 
-          {/* Participants */}
           <div className="flex flex-col gap-1.5">
             <Label>Participants</Label>
-            {/* Selected participants chips */}
             {selectedParticipants.length > 0 && (
               <div className="mb-1 flex flex-wrap gap-1.5">
                 {selectedParticipants.map((id) => {
@@ -257,7 +248,6 @@ export const ScheduleMeetingDialog = ({
                 })}
               </div>
             )}
-            {/* User list for selection */}
             <div className="border-input flex max-h-40 flex-col gap-1 overflow-y-auto rounded-lg border p-2">
               {users.map((user) => {
                 const isSelected = selectedParticipants.includes(user.id);

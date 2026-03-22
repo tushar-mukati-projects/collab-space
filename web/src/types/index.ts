@@ -1,9 +1,3 @@
-// ============================================================================
-// Collaborative Workspace App — Type Definitions
-// ============================================================================
-
-// --- Enums & Literal Types ---------------------------------------------------
-
 export type UserStatus = "online" | "offline" | "away";
 
 export type UserRole = "admin" | "member";
@@ -34,8 +28,6 @@ export type ActivityType =
   | "meeting_created"
   | "meeting_started"
   | "meeting_ended";
-
-// --- Core Models -------------------------------------------------------------
 
 export interface User {
   id: string;
@@ -111,7 +103,6 @@ export interface Ticket {
   workspace_id: string;
 }
 
-// Board summary (returned by GET /boards)
 export interface BoardSummary {
   id: string;
   name: string;
@@ -128,7 +119,6 @@ export interface BoardSummary {
   updated_at: string;
 }
 
-// Ticket summary (returned by GET /api/tickets)
 export interface TicketSummary {
   id: string;
   title: string;
@@ -143,7 +133,6 @@ export interface TicketSummary {
   sub_ticket_count: number;
 }
 
-// Filters for GET /api/tickets
 export interface TicketFilters {
   assignees?: string[];
   created_by?: string[];
@@ -155,10 +144,8 @@ export interface TicketFilters {
   parent_type?: TicketParentType[];
 }
 
-// Board detail — same as BoardSummary; tickets fetched separately via GET /api/tickets
 export type BoardDetail = BoardSummary;
 
-// Board column — client-side only, computed from ticket statuses
 export interface BoardColumn {
   id: string;
   name: string;
@@ -191,8 +178,6 @@ export interface Notification {
   link: string;
   actor_id: string;
 }
-
-// --- API Request / Response helpers ------------------------------------------
 
 export interface CreateTicketInput {
   title: string;
@@ -253,8 +238,6 @@ export interface CreateCommentInput {
   ticket_id: string;
 }
 
-// --- Favorites ---------------------------------------------------------------
-
 export interface Favorite {
   id: string;
   ticket_id: string;
@@ -266,8 +249,6 @@ export interface Favorite {
 export interface ToggleFavoriteInput {
   ticket_id: string;
 }
-
-// --- Invitations -------------------------------------------------------------
 
 export interface InviteToWorkspaceInput {
   email: string;
@@ -281,8 +262,6 @@ export interface WorkspaceInvitation {
   plan: WorkspacePlan;
   member_count: number;
 }
-
-// --- Push Notifications ------------------------------------------------------
 
 export interface PushSubscriptionInput {
   endpoint: string;

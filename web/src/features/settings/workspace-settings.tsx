@@ -138,7 +138,6 @@ export const WorkspaceSettings = () => {
 
   return (
     <div className="animate-fade-in flex flex-col gap-6">
-      {/* General */}
       <Card>
         <CardHeader>
           <CardTitle>General</CardTitle>
@@ -186,14 +185,12 @@ export const WorkspaceSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Members & Invitations */}
       <Card>
         <CardHeader>
           <CardTitle>People</CardTitle>
           <CardDescription>Manage workspace members and invitations.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          {/* Invite input */}
           <div className="flex flex-col gap-1.5">
             <div className="flex gap-2">
               <Input
@@ -224,7 +221,6 @@ export const WorkspaceSettings = () => {
 
           <Separator />
 
-          {/* Tabs */}
           <div className="flex gap-1">
             <button
               type="button"
@@ -252,7 +248,6 @@ export const WorkspaceSettings = () => {
             </button>
           </div>
 
-          {/* Members tab */}
           {memberTab === "members" && (
             <div className="flex flex-col gap-1">
               {workspace.members.map((member) => (
@@ -302,7 +297,6 @@ export const WorkspaceSettings = () => {
             </div>
           )}
 
-          {/* Invited tab */}
           {memberTab === "invited" && (
             <div className="flex flex-col gap-1">
               {invitedCount === 0 ? (
@@ -342,7 +336,6 @@ export const WorkspaceSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Save */}
       <div className="flex items-center justify-end gap-2">
         <Button onClick={handleSave} disabled={updateWorkspaceMutation.isPending}>
           {updateWorkspaceMutation.isPending ? (

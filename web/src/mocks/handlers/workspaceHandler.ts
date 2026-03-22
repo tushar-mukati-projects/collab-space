@@ -7,7 +7,6 @@ const generateId = (prefix: string): string => {
 };
 
 export const workspaceHandlers = [
-  // GET /api/workspace — return the first workspace (current workspace)
   http.get("/api/workspace", async () => {
     await delay(200);
     const workspace = _workspaces[0];
@@ -17,7 +16,6 @@ export const workspaceHandlers = [
     return HttpResponse.json(workspace);
   }),
 
-  // POST /api/workspaces — create a new workspace
   http.post("/api/workspaces", async ({ request }) => {
     await delay(400);
     const { name } = (await request.json()) as { name: string };
@@ -45,7 +43,6 @@ export const workspaceHandlers = [
     return HttpResponse.json(workspace, { status: 201 });
   }),
 
-  // GET /api/workspaces/invitations?email=... — get workspaces where email is invited
   http.get("/api/workspaces/invitations", async ({ request }) => {
     await delay(300);
     const url = new URL(request.url);
@@ -56,7 +53,6 @@ export const workspaceHandlers = [
       ws.invited_emails.some((e) => e.toLowerCase() === email),
     );
 
-    // Return minimal info (don't leak member data)
     return HttpResponse.json(
       invited.map((ws) => ({
         id: ws.id,
@@ -69,7 +65,6 @@ export const workspaceHandlers = [
     );
   }),
 
-  // POST /api/workspaces/:id/join — join a workspace by invitation
   http.post("/api/workspaces/:id/join", async ({ params, request }) => {
     await delay(400);
     const ws = _workspaces.find((w) => w.id === params.id);
@@ -84,13 +79,11 @@ export const workspaceHandlers = [
       return HttpResponse.json({ error: "No invitation found for this email" }, { status: 403 });
     }
 
-    // Remove from invited, add as member
     ws.invited_emails.splice(inviteIdx, 1);
 
     return HttpResponse.json(ws);
   }),
 
-  // POST /api/workspaces/:id/invite — invite an email to workspace
   http.post("/api/workspaces/:id/invite", async ({ params, request }) => {
     await delay(300);
     const ws = _workspaces.find((w) => w.id === params.id);
@@ -103,6 +96,53 @@ export const workspaceHandlers = [
       ws.invited_emails.push(email.toLowerCase());
     }
 
+    return HttpResponse.json({ success: true });
+  }),
+
+  http.post("/api/workspaces/:id/revoke-invite", async ({ params, request }) => {
+    await delay(300);
+    const ws = _workspaces.find((w) => w.id === params.id);
+    if (!ws) {
+      return HttpResponse.json({ error: "Workspace not found" }, { status: 404 });
+    }
+
+    const { email } = (await request.json()) as { email: string };
+    const idx = ws.invited_emails.findIndex((e) => e.toLowerCase() === email.toLowerCase());
+    if (idx >= 0) ws.invited_emails.splice(idx, 1);
+
+    return HttpResponse.json({ success: true });
+  }),
+
+  http.delete("/api/workspaces/:id/members/:memberId", async ({ params }) => {
+    await delay(300);
+    const ws = _workspaces.find((w) => w.id === params.id);
+    if (!ws) {
+      return HttpResponse.json({ error: "Workspace not found" }, { status: 404 });
+    }
+
+    const memberIdx = ws.members.findIndex((m) => m.id === params.memberId);
+    if (memberIdx === -1) {
+      return HttpResponse.json({ error: "Member not found" }, { status: 404 });
+    }
+
+    ws.members.splice(memberIdx, 1);
+    return HttpResponse.json({ success: true });
+  }),
+
+  http.patch("/api/workspaces/:id/members/:memberId", async ({ params, request }) => {
+    await delay(300);
+    const ws = _workspaces.find((w) => w.id === params.id);
+    if (!ws) {
+      return HttpResponse.json({ error: "Workspace not found" }, { status: 404 });
+    }
+
+    const member = ws.members.find((m) => m.id === params.memberId);
+    if (!member) {
+      return HttpResponse.json({ error: "Member not found" }, { status: 404 });
+    }
+
+    const { role } = (await request.json()) as { role: "admin" | "member" };
+    member.role = role;
     return HttpResponse.json({ success: true });
   }),
 ];

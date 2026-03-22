@@ -10,7 +10,6 @@ export const useKeyboardShortcuts = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
 
-      // Cmd+K / Ctrl+K — toggle command palette
       if (mod && e.key === "k") {
         e.preventDefault();
         toggleCommandPalette();

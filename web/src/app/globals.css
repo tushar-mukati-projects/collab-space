@@ -49,7 +49,6 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* ── Light mode — clean, warm pearl with indigo accent ─────────────────── */
 :root {
   --background: oklch(0.98 0.004 270);
   --foreground: oklch(0.14 0.015 270);
@@ -60,19 +59,19 @@
   --primary: oklch(0.49 0.24 270);
   --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.955 0.008 270);
-  --secondary-foreground: oklch(0.20 0.015 270);
+  --secondary-foreground: oklch(0.2 0.015 270);
   --muted: oklch(0.94 0.006 270);
   --muted-foreground: oklch(0.48 0.015 270);
   --accent: oklch(0.95 0.01 270);
-  --accent-foreground: oklch(0.20 0.015 270);
+  --accent-foreground: oklch(0.2 0.015 270);
   --destructive: oklch(0.55 0.22 25);
   --border: oklch(0.91 0.006 270);
   --input: oklch(0.91 0.006 270);
-  --ring: oklch(0.55 0.20 270);
-  --chart-1: oklch(0.60 0.22 270);
-  --chart-2: oklch(0.55 0.20 290);
+  --ring: oklch(0.55 0.2 270);
+  --chart-1: oklch(0.6 0.22 270);
+  --chart-2: oklch(0.55 0.2 290);
   --chart-3: oklch(0.65 0.18 200);
-  --chart-4: oklch(0.60 0.20 150);
+  --chart-4: oklch(0.6 0.2 150);
   --chart-5: oklch(0.55 0.18 30);
   --radius: 0.625rem;
   --sidebar: oklch(0.975 0.005 270);
@@ -82,10 +81,9 @@
   --sidebar-accent: oklch(0.93 0.01 270);
   --sidebar-accent-foreground: oklch(0.18 0.015 270);
   --sidebar-border: oklch(0.91 0.006 270);
-  --sidebar-ring: oklch(0.55 0.20 270);
+  --sidebar-ring: oklch(0.55 0.2 270);
 }
 
-/* ── Dark mode — deep obsidian with blue undertone ─────────────────────── */
 .dark {
   --background: oklch(0.13 0.014 270);
   --foreground: oklch(0.93 0.005 270);
@@ -93,31 +91,31 @@
   --card-foreground: oklch(0.93 0.005 270);
   --popover: oklch(0.18 0.016 270);
   --popover-foreground: oklch(0.93 0.005 270);
-  --primary: oklch(0.68 0.20 270);
+  --primary: oklch(0.68 0.2 270);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.20 0.014 270);
-  --secondary-foreground: oklch(0.90 0.005 270);
-  --muted: oklch(0.20 0.014 270);
+  --secondary: oklch(0.2 0.014 270);
+  --secondary-foreground: oklch(0.9 0.005 270);
+  --muted: oklch(0.2 0.014 270);
   --muted-foreground: oklch(0.58 0.012 270);
   --accent: oklch(0.21 0.018 270);
   --accent-foreground: oklch(0.93 0.005 270);
-  --destructive: oklch(0.65 0.20 22);
+  --destructive: oklch(0.65 0.2 22);
   --border: oklch(1 0 0 / 8%);
   --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.65 0.20 270);
-  --chart-1: oklch(0.68 0.20 270);
+  --ring: oklch(0.65 0.2 270);
+  --chart-1: oklch(0.68 0.2 270);
   --chart-2: oklch(0.62 0.18 290);
-  --chart-3: oklch(0.70 0.16 200);
+  --chart-3: oklch(0.7 0.16 200);
   --chart-4: oklch(0.65 0.18 150);
-  --chart-5: oklch(0.60 0.16 30);
+  --chart-5: oklch(0.6 0.16 30);
   --sidebar: oklch(0.11 0.016 272);
-  --sidebar-foreground: oklch(0.90 0.005 270);
-  --sidebar-primary: oklch(0.68 0.20 270);
+  --sidebar-foreground: oklch(0.9 0.005 270);
+  --sidebar-primary: oklch(0.68 0.2 270);
   --sidebar-primary-foreground: oklch(0.99 0 0);
   --sidebar-accent: oklch(0.19 0.018 270);
   --sidebar-accent-foreground: oklch(0.93 0.005 270);
   --sidebar-border: oklch(1 0 0 / 7%);
-  --sidebar-ring: oklch(0.65 0.20 270);
+  --sidebar-ring: oklch(0.65 0.2 270);
 }
 
 @layer base {
@@ -135,36 +133,65 @@
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: -0.011em;
   }
-  html.font-compact { font-size: 14px; }
-  html.font-comfortable { font-size: 18px; }
+  html.font-compact {
+    font-size: 14px;
+  }
+  html.font-comfortable {
+    font-size: 18px;
+  }
 
-  /* Smooth transitions on interactive elements */
-  button, a, input, select, textarea, [role="button"] {
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  [role="button"] {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Headings get tighter tracking */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     letter-spacing: -0.025em;
   }
 
-  /* Thin, premium scrollbar */
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: oklch(0.5 0 0 / 12%); border-radius: 100px; }
-  ::-webkit-scrollbar-thumb:hover { background: oklch(0.5 0 0 / 22%); }
-  .dark ::-webkit-scrollbar-thumb { background: oklch(1 0 0 / 8%); }
-  .dark ::-webkit-scrollbar-thumb:hover { background: oklch(1 0 0 / 16%); }
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.5 0 0 / 12%);
+    border-radius: 100px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.5 0 0 / 22%);
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: oklch(1 0 0 / 8%);
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: oklch(1 0 0 / 16%);
+  }
 
-  /* Selection */
-  ::selection { background: oklch(0.55 0.20 270 / 20%); color: inherit; }
+  ::selection {
+    background: oklch(0.55 0.2 270 / 20%);
+    color: inherit;
+  }
 }
 
-/* ─── Global progress bar ─────────────────────────────────────────────────── */
-
 @keyframes progress-indeterminate {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(400%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
 }
 
 .global-progress-bar {
@@ -179,29 +206,49 @@
 }
 
 .global-progress-bar::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   width: 25%;
-  background: linear-gradient(90deg, transparent, oklch(0.55 0.24 270), oklch(0.50 0.22 290), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(0.55 0.24 270),
+    oklch(0.5 0.22 290),
+    transparent
+  );
   animation: progress-indeterminate 1.2s ease-in-out infinite;
 }
 
-/* ─── Subtle entrance animations ──────────────────────────────────────────── */
-
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fade-in-scale {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .animate-fade-in {
@@ -213,23 +260,29 @@
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(90deg, var(--muted) 0%, oklch(0.5 0.01 270 / 8%) 50%, var(--muted) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--muted) 0%,
+    oklch(0.5 0.01 270 / 8%) 50%,
+    var(--muted) 100%
+  );
   background-size: 200% 100%;
   animation: shimmer 2s ease-in-out infinite;
 }
 
-/* ─── Inline save indicator ───────────────────────────────────────────────── */
-
 @keyframes save-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .save-indicator {
   animation: save-pulse 1.5s ease-in-out infinite;
 }
-
-/* ─── Collaboration cursors ────────────────────────────────────────────────── */
 
 .collaboration-cursor__caret {
   position: relative;
@@ -256,8 +309,6 @@
   pointer-events: none;
 }
 
-/* ─── BlockNote editor ─────────────────────────────────────────────────────── */
-
 .bn-ticket-editor {
   --bn-font-family: var(--font-sans);
 }
@@ -268,42 +319,33 @@
   background: transparent !important;
 }
 
-/* Match editor background to page background in both themes */
 .bn-ticket-editor [data-theming-css-variables-demo],
 .bn-ticket-editor .bn-container {
   background: transparent !important;
 }
 
-/* Scale down to match app's font sizes */
 .bn-ticket-editor .bn-block-content {
   font-size: 0.875rem;
   line-height: 1.625;
 }
 
-/* ── Heading sizes ────────────────────────────────────────────────────────────
-   BlockNote sets font-size via a CSS variable (--level, in em) which resolves
-   to 48px / 32px / 20px at 16px base — way too large for our UI.
-   We override directly on .bn-block-content with !important and rem units.
-   H1 = default heading (no data-level attribute); H2+ have data-level set. */
 .bn-ticket-editor .bn-block-content[data-content-type="heading"] {
-  font-size: 1.375rem !important; /* H1 ~22px */
+  font-size: 1.375rem !important;
 }
 .bn-ticket-editor .bn-block-content[data-content-type="heading"][data-level="2"] {
-  font-size: 1.125rem !important; /* H2 ~18px */
+  font-size: 1.125rem !important;
 }
 .bn-ticket-editor .bn-block-content[data-content-type="heading"][data-level="3"],
 .bn-ticket-editor .bn-block-content[data-content-type="heading"][data-level="4"],
 .bn-ticket-editor .bn-block-content[data-content-type="heading"][data-level="5"],
 .bn-ticket-editor .bn-block-content[data-content-type="heading"][data-level="6"] {
-  font-size: 1rem !important; /* H3-H6 ~16px */
+  font-size: 1rem !important;
 }
 
 .bn-ticket-editor .bn-block-content[data-content-type="codeBlock"] {
   font-size: 0.8125rem;
 }
 
-/* ── File panel (upload/embed modal) ─────────────────────────────────────────
-   Constrain width and clean up visual appearance. */
 .bn-panel {
   width: 380px;
   max-width: calc(100vw - 2rem);
@@ -312,17 +354,11 @@
   padding-top: 0.5rem;
 }
 
-/* ── Suggestion menu selection highlight ─────────────────────────────────────
-   The aria-selected:bg-accent Tailwind classes come from @blocknote/shadcn's
-   JS bundle and may not be picked up by Tailwind's scanner. Explicit rule
-   guarantees the selected item is visually highlighted. */
 .bn-suggestion-menu .bn-suggestion-menu-item[aria-selected="true"] {
   background-color: var(--accent);
   color: var(--accent-foreground);
 }
 
-/* ── Slash menu — compact mode ────────────────────────────────────────────────
-   Make suggestion menu items smaller and hide verbose descriptions. */
 .bn-suggestion-menu {
   max-height: 18rem;
   overflow-y: auto;
@@ -339,18 +375,14 @@
   width: 1rem !important;
   height: 1rem !important;
 }
-/* Hide subtitle/description text */
 .bn-suggestion-menu .bn-suggestion-menu-item .text-xs:last-child {
   display: none;
 }
-/* Tighter label section headers */
 .bn-suggestion-menu .bn-suggestion-menu-label {
   padding: 0.25rem 0.5rem;
   font-size: 0.6875rem;
 }
 
-/* ── Block side menu — compact ────────────────────────────────────────────────
-   The + and drag handle buttons are too large; scale them down. */
 .bn-side-menu .bn-button {
   height: 1.375rem !important;
   width: 1.375rem !important;
@@ -361,8 +393,6 @@
   height: 0.875rem !important;
 }
 
-/* ── Table handles — compact ──────────────────────────────────────────────────
-   The column/row drag handles on tables are too large by default. */
 .bn-editor [data-content-type="table"] .tableWrapper {
   --bn-table-widget-size: 14px !important;
   --bn-table-handle-size: 6px !important;
@@ -376,17 +406,12 @@
   height: 0.75rem !important;
 }
 
-/* ── Mobile — reduce BlockNote's hardcoded 54px padding ──────────────────────
-   The bn-editor has padding-inline: 54px baked into the library CSS.
-   On small screens this eats most of the viewport width. */
 @media (max-width: 639px) {
   .bn-editor {
     padding-inline: 1rem !important;
   }
 }
 
-/* ── Compact editor for dialogs ───────────────────────────────────────────────
-   Used inside create-ticket-dialog. No large bottom padding. */
 .bn-compact-editor {
   --bn-font-family: var(--font-sans);
 }

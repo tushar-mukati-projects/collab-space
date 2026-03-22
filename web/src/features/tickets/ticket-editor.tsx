@@ -63,8 +63,7 @@ export const TicketEditor = ({
   collaboration,
 }: TicketEditorProps) => {
   const [editor, setEditor] = React.useState<BlockNoteEditor | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const providerRef = React.useRef<any>(null);
+  const providerRef = React.useRef<{ destroy: () => void } | null>(null);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -87,8 +86,7 @@ export const TicketEditor = ({
           uploadFile,
           extensions: [suggestionMenuKeys()],
           collaboration: {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            provider: provider as any,
+            provider: provider as never,
             fragment: doc.getXmlFragment("document-store"),
             user: collaboration.user,
             showCursorLabels: "activity",
@@ -110,8 +108,7 @@ export const TicketEditor = ({
       providerRef.current?.destroy();
       providerRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [collaboration, initialContent]);
 
   const onChangeRef = React.useRef(onChange);
   onChangeRef.current = onChange;

@@ -41,10 +41,6 @@ import type {
 } from "@/types";
 import { useCreateTicket } from "@/hooks/tickets";
 
-// ---------------------------------------------------------------------------
-// Options
-// ---------------------------------------------------------------------------
-
 const statusOptions: {
   value: TicketStatus;
   label: string;
@@ -70,14 +66,6 @@ const priorityOptions: {
   { value: "low", label: "Low", icon: ArrowDown, color: "text-green-500" },
   { value: "none", label: "None", icon: Circle, color: "text-muted-foreground" },
 ];
-
-// ---------------------------------------------------------------------------
-// Compact property button
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
 
 interface CreateTicketDialogProps {
   open: boolean;
@@ -125,7 +113,7 @@ export const CreateTicketDialog = ({
     setAssignee(null);
     setSelectedLabels([]);
     setDueDate(undefined);
-    setEditorKey((k) => k + 1); // remount editor
+    setEditorKey((k) => k + 1);
   };
 
   const handleSubmit = async () => {
@@ -180,10 +168,9 @@ export const CreateTicketDialog = ({
     >
       <DialogContent
         showCloseButton={false}
-        className="flex max-h-[85vh] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-2xl animate-fade-in-scale"
+        className="animate-fade-in-scale flex max-h-[85vh] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-2xl"
         onKeyDown={handleKeyDown}
       >
-        {/* Title input */}
         <div className="px-5 pt-5 pb-2">
           <input
             placeholder="Issue title"
@@ -194,7 +181,6 @@ export const CreateTicketDialog = ({
           />
         </div>
 
-        {/* Rich text editor */}
         <div className="max-h-[320px] min-h-[160px] flex-1 overflow-y-auto px-4">
           <TicketEditor
             key={editorKey}
@@ -204,12 +190,9 @@ export const CreateTicketDialog = ({
           />
         </div>
 
-        {/* Separator + bottom bar */}
         <div className="border-border mt-auto border-t">
           <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
-            {/* Property selectors */}
             <div className="flex flex-wrap items-center gap-1">
-              {/* Status */}
               <DropdownMenu>
                 <DropdownMenuTrigger
                   className={cn(
@@ -233,7 +216,6 @@ export const CreateTicketDialog = ({
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Priority */}
               <DropdownMenu>
                 <DropdownMenuTrigger
                   className={cn(
@@ -257,7 +239,6 @@ export const CreateTicketDialog = ({
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Assignee */}
               <DropdownMenu>
                 <DropdownMenuTrigger
                   className={cn(
@@ -307,7 +288,6 @@ export const CreateTicketDialog = ({
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Labels */}
               <Popover>
                 <PopoverTrigger
                   render={
@@ -361,7 +341,6 @@ export const CreateTicketDialog = ({
                 </PopoverContent>
               </Popover>
 
-              {/* Due date */}
               <Popover>
                 <PopoverTrigger
                   render={
@@ -396,7 +375,6 @@ export const CreateTicketDialog = ({
               </Popover>
             </div>
 
-            {/* Actions */}
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"

@@ -43,7 +43,6 @@ export const NotificationPanel = ({ variant = "icon" }: NotificationPanelProps) 
     if (!isRead) {
       updateNotificationsMutation.mutate({ ids: [notificationId], status: { read: true } });
     }
-    // Normalize link: /tickets/tkt_01 → /ticket/tkt_01
     const normalized = link.replace(/^\/tickets\//, "/ticket/");
     router.push(normalized);
   };
@@ -65,7 +64,7 @@ export const NotificationPanel = ({ variant = "icon" }: NotificationPanelProps) 
                 handleClickNotification(notification.id, notification.link, notification.read)
               }
               className={cn(
-                "hover:bg-accent/60 flex w-full items-start gap-3 px-3 py-2.5 text-left transition-all animate-fade-in",
+                "hover:bg-accent/60 animate-fade-in flex w-full items-start gap-3 px-3 py-2.5 text-left transition-all",
                 !notification.read && "bg-primary/[0.04]",
               )}
               style={{ animationDelay: `${i * 30}ms` }}
@@ -90,7 +89,7 @@ export const NotificationPanel = ({ variant = "icon" }: NotificationPanelProps) 
                 <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs">
                   {notification.message}
                 </p>
-                <p className="mt-1 text-[10px] text-muted-foreground/70">
+                <p className="text-muted-foreground/70 mt-1 text-[10px]">
                   {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                 </p>
               </div>
@@ -103,7 +102,6 @@ export const NotificationPanel = ({ variant = "icon" }: NotificationPanelProps) 
 
   const panelContent = (
     <div className="flex h-[min(32rem,80vh)] w-80 flex-col">
-      {/* Header */}
       <div className="border-border flex shrink-0 items-center justify-between border-b px-3 py-2.5">
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-semibold">Inbox</h2>
@@ -154,7 +152,7 @@ export const NotificationPanel = ({ variant = "icon" }: NotificationPanelProps) 
           <div className="relative shrink-0">
             <Bell className="size-4" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 flex size-3.5 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white animate-fade-in-scale">
+              <span className="animate-fade-in-scale absolute -top-1.5 -right-1.5 flex size-3.5 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
@@ -176,7 +174,6 @@ export const NotificationPanel = ({ variant = "icon" }: NotificationPanelProps) 
     );
   }
 
-  // icon variant (legacy, kept for any standalone use)
   return (
     <Popover>
       <PopoverTrigger

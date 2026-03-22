@@ -7,22 +7,22 @@ import { BoardColumns } from "./board-columns";
 import { ManageLabelsDialog } from "./manage-labels-dialog";
 import { ManageStatusDialog } from "./manage-status-dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight, Plus, Loader2, Tag, CircleDot, Trash2 } from "lucide-react";
+import { ChevronRight, Plus, Loader2, Tag, CircleDot, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const BoardSkeleton = () => (
-  <div className="space-y-2 animate-fade-in">
+  <div className="animate-fade-in space-y-2">
     {[1, 2].map((i) => (
-      <div key={i} className="rounded-xl border border-border bg-card">
+      <div key={i} className="border-border bg-card rounded-xl border">
         <div className="flex items-center px-4 py-3.5">
           <div className="flex flex-1 items-center gap-3">
-            <div className="skeleton-shimmer h-4 w-4 rounded bg-muted" />
-            <div className="skeleton-shimmer h-4 w-32 rounded bg-muted" />
-            <div className="skeleton-shimmer h-5 w-16 rounded-full bg-muted" />
+            <div className="skeleton-shimmer bg-muted h-4 w-4 rounded" />
+            <div className="skeleton-shimmer bg-muted h-4 w-32 rounded" />
+            <div className="skeleton-shimmer bg-muted h-5 w-16 rounded-full" />
           </div>
           <div className="flex items-center gap-3">
-            <div className="skeleton-shimmer h-3 w-20 rounded bg-muted" />
-            <div className="skeleton-shimmer h-3 w-16 rounded bg-muted" />
+            <div className="skeleton-shimmer bg-muted h-3 w-20 rounded" />
+            <div className="skeleton-shimmer bg-muted h-3 w-16 rounded" />
           </div>
         </div>
       </div>
@@ -58,11 +58,11 @@ export const BoardView = () => {
     return (
       <div className="mx-auto max-w-[1400px] p-4 sm:p-6">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div className="skeleton-shimmer h-8 w-24 rounded-lg bg-muted" />
+          <div className="skeleton-shimmer bg-muted h-8 w-24 rounded-lg" />
           <div className="flex gap-2">
-            <div className="skeleton-shimmer h-8 w-28 rounded-lg bg-muted" />
-            <div className="skeleton-shimmer h-8 w-28 rounded-lg bg-muted" />
-            <div className="skeleton-shimmer h-8 w-24 rounded-lg bg-muted" />
+            <div className="skeleton-shimmer bg-muted h-8 w-28 rounded-lg" />
+            <div className="skeleton-shimmer bg-muted h-8 w-28 rounded-lg" />
+            <div className="skeleton-shimmer bg-muted h-8 w-24 rounded-lg" />
           </div>
         </div>
         <BoardSkeleton />
@@ -72,7 +72,7 @@ export const BoardView = () => {
 
   return (
     <div className="mx-auto max-w-[1400px] p-4 sm:p-6">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 animate-fade-in">
+      <div className="animate-fade-in mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight">Boards</h1>
         <div className="flex flex-wrap items-center gap-2">
           <Button
@@ -101,9 +101,9 @@ export const BoardView = () => {
       </div>
 
       {showCreateInput && (
-        <div className="mb-4 flex items-center gap-2 animate-fade-in">
+        <div className="animate-fade-in mb-4 flex items-center gap-2">
           <input
-            className="bg-background focus:ring-ring/30 rounded-lg border px-3 py-1.5 text-sm outline-none transition-all focus:ring-2 focus:border-primary"
+            className="bg-background focus:ring-ring/30 focus:border-primary rounded-lg border px-3 py-1.5 text-sm transition-all outline-none focus:ring-2"
             placeholder="Board name..."
             value={newBoardName}
             onChange={(e) => setNewBoardName(e.target.value)}
@@ -111,11 +111,7 @@ export const BoardView = () => {
             autoFocus
           />
           <Button size="sm" onClick={handleCreateBoard} disabled={createBoardMutation.isPending}>
-            {createBoardMutation.isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              "Create"
-            )}
+            {createBoardMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : "Create"}
           </Button>
           <Button
             size="sm"
@@ -134,7 +130,7 @@ export const BoardView = () => {
         {boards?.map((board, index) => (
           <div
             key={board.id}
-            className="bg-card rounded-xl border border-border transition-all duration-200 hover:border-border/80 hover:shadow-sm animate-fade-in"
+            className="bg-card border-border hover:border-border/80 animate-fade-in rounded-xl border transition-all duration-200 hover:shadow-sm"
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <div className="flex items-center">

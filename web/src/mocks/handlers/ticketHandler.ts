@@ -31,7 +31,6 @@ const toSummary = (ticket: Ticket): TicketSummary => {
 };
 
 export const ticketHandlers = [
-  // GET /api/tickets — supports query params: assignees, created_by, statuses, priorities, labels, search_term, parent_id, parent_type
   http.get("/api/tickets", async ({ request }) => {
     await delay(300);
     const url = new URL(request.url);
@@ -91,7 +90,6 @@ export const ticketHandlers = [
     await delay(300);
     const input = (await request.json()) as CreateTicketInput;
     const now = new Date().toISOString();
-    // Determine parent relationship
     const parentType = input.parent_type ?? null;
     const parentId = input.parent_id ?? null;
 
@@ -116,7 +114,6 @@ export const ticketHandlers = [
     };
     _tickets.push(ticket);
 
-    // Update parent ticket's sub_tickets array
     if (parentType === "ticket" && parentId) {
       const parent = _tickets.find((t) => t.id === parentId);
       if (parent) {

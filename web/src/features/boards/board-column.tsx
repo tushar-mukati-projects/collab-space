@@ -36,11 +36,10 @@ export const BoardColumn = ({
         isOverlay && "opacity-80",
       )}
     >
-      {/* Column header */}
       <div className="flex items-center justify-between rounded-t-xl px-3 py-2.5">
         <div className="flex items-center gap-2">
           <span
-            className="inline-block size-2.5 rounded-full ring-2 ring-background"
+            className="ring-background inline-block size-2.5 rounded-full ring-2"
             style={{ backgroundColor: column.color }}
           />
           <span className="text-sm font-semibold tracking-tight">{column.name}</span>
@@ -60,12 +59,11 @@ export const BoardColumn = ({
         )}
       </div>
 
-      {/* Droppable card area */}
       <div
         ref={setNodeRef}
         className={cn(
           "flex flex-1 flex-col gap-2 overflow-y-auto rounded-b-xl px-2 pt-1 pb-2 transition-all duration-200",
-          isOver && "bg-primary/5 ring-primary/20 rounded-xl ring-2 ring-inset scale-[1.01]",
+          isOver && "bg-primary/5 ring-primary/20 scale-[1.01] rounded-xl ring-2 ring-inset",
         )}
       >
         <SortableContext items={tickets.map((t) => t.id)} strategy={verticalListSortingStrategy}>
@@ -79,7 +77,6 @@ export const BoardColumn = ({
           ))}
         </SortableContext>
 
-        {/* Empty state */}
         {tickets.length === 0 && (
           <div className="border-border flex flex-1 items-center justify-center rounded-xl border border-dashed py-8 transition-colors">
             <span className="text-muted-foreground/60 text-xs">No tickets</span>

@@ -1,7 +1,5 @@
 import { prisma } from "../db.js";
 
-// ─── listWorkspaceUsers ─────────────────────────────────────────────────────
-
 export const listWorkspaceUsers = async (workspaceId: string) => {
   const members = await prisma.workspaceMember.findMany({
     where: { workspace_id: workspaceId },
@@ -20,8 +18,6 @@ export const listWorkspaceUsers = async (workspaceId: string) => {
     updated_at: member.user.updated_at,
   }));
 };
-
-// ─── getWorkspaceUser ───────────────────────────────────────────────────────
 
 export const getWorkspaceUser = async (userId: string, workspaceId: string) => {
   const member = await prisma.workspaceMember.findFirst({

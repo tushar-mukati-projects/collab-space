@@ -1,16 +1,17 @@
-FROM oven/bun:1 AS base
+FROM oven/bun:1
 WORKDIR /app
 
-FROM base AS deps
+# install deps (cached)
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
-FROM base AS build
-COPY --from=deps /app/node_modules ./node_modules
+# copy code
 COPY . .
+
+# disable telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Next.js needs NEXT_PUBLIC_* at build time
+# build-time envs
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ARG NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login
 ARG NEXT_PUBLIC_CLERK_SIGN_UP_URL=/signup
@@ -19,18 +20,14 @@ ARG NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_COLLAB_URL
 
+# build app
 RUN bun next build
 
-FROM base AS runner
-WORKDIR /app
+# runtime config
 ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-COPY --from=build /app/public ./public
-COPY --from=build /app/.next/standalone ./
-COPY --from=build /app/.next/static ./.next/static
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
 EXPOSE 3000
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-CMD ["bun", "server.js"]
+
+CMD ["bun", ".next/standalone/server.js"]

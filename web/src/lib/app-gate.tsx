@@ -54,7 +54,7 @@ const useBootstrap = () => {
 interface AppGateContextValue {
   user: MeResponse | null;
   hasWorkspace: boolean;
-  appearance: any;
+  appearance: { theme?: string; accent_color?: string; font_size?: string } | null;
 }
 
 const AppGateContext = React.createContext<AppGateContextValue>({
@@ -85,7 +85,9 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
           </div>
           <div>
             <p className="text-sm font-medium">Unable to connect to server</p>
-            <p className="text-muted-foreground mt-1 text-xs">Please check your connection and try again.</p>
+            <p className="text-muted-foreground mt-1 text-xs">
+              Please check your connection and try again.
+            </p>
           </div>
           <button
             onClick={() => refetch()}

@@ -2,19 +2,18 @@
 
 import { useEffect, useState } from "react";
 
+const ENABLE_MOCKS = process.env.NEXT_PUBLIC_ENABLE_MOCKS === "true";
+
 export const useMswReady = () => {
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(!ENABLE_MOCKS);
 
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
-      import("@/mocks/browser").then(({ worker }) => {
-        worker.start({ onUnhandledRequest: "bypass" }).then(() => {
-          setReady(true);
-        });
+    if (!ENABLE_MOCKS) return;
+    import("@/mocks/browser").then(({ worker }) => {
+      worker.start({ onUnhandledRequest: "bypass" }).then(() => {
+        setReady(true);
       });
-    } else {
-      setReady(true);
-    }
+    });
   }, []);
 
   return ready;
