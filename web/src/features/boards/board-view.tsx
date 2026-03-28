@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import NProgress from "nprogress";
 import { useFetchBoards, useCreateBoard, useDeleteBoard } from "@/hooks/board";
 import { BoardColumns } from "./board-columns";
 import { ManageLabelsDialog } from "./manage-labels-dialog";
 import { ManageStatusDialog } from "./manage-status-dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Plus, Loader2, Tag, CircleDot, Trash2 } from "lucide-react";
+import { ChevronRight, Plus, Loader2, Tag, CircleDot, Trash2, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePermission, PERMISSION_LABEL } from "@/hooks/usePermission";
 
@@ -142,11 +143,11 @@ export const BoardView = () => {
         </div>
       )}
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {boards?.map((board, index) => (
           <div
             key={board.id}
-            className="bg-card border-border hover:border-border/80 animate-fade-in rounded-xl border transition-all duration-200 hover:shadow-sm"
+            className="bg-card border-border animate-fade-in rounded-xl border shadow-sm transition-all duration-200 hover:shadow-md"
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <div className="flex items-center">
@@ -219,13 +220,30 @@ export const BoardView = () => {
                 <div className="border-t px-4 pt-2 pb-4">
                   <BoardColumns
                     board={board}
-                    onCardClick={(ticketId) => router.push(`/ticket/${ticketId}`)}
+                    onCardClick={(ticketId) => {
+                      NProgress.start();
+                      router.push(`/ticket/${ticketId}`);
+                    }}
                   />
                 </div>
               </div>
             </div>
           </div>
         ))}
+
+        {boards?.length === 0 && (
+          <div className="animate-fade-in flex h-48 flex-col items-center justify-center gap-3 text-center">
+            <div className="bg-muted flex size-12 items-center justify-center rounded-full">
+              <LayoutGrid className="text-muted-foreground size-5" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">No boards yet</p>
+              <p className="text-muted-foreground text-xs">
+                Create your first board to get started.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       <ManageLabelsDialog open={labelsDialogOpen} onOpenChange={setLabelsDialogOpen} />

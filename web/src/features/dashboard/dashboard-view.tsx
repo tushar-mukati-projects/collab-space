@@ -64,16 +64,16 @@ interface StatCardProps {
 }
 
 const StatCard = ({ label, value, icon: Icon, color, subtitle }: StatCardProps) => (
-  <div className="border-border/60 bg-card rounded-2xl border p-5 shadow-xs transition-all hover:shadow-sm">
+  <div className="border-border bg-card rounded-2xl border p-5 shadow-sm transition-all hover:shadow-md">
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
+        <p className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
           {label}
         </p>
-        <p className="mt-1 text-3xl font-bold tracking-tight">{value}</p>
-        {subtitle && <p className="text-muted-foreground mt-0.5 text-xs">{subtitle}</p>}
+        <p className="mt-1.5 text-3xl font-bold tracking-tight">{value}</p>
+        {subtitle && <p className="text-muted-foreground mt-1 text-xs">{subtitle}</p>}
       </div>
-      <div className={cn("rounded-xl p-2.5", color)}>
+      <div className={cn("rounded-xl p-2.5 shadow-sm", color)}>
         <Icon className="size-5 text-white" />
       </div>
     </div>
@@ -93,7 +93,7 @@ const Card = ({
   className?: string;
   action?: React.ReactNode;
 }) => (
-  <div className={cn("border-border/60 bg-card rounded-2xl border shadow-xs", className)}>
+  <div className={cn("border-border bg-card rounded-2xl border shadow-sm", className)}>
     <div className="flex items-center justify-between px-5 pt-5 pb-3">
       <div className="flex items-center gap-2">
         {Icon && <Icon className="text-muted-foreground size-4" />}
@@ -122,7 +122,7 @@ const CustomTooltip = ({
 }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="border-border/60 bg-background rounded-xl border px-3 py-2 text-xs shadow-lg">
+    <div className="border-border bg-background rounded-xl border px-3 py-2 text-xs shadow-lg">
       <p className="font-medium">{label}</p>
       {payload.map((entry: TooltipPayloadEntry, i: number) => (
         <p key={i} style={{ color: entry.color }} className="mt-0.5">
@@ -293,7 +293,7 @@ export const DashboardView = () => {
         <Card title="Meetings This Week" icon={Video}>
           {stats.upcomingMeetings.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center py-8 text-center text-sm">
-              <Video className="mb-2 size-8 opacity-20" />
+              <Video className="mb-2 size-8 opacity-30" />
               <p>No meetings scheduled</p>
             </div>
           ) : (
@@ -302,7 +302,7 @@ export const DashboardView = () => {
                 <Link
                   key={m.id}
                   href={`/meetings/${m.id}`}
-                  className="border-border/50 hover:border-primary/30 hover:bg-accent/30 block rounded-xl border p-3 transition-all"
+                  className="border-border hover:border-primary/30 hover:bg-accent/30 block rounded-xl border p-3 transition-all"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className="truncate text-sm font-medium">{m.title}</p>
@@ -393,7 +393,7 @@ export const DashboardView = () => {
         <Card title="Upcoming Deadlines" icon={CalendarClock} className="lg:col-span-2">
           {stats.upcomingDeadlines.length === 0 && stats.overdueTickets.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center py-8 text-center text-sm">
-              <CalendarClock className="mb-2 size-8 opacity-20" />
+              <CalendarClock className="mb-2 size-8 opacity-30" />
               <p>No upcoming deadlines</p>
             </div>
           ) : (
@@ -481,7 +481,7 @@ export const DashboardView = () => {
               return (
                 <div
                   key={m.id}
-                  className="border-border/50 flex items-center gap-3 rounded-xl border p-3"
+                  className="border-border flex items-center gap-3 rounded-xl border p-3"
                 >
                   <Avatar size="sm" className="size-9 shrink-0">
                     <AvatarImage src={m.avatar} />

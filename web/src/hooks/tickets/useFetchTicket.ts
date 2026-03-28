@@ -11,5 +11,10 @@ export const useFetchTicket = (id: string, enabled = true) => {
       return response.data;
     },
     enabled: !!id && enabled,
+    retry: (failureCount, error) => {
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      if (status === 404) return false;
+      return failureCount < 2;
+    },
   });
 };

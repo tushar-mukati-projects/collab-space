@@ -326,7 +326,18 @@ export const deleteTicket = async (id: string, workspaceId: string) => {
     return false;
   }
 
-  await prisma.ticket.delete({ where: { id } });
+  const deleteRecursive = async (ticketId: string) => {
+    const children = await prisma.ticket.findMany({
+      where: { parent_id: ticketId, parent_type: "ticket" },
+      select: { id: true },
+    });
+    for (const child of children) {
+      await deleteRecursive(child.id);
+    }
+    await prisma.ticket.delete({ where: { id: ticketId } });
+  };
+
+  await deleteRecursive(id);
   return true;
 };
 

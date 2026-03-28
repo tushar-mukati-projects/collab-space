@@ -74,7 +74,7 @@ const MeetingCard = ({ meeting, users, onJoin, index }: MeetingCardProps) => {
 
   return (
     <div
-      className="group border-border bg-card hover:bg-accent/30 animate-fade-in flex items-center justify-between rounded-xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
+      className="group border-border bg-card animate-fade-in hover:border-primary/20 flex items-center justify-between rounded-xl border p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <div className="flex flex-1 items-center gap-4">

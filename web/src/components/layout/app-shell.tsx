@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
+import NProgress from "nprogress";
 import { useUIStore } from "@/stores/ui-store";
 import { useAppGate } from "@/lib/app-gate";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
@@ -35,6 +36,19 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const isMeetingRoom = /^\/meetings\/[^/]+$/.test(pathname);
 
   useKeyboardShortcuts();
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest("a");
+      if (!anchor) return;
+      const href = anchor.getAttribute("href");
+      if (href?.startsWith("/") && !href.startsWith("//") && href !== pathname) {
+        NProgress.start();
+      }
+    };
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [pathname]);
 
   useEffect(() => {
     if (appearance?.theme) setTheme(resolveTheme(appearance.theme as "light" | "dark" | "system"));

@@ -16,12 +16,10 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <GlobalProgress />
       <AxiosAuthProvider>
         <AppGate>
-          <TooltipProvider delay={300}>
-            <GlobalProgress />
-            {children}
-          </TooltipProvider>
+          <TooltipProvider delay={300}>{children}</TooltipProvider>
         </AppGate>
       </AxiosAuthProvider>
       <Toaster

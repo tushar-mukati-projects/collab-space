@@ -1,4 +1,5 @@
 import { prisma } from "../db.js";
+import { deleteTicket } from "./ticket.service.js";
 
 interface BoardRow {
   id: string;
@@ -99,7 +100,15 @@ export const createBoard = async (name: string, workspaceId: string) => {
 export const deleteBoard = async (id: string, workspaceId: string) => {
   const board = await prisma.board.findFirst({ where: { id, workspace_id: workspaceId } });
   if (!board) return false;
-  await prisma.ticket.deleteMany({ where: { parent_id: id, parent_type: "board" } });
+
+  const boardTickets = await prisma.ticket.findMany({
+    where: { parent_id: id, parent_type: "board" },
+    select: { id: true },
+  });
+  for (const ticket of boardTickets) {
+    await deleteTicket(ticket.id, workspaceId);
+  }
+
   await prisma.board.delete({ where: { id } });
   return true;
 };

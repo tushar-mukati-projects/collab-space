@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import NProgress from "nprogress";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useUIStore } from "@/stores/ui-store";
 import { useOnboardingStore } from "@/stores/auth-store";
@@ -180,7 +181,10 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
                         <button
                           key={ticket.id}
                           type="button"
-                          onClick={() => router.push(`/ticket/${ticket.id}`)}
+                          onClick={() => {
+                            NProgress.start();
+                            router.push(`/ticket/${ticket.id}`);
+                          }}
                           className="hover:bg-accent/60 active:bg-accent flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors"
                         >
                           <span
@@ -237,7 +241,10 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
                         <button
                           key={fav.id}
                           type="button"
-                          onClick={() => router.push(`/ticket/${fav.ticket_id}`)}
+                          onClick={() => {
+                            NProgress.start();
+                            router.push(`/ticket/${fav.ticket_id}`);
+                          }}
                           className="hover:bg-accent/60 active:bg-accent flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors"
                         >
                           <span
@@ -265,6 +272,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
         <button
           type="button"
           onClick={() => {
+            NProgress.start();
             router.push("/settings");
             onClose?.();
           }}

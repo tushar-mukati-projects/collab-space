@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, LayoutList } from "lucide-react";
 import { BoardCard } from "./board-card";
 import type { TicketSummary, BoardColumn as BoardColumnType, Label } from "@/types";
 
@@ -21,10 +21,10 @@ export const BoardColumn = ({
 }: BoardColumnProps) => {
   return (
     <div className="flex h-full w-[300px] min-w-[300px] flex-col rounded-xl">
-      <div className="flex items-center justify-between rounded-t-xl px-3 py-2.5">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between px-3 py-3">
+        <div className="flex items-center gap-2.5">
           <span
-            className="ring-background inline-block size-2.5 rounded-full ring-2"
+            className="inline-block size-2.5 rounded-full shadow-sm"
             style={{ backgroundColor: column.color }}
           />
           <span className="text-sm font-semibold tracking-tight">{column.name}</span>
@@ -36,15 +36,15 @@ export const BoardColumn = ({
           <button
             type="button"
             onClick={onAddTicket}
-            className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg p-1 transition-all duration-200 hover:scale-105"
+            className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg p-1.5 transition-all duration-200"
             title="Add ticket"
           >
-            <Plus className="size-4" />
+            <Plus className="size-3.5" />
           </button>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 overflow-y-auto rounded-b-xl px-2 pt-1 pb-2">
+      <div className="flex flex-1 flex-col gap-2.5 overflow-y-auto px-2 pt-0.5 pb-3">
         {tickets.map((ticket) => (
           <BoardCard
             key={ticket.id}
@@ -55,8 +55,9 @@ export const BoardColumn = ({
         ))}
 
         {tickets.length === 0 && (
-          <div className="border-border flex flex-1 items-center justify-center rounded-xl border border-dashed py-8 transition-colors">
-            <span className="text-muted-foreground/60 text-xs">No tickets</span>
+          <div className="border-border/60 flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed py-10 transition-colors">
+            <LayoutList className="text-muted-foreground/40 size-5" />
+            <span className="text-muted-foreground/50 text-xs">No tickets</span>
           </div>
         )}
       </div>

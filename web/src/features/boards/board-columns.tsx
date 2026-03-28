@@ -83,29 +83,29 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 py-2">
+    <div className="flex flex-wrap items-center gap-2 py-3">
       <div className="relative">
-        <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+        <Search className="text-muted-foreground absolute top-1/2 left-3 size-3.5 -translate-y-1/2" />
         <input
           placeholder="Search tickets…"
           value={filters.search_term ?? ""}
           onChange={(e) =>
             onFiltersChange({ ...filters, search_term: e.target.value || undefined })
           }
-          className="bg-background border-border text-foreground placeholder:text-muted-foreground h-7 w-44 rounded-md border pr-2 pl-8 text-sm outline-none focus:ring-1 focus:ring-inset"
+          className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground focus:bg-background h-8 w-48 rounded-lg border pr-3 pl-9 text-sm transition-colors outline-none focus:ring-1 focus:ring-inset"
         />
       </div>
 
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
-            "border-border hover:bg-accent inline-flex h-7 items-center gap-1 rounded-md border bg-transparent px-2.5 text-xs font-medium transition-colors",
+            "border-border hover:bg-accent inline-flex h-8 items-center gap-1.5 rounded-lg border bg-transparent px-3 text-xs font-medium transition-colors",
             (filters.statuses?.length ?? 0) > 0 && "border-primary text-primary",
           )}
         >
           Status
           {(filters.statuses?.length ?? 0) > 0 && (
-            <span className="bg-primary rounded-full px-1 text-[10px] text-white">
+            <span className="bg-primary rounded-full px-1.5 text-[10px] font-semibold text-white">
               {filters.statuses!.length}
             </span>
           )}
@@ -127,13 +127,13 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
-            "border-border hover:bg-accent inline-flex h-7 items-center gap-1 rounded-md border bg-transparent px-2.5 text-xs font-medium transition-colors",
+            "border-border hover:bg-accent inline-flex h-8 items-center gap-1.5 rounded-lg border bg-transparent px-3 text-xs font-medium transition-colors",
             (filters.priorities?.length ?? 0) > 0 && "border-primary text-primary",
           )}
         >
           Priority
           {(filters.priorities?.length ?? 0) > 0 && (
-            <span className="bg-primary rounded-full px-1 text-[10px] text-white">
+            <span className="bg-primary rounded-full px-1.5 text-[10px] font-semibold text-white">
               {filters.priorities!.length}
             </span>
           )}
@@ -155,13 +155,13 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
-            "border-border hover:bg-accent inline-flex h-7 items-center gap-1 rounded-md border bg-transparent px-2.5 text-xs font-medium transition-colors",
+            "border-border hover:bg-accent inline-flex h-8 items-center gap-1.5 rounded-lg border bg-transparent px-3 text-xs font-medium transition-colors",
             (filters.assignees?.length ?? 0) > 0 && "border-primary text-primary",
           )}
         >
           Assignee
           {(filters.assignees?.length ?? 0) > 0 && (
-            <span className="bg-primary rounded-full px-1 text-[10px] text-white">
+            <span className="bg-primary rounded-full px-1.5 text-[10px] font-semibold text-white">
               {filters.assignees!.length}
             </span>
           )}
@@ -183,13 +183,13 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
-            "border-border hover:bg-accent inline-flex h-7 items-center gap-1 rounded-md border bg-transparent px-2.5 text-xs font-medium transition-colors",
+            "border-border hover:bg-accent inline-flex h-8 items-center gap-1.5 rounded-lg border bg-transparent px-3 text-xs font-medium transition-colors",
             (filters.labels?.length ?? 0) > 0 && "border-primary text-primary",
           )}
         >
           Labels
           {(filters.labels?.length ?? 0) > 0 && (
-            <span className="bg-primary rounded-full px-1 text-[10px] text-white">
+            <span className="bg-primary rounded-full px-1.5 text-[10px] font-semibold text-white">
               {filters.labels!.length}
             </span>
           )}
@@ -215,7 +215,7 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
       {activeCount > 0 && (
         <button
           type="button"
-          className="text-muted-foreground hover:text-foreground inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs transition-colors"
+          className="text-muted-foreground hover:text-foreground hover:bg-accent inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs transition-colors"
           onClick={() => onFiltersChange({})}
         >
           <X className="size-3" />
@@ -280,13 +280,16 @@ export const BoardColumns = ({ board, onCardClick }: BoardColumnsProps) => {
                   <div className="skeleton-shimmer bg-muted size-5 rounded-full" />
                 </div>
                 {[1, 2].map((i) => (
-                  <div key={i} className="border-border bg-card space-y-2.5 rounded-xl border p-3">
-                    <div className="skeleton-shimmer bg-muted h-3.5 w-5 rounded" />
-                    <div className="skeleton-shimmer bg-muted h-4 w-3/4 rounded" />
-                    <div className="skeleton-shimmer bg-muted h-3 w-1/2 rounded" />
-                    <div className="flex gap-1">
-                      <div className="skeleton-shimmer bg-muted h-4 w-12 rounded-full" />
-                      <div className="skeleton-shimmer bg-muted h-4 w-10 rounded-full" />
+                  <div
+                    key={i}
+                    className="border-border bg-card space-y-3 rounded-xl border p-3.5 shadow-sm"
+                  >
+                    <div className="skeleton-shimmer bg-muted h-3.5 w-6 rounded" />
+                    <div className="skeleton-shimmer bg-muted h-4 w-4/5 rounded" />
+                    <div className="skeleton-shimmer bg-muted h-3.5 w-1/2 rounded" />
+                    <div className="flex gap-1.5">
+                      <div className="skeleton-shimmer bg-muted h-5 w-14 rounded-full" />
+                      <div className="skeleton-shimmer bg-muted h-5 w-12 rounded-full" />
                     </div>
                   </div>
                 ))}

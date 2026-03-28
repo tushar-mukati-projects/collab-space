@@ -285,17 +285,20 @@ export const useWebRTC = ({ roomId, userId, userName }: UseWebRTCProps) => {
 
     init();
 
+    const pcs = pcsRef.current;
+    const peerInfo = peerInfoRef.current;
+
     return () => {
       disposed = true;
       socketRef.current?.disconnect();
       socketRef.current = null;
-      pcsRef.current.forEach((pc) => pc.close());
-      pcsRef.current.clear();
+      pcs.forEach((pc) => pc.close());
+      pcs.clear();
       localStreamRef.current?.getTracks().forEach((t) => t.stop());
       localStreamRef.current = null;
       screenStreamRef.current?.getTracks().forEach((t) => t.stop());
       screenStreamRef.current = null;
-      peerInfoRef.current.clear();
+      peerInfo.clear();
     };
   }, [roomId, userId, userName]);
 

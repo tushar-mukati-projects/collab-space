@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import NProgress from "nprogress";
 import { format, formatDistanceToNow } from "date-fns";
 import {
   CalendarIcon,
@@ -341,7 +342,14 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
     return (
       <div className="animate-fade-in flex h-96 flex-col items-center justify-center gap-3">
         <p className="text-muted-foreground text-sm">Ticket not found.</p>
-        <Button variant="outline" size="sm" onClick={() => router.push("/boards")}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            NProgress.start();
+            router.push("/boards");
+          }}
+        >
           <ArrowLeft className="size-4" />
           Back to Board
         </Button>
@@ -738,7 +746,10 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
               <PropertyField icon={CornerDownRight} label="Parent ticket">
                 <button
                   type="button"
-                  onClick={() => router.push(`/ticket/${parentTicket.id}`)}
+                  onClick={() => {
+                    NProgress.start();
+                    router.push(`/ticket/${parentTicket.id}`);
+                  }}
                   className="border-border/60 text-foreground hover:border-primary/35 hover:bg-accent bg-background flex min-h-10 w-full items-center gap-2 rounded-xl border px-3 text-left text-sm font-medium transition-colors"
                 >
                   <CornerDownRight className="text-muted-foreground size-3.5 rotate-180" />
@@ -794,7 +805,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
         </div>
 
         {attachments.length === 0 && !uploadAttachmentMutation.isPending && (
-          <p className="text-muted-foreground/60 text-xs">No attachments yet.</p>
+          <p className="text-muted-foreground text-xs">No attachments yet.</p>
         )}
 
         {uploadAttachmentMutation.isPending && (
@@ -876,7 +887,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
         </div>
 
         {subTickets.length === 0 && (
-          <p className="text-muted-foreground/60 text-xs">No sub-tickets yet.</p>
+          <p className="text-muted-foreground text-xs">No sub-tickets yet.</p>
         )}
 
         {subTickets.map((sub) => {
@@ -886,7 +897,10 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
             <button
               key={sub.id}
               type="button"
-              onClick={() => router.push(`/ticket/${sub.id}`)}
+              onClick={() => {
+                NProgress.start();
+                router.push(`/ticket/${sub.id}`);
+              }}
               className="hover:bg-accent flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-all"
             >
               <StatusIcon className={cn("size-3.5 shrink-0", statusOpt?.color)} />
@@ -903,9 +917,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
     <div className="space-y-4">
       <h4 className="text-sm font-semibold">Activity</h4>
 
-      {timeline.length === 0 && (
-        <p className="text-muted-foreground/60 text-xs">No activity yet.</p>
-      )}
+      {timeline.length === 0 && <p className="text-muted-foreground text-xs">No activity yet.</p>}
 
       <div className="space-y-4">
         {timeline.map((item) => {
@@ -1015,7 +1027,10 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
                 if (canDelete && confirm("Delete this ticket?")) {
                   setIsDeleted(true);
                   deleteTicketMutation.mutate(ticketId, {
-                    onSuccess: () => router.push("/boards"),
+                    onSuccess: () => {
+                      NProgress.start();
+                      router.push("/boards");
+                    },
                   });
                 }
               }}
