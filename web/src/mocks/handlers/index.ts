@@ -9,6 +9,9 @@ import { statusHandlers } from "./statusHandler";
 import { settingsHandlers } from "./settingsHandler";
 import { favoriteHandlers } from "./favoriteHandler";
 import { billingHandlers } from "./billingHandler";
+import { attachmentHandlers } from "./attachmentHandler";
+import { statsHandlers } from "./statsHandler";
+import { permissionHandlers } from "./permissionHandler";
 
 export const handlers = [
   ...userHandlers,
@@ -22,4 +25,7 @@ export const handlers = [
   ...settingsHandlers,
   ...favoriteHandlers,
   ...billingHandlers,
+  ...attachmentHandlers,
+  ...statsHandlers,
+  ...permissionHandlers,
 ];

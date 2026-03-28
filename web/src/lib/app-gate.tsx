@@ -74,7 +74,19 @@ export const AppGate = ({ children }: { children: React.ReactNode }) => {
     setWorkspaceReady(hasWorkspace);
   }, [hasWorkspace, setWorkspaceReady]);
 
-  if (!isLoaded || isLoading) return null;
+  if (!isLoaded || isLoading) {
+    return (
+      <div className="bg-background fixed inset-0 z-50 flex flex-col items-center justify-center gap-5">
+        <div className="flex size-12 items-center justify-center rounded-[0.875rem] bg-gradient-to-br from-indigo-500 to-violet-500 text-lg font-extrabold tracking-tight text-white shadow-lg shadow-indigo-500/25">
+          CS
+        </div>
+        <div className="border-border/60 size-5 animate-spin rounded-full border-2 border-t-indigo-500" />
+        <p className="text-muted-foreground animate-pulse text-sm font-medium">
+          Loading workspace...
+        </p>
+      </div>
+    );
+  }
 
   if (isSignedIn && isError) {
     return (

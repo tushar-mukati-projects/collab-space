@@ -91,6 +91,55 @@ export const sendInvitationEmail = async (
   });
 };
 
+export const sendTicketAssignedEmail = async (
+  email: string,
+  assigneeName: string,
+  ticketTitle: string,
+  ticketId: string,
+  assignedByName: string,
+) => {
+  const appUrl = process.env.CLIENT_URL ?? "http://localhost:3000";
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <tr><td style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:28px;text-align:center;">
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">CollabSpace</h1>
+        </td></tr>
+        <tr><td style="padding:32px;">
+          <h2 style="margin:0 0 8px;color:#18181b;font-size:18px;font-weight:600;">Ticket Assigned to You</h2>
+          <p style="margin:0 0 20px;color:#71717a;font-size:13px;">Hi ${assigneeName},</p>
+          <div style="background:#f8f8fc;border:1px solid #e4e4e7;border-radius:10px;padding:20px;margin-bottom:24px;">
+            <p style="margin:0 0 6px;color:#71717a;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;">Ticket</p>
+            <p style="margin:0;color:#18181b;font-size:16px;font-weight:600;">${ticketTitle}</p>
+            <p style="margin:10px 0 0;color:#71717a;font-size:13px;">Assigned by <strong style="color:#18181b;">${assignedByName}</strong></p>
+          </div>
+          <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+            <a href="${appUrl}/ticket/${ticketId}" style="display:inline-block;background:#6366f1;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:14px;font-weight:600;">
+              View Ticket
+            </a>
+          </td></tr></table>
+        </td></tr>
+        <tr><td style="padding:20px 32px;border-top:1px solid #e4e4e7;text-align:center;">
+          <p style="margin:0;color:#a1a1aa;font-size:12px;">CollabSpace — Collaborative workspace for teams</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  return sendEmail({
+    to: email,
+    subject: `You've been assigned: ${ticketTitle}`,
+    html,
+  });
+};
+
 export const sendNotificationEmail = async (
   email: string,
   title: string,

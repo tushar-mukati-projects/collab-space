@@ -27,6 +27,11 @@ import {
   Star,
   Trash2,
   Check,
+  Paperclip,
+  FileText,
+  Download,
+  Upload,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -57,11 +62,15 @@ import {
   useFetchActivities,
   useCreateComment,
   useTickets,
+  useFetchAttachments,
+  useUploadAttachment,
+  useDeleteAttachment,
 } from "@/hooks/tickets";
 import { useFetchUsers } from "@/hooks/users";
 import { useFetchLabels } from "@/hooks/labels";
 import { useFetchFavorites, useToggleFavorite } from "@/hooks/favorites";
-import type { Ticket, TicketStatus, TicketPriority, User, Label, Comment, Activity } from "@/types";
+import { usePermission, PERMISSION_LABEL } from "@/hooks/usePermission";
+import type { Ticket, TicketStatus, TicketPriority, User, Label, Comment, Activity, Attachment } from "@/types";
 
 const statusOptions: {
   value: TicketStatus;
@@ -185,6 +194,13 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   const { data: favorites = [] } = useFetchFavorites();
   const toggleFavMutation = useToggleFavorite();
   const isFavorited = favorites.some((f) => f.ticket_id === ticketId);
+  const { data: attachments = [] } = useFetchAttachments(ticketId, fetchEnabled);
+  const uploadAttachmentMutation = useUploadAttachment();
+  const deleteAttachmentMutation = useDeleteAttachment();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const canEdit = usePermission("ticket:edit");
+  const canDelete = usePermission("ticket:delete");
+  const canComment = usePermission("ticket:comment");
 
   const collabConfig = React.useMemo(() => {
     const collabUrl = process.env.NEXT_PUBLIC_COLLAB_URL;
@@ -748,6 +764,106 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
+          <h4 className="text-sm font-semibold">Attachments</h4>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadAttachmentMutation.isPending}
+              className="text-muted-foreground hover:text-foreground hover:bg-accent inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs transition-all"
+            >
+              {uploadAttachmentMutation.isPending ? (
+                <Loader2 className="size-3 animate-spin" />
+              ) : (
+                <Upload className="size-3" />
+              )}
+              Upload
+            </button>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                uploadAttachmentMutation.mutate({ ticketId, file });
+                e.target.value = "";
+              }
+            }}
+          />
+        </div>
+
+        {attachments.length === 0 && !uploadAttachmentMutation.isPending && (
+          <p className="text-muted-foreground/60 text-xs">No attachments yet.</p>
+        )}
+
+        {uploadAttachmentMutation.isPending && (
+          <div className="border-border/60 bg-muted/30 flex items-center gap-2 rounded-lg px-3 py-2">
+            <Loader2 className="text-primary size-3.5 animate-spin" />
+            <span className="text-muted-foreground text-xs">Uploading...</span>
+          </div>
+        )}
+
+        <div className="space-y-1.5">
+          {attachments.map((att) => {
+            const isImage = att.mime_type.startsWith("image/");
+            const sizeLabel =
+              att.size < 1024
+                ? `${att.size} B`
+                : att.size < 1024 * 1024
+                  ? `${(att.size / 1024).toFixed(1)} KB`
+                  : `${(att.size / (1024 * 1024)).toFixed(1)} MB`;
+            return (
+              <div
+                key={att.id}
+                className="border-border/60 bg-card/80 group flex items-center gap-2.5 rounded-xl border p-2 transition-colors hover:bg-accent/30"
+              >
+                <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
+                  {isImage ? (
+                    <img
+                      src={att.url}
+                      alt={att.filename}
+                      className="size-8 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <FileText className="text-muted-foreground size-4" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium">{att.filename}</p>
+                  <p className="text-muted-foreground text-[10px]">{sizeLabel}</p>
+                </div>
+                <a
+                  href={att.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground shrink-0 rounded-md p-1 transition-colors"
+                >
+                  <Download className="size-3.5" />
+                </a>
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      deleteAttachmentMutation.mutate({ ticketId, attachmentId: att.id })
+                    }
+                    disabled={deleteAttachmentMutation.isPending}
+                    className="text-muted-foreground hover:text-destructive shrink-0 rounded-md p-1 opacity-0 transition-all group-hover:opacity-100"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
           <h4 className="text-sm font-semibold">Sub-tickets</h4>
           <button
             type="button"
@@ -842,13 +958,14 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
         })}
       </div>
 
-      <div className="flex gap-2 pt-2">
+      <div className="flex gap-2 pt-2" title={!canComment ? `Requires: ${PERMISSION_LABEL["ticket:comment"]}` : undefined}>
         <Input
-          placeholder="Add a comment..."
+          placeholder={canComment ? "Add a comment..." : "You don't have permission to comment"}
           value={commentText}
-          onChange={(e) => setCommentText(e.target.value)}
+          onChange={(e) => canComment && setCommentText(e.target.value)}
+          disabled={!canComment}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
+            if (canComment && e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               handleSubmitComment();
             }
@@ -858,7 +975,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
         <Button
           size="icon"
           onClick={handleSubmitComment}
-          disabled={!commentText.trim() || createCommentMutation.isPending}
+          disabled={!canComment || !commentText.trim() || createCommentMutation.isPending}
         >
           {createCommentMutation.isPending ? (
             <Loader2 className="size-4 animate-spin" />
@@ -892,16 +1009,20 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
             <button
               type="button"
               onClick={() => {
-                if (confirm("Delete this ticket?")) {
+                if (canDelete && confirm("Delete this ticket?")) {
                   setIsDeleted(true);
                   deleteTicketMutation.mutate(ticketId, {
                     onSuccess: () => router.push("/boards"),
                   });
                 }
               }}
-              disabled={deleteTicketMutation.isPending}
+              disabled={!canDelete || deleteTicketMutation.isPending}
+              title={!canDelete ? `Requires: ${PERMISSION_LABEL["ticket:delete"]}` : undefined}
               className={cn(
-                "text-muted-foreground hover:text-destructive hover:bg-destructive/8 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition-all",
+                "text-muted-foreground inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition-all",
+                canDelete
+                  ? "hover:text-destructive hover:bg-destructive/8"
+                  : "cursor-not-allowed opacity-50",
                 deleteTicketMutation.isPending && "pointer-events-none opacity-50",
               )}
             >

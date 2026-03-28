@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { validate } from "../middleware/validate.js";
 import { requirePermission } from "../middleware/auth.js";
+import { upload as uploadMiddleware } from "../middleware/upload.js";
 import { PERMISSIONS } from "../constants.js";
 import {
   listTicketsSchema,
@@ -19,6 +20,11 @@ import {
   createComment,
   listActivities,
 } from "../controllers/tickets.controller.js";
+import {
+  upload as uploadAttachment,
+  list as listAttachments,
+  remove as removeAttachment,
+} from "../controllers/attachments.controller.js";
 
 const router = Router();
 router.get("/", requirePermission(PERMISSIONS.TICKET_VIEW), validate(listTicketsSchema), list);
@@ -58,5 +64,21 @@ router.get(
   requirePermission(PERMISSIONS.TICKET_VIEW),
   validate(ticketIdSchema),
   listActivities,
+);
+router.get(
+  "/:id/attachments",
+  requirePermission(PERMISSIONS.TICKET_VIEW),
+  listAttachments,
+);
+router.post(
+  "/:id/attachments",
+  requirePermission(PERMISSIONS.TICKET_EDIT),
+  uploadMiddleware.single("file"),
+  uploadAttachment,
+);
+router.delete(
+  "/:id/attachments/:attachmentId",
+  requirePermission(PERMISSIONS.TICKET_EDIT),
+  removeAttachment,
 );
 export default router;

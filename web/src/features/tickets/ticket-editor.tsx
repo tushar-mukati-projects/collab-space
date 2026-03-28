@@ -32,7 +32,17 @@ interface TicketEditorProps {
 }
 
 const uploadFile = async (file: File): Promise<string> => {
-  return URL.createObjectURL(file);
+  const { axiosInstance } = await import("@/lib/axios");
+  const formData = new FormData();
+  formData.append("file", file);
+  try {
+    const res = await axiosInstance.post<{ url: string }>("/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data.url;
+  } catch {
+    return URL.createObjectURL(file);
+  }
 };
 
 const CURSOR_COLORS = [

@@ -228,6 +228,16 @@ export interface CreateMeetingInput {
   workspace_id: string;
 }
 
+export interface Attachment {
+  id: string;
+  filename: string;
+  url: string;
+  size: number;
+  mime_type: string;
+  uploaded_by: string;
+  created_at: string;
+}
+
 export interface CreateCommentInput {
   content: string;
   author_id: string;

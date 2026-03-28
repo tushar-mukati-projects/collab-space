@@ -186,7 +186,7 @@ export const ScheduleMeetingDialog = ({
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="max-h-60">
+                <SelectContent className="max-h-60" side="bottom" alignItemWithTrigger={false}>
                   {timeSlots.map((slot) => (
                     <SelectItem key={slot.value} value={slot.value}>
                       {slot.label}
@@ -206,7 +206,7 @@ export const ScheduleMeetingDialog = ({
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="max-h-60">
+                <SelectContent className="max-h-60" side="bottom" alignItemWithTrigger={false}>
                   {timeSlots.map((slot) => (
                     <SelectItem key={slot.value} value={slot.value}>
                       {slot.label}

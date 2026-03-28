@@ -9,6 +9,7 @@ import { ManageStatusDialog } from "./manage-status-dialog";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Plus, Loader2, Tag, CircleDot, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePermission, PERMISSION_LABEL } from "@/hooks/usePermission";
 
 const BoardSkeleton = () => (
   <div className="animate-fade-in space-y-2">
@@ -40,6 +41,10 @@ export const BoardView = () => {
   const [newBoardName, setNewBoardName] = useState("");
   const [labelsDialogOpen, setLabelsDialogOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const canCreateBoard = usePermission("board:create");
+  const canDeleteBoard = usePermission("board:delete");
+  const canManageLabels = usePermission("label:manage");
+  const canManageSettings = usePermission("settings:manage");
 
   const effectiveOpenId = openBoardId ?? boards?.[0]?.id ?? null;
 
@@ -78,7 +83,9 @@ export const BoardView = () => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => setStatusDialogOpen(true)}
+            onClick={() => canManageSettings && setStatusDialogOpen(true)}
+            disabled={!canManageSettings}
+            title={!canManageSettings ? `Requires: ${PERMISSION_LABEL["settings:manage"]}` : undefined}
             className="gap-1.5"
           >
             <CircleDot className="size-3.5" />
@@ -87,13 +94,20 @@ export const BoardView = () => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => setLabelsDialogOpen(true)}
+            onClick={() => canManageLabels && setLabelsDialogOpen(true)}
+            disabled={!canManageLabels}
+            title={!canManageLabels ? `Requires: ${PERMISSION_LABEL["label:manage"]}` : undefined}
             className="gap-1.5"
           >
             <Tag className="size-3.5" />
             Manage Labels
           </Button>
-          <Button size="sm" onClick={() => setShowCreateInput(true)}>
+          <Button
+            size="sm"
+            onClick={() => canCreateBoard && setShowCreateInput(true)}
+            disabled={!canCreateBoard}
+            title={!canCreateBoard ? `Requires: ${PERMISSION_LABEL["board:create"]}` : undefined}
+          >
             <Plus className="size-4" />
             New Board
           </Button>
@@ -167,12 +181,17 @@ export const BoardView = () => {
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (confirm(`Delete board "${board.name}"?`)) {
+                  if (canDeleteBoard && confirm(`Delete board "${board.name}"?`)) {
                     deleteBoardMutation.mutate(board.id);
                   }
                 }}
+                disabled={!canDeleteBoard || deleteBoardMutation.isPending}
+                title={!canDeleteBoard ? `Requires: ${PERMISSION_LABEL["board:delete"]}` : undefined}
                 className={cn(
-                  "text-muted-foreground hover:text-destructive hover:bg-destructive/8 mr-2 inline-flex items-center justify-center rounded-lg p-2 transition-all",
+                  "text-muted-foreground mr-2 inline-flex items-center justify-center rounded-lg p-2 transition-all",
+                  canDeleteBoard
+                    ? "hover:text-destructive hover:bg-destructive/8"
+                    : "cursor-not-allowed opacity-40",
                   deleteBoardMutation.isPending && "pointer-events-none opacity-50",
                 )}
               >

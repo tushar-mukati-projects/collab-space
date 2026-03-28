@@ -23,6 +23,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFetchWorkspace } from "@/hooks/workspace";
 import { useInviteToWorkspace } from "@/hooks/workspace";
+import { usePermission, PERMISSION_LABEL } from "@/hooks/usePermission";
 const planBadgeStyles: Record<string, string> = {
   free: "bg-zinc-500/15 text-zinc-600 dark:bg-zinc-500/20 dark:text-zinc-400",
   pro: "bg-indigo-500/15 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400",
@@ -55,6 +56,9 @@ export const WorkspaceSettings = () => {
   const [inviteEmail, setInviteEmail] = React.useState("");
   const [emailError, setEmailError] = React.useState("");
   const [memberTab, setMemberTab] = React.useState<"members" | "invited">("members");
+  const canInvite = usePermission("member:invite");
+  const canRemove = usePermission("member:remove");
+  const canChangeRole = usePermission("member:role");
 
   const invalidateWs = () => queryClient.invalidateQueries({ queryKey: ["settings", "workspace"] });
 
@@ -184,22 +188,20 @@ export const WorkspaceSettings = () => {
           <CardDescription>Manage workspace members and invitations.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5" title={!canInvite ? `Requires: ${PERMISSION_LABEL["member:invite"]}` : undefined}>
             <div className="flex gap-2">
               <Input
                 value={inviteEmail}
-                onChange={(e) => {
-                  setInviteEmail(e.target.value);
-                  setEmailError("");
-                }}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleInvite())}
-                placeholder="Invite by email address..."
+                onChange={(e) => canInvite && (setInviteEmail(e.target.value), setEmailError(""))}
+                onKeyDown={(e) => canInvite && e.key === "Enter" && (e.preventDefault(), handleInvite())}
+                placeholder={canInvite ? "Invite by email address..." : "You don't have permission to invite"}
+                disabled={!canInvite}
                 className="flex-1"
                 type="email"
               />
               <Button
                 onClick={handleInvite}
-                disabled={!inviteEmail.trim() || inviteMutation.isPending}
+                disabled={!canInvite || !inviteEmail.trim() || inviteMutation.isPending}
               >
                 {inviteMutation.isPending ? (
                   <Loader2 className="size-4 animate-spin" />
@@ -263,9 +265,14 @@ export const WorkspaceSettings = () => {
                   </div>
                   <Select
                     value={member.role}
-                    onValueChange={(role) => role && handleRoleChange(member.id, role)}
+                    onValueChange={(role) => canChangeRole && role && handleRoleChange(member.id, role)}
+                    disabled={!canChangeRole}
                   >
-                    <SelectTrigger size="sm" className="h-7 w-auto">
+                    <SelectTrigger
+                      size="sm"
+                      className="h-7 w-auto"
+                      title={!canChangeRole ? `Requires: ${PERMISSION_LABEL["member:role"]}` : undefined}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -273,18 +280,18 @@ export const WorkspaceSettings = () => {
                       <SelectItem value="member">Member</SelectItem>
                     </SelectContent>
                   </Select>
-                  {
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="text-muted-foreground hover:text-destructive"
-                      onClick={() => {
-                        if (confirm(`Remove ${member.name}?`)) handleRemoveMember(member.id);
-                      }}
-                    >
-                      <X className="size-3.5" />
-                    </Button>
-                  }
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:text-destructive"
+                    disabled={!canRemove}
+                    title={!canRemove ? `Requires: ${PERMISSION_LABEL["member:remove"]}` : undefined}
+                    onClick={() => {
+                      if (canRemove && confirm(`Remove ${member.name}?`)) handleRemoveMember(member.id);
+                    }}
+                  >
+                    <X className="size-3.5" />
+                  </Button>
                 </div>
               ))}
             </div>
@@ -315,8 +322,10 @@ export const WorkspaceSettings = () => {
                       variant="ghost"
                       size="icon-sm"
                       className="text-muted-foreground hover:text-destructive"
+                      disabled={!canInvite}
+                      title={!canInvite ? `Requires: ${PERMISSION_LABEL["member:invite"]}` : undefined}
                       onClick={() => {
-                        if (confirm(`Revoke invitation for ${email}?`)) handleRevokeInvite(email);
+                        if (canInvite && confirm(`Revoke invitation for ${email}?`)) handleRevokeInvite(email);
                       }}
                     >
                       <X className="size-3.5" />

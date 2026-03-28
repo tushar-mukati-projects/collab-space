@@ -11,4 +11,7 @@ export const config = {
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET!,
   STRIPE_PRO_PRICE_ID: process.env.STRIPE_PRO_PRICE_ID!,
   STRIPE_ENTERPRISE_PRICE_ID: process.env.STRIPE_ENTERPRISE_PRICE_ID!,
+  SUPABASE_URL: process.env.SUPABASE_URL,
+  SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
+  SUPABASE_BUCKET: process.env.SUPABASE_BUCKET ?? "collabspace-attachments",
 };

@@ -95,6 +95,7 @@ model User {
   appearance_prefs    AppearancePrefs[]
   favorites           Favorite[]
   push_subscriptions  PushSubscription[]
+  attachments         Attachment[]
 }
 
 model Workspace {
@@ -124,6 +125,7 @@ model Workspace {
   favorites           Favorite[]
   push_subscriptions  PushSubscription[]
   role_permissions    RolePermission[]
+  attachments         Attachment[]
 }
 
 model WorkspaceMember {
@@ -188,10 +190,31 @@ model Ticket {
   comments    Comment[]
   activities  Activity[]
   favorites   Favorite[]
+  attachments Attachment[]
 
   @@index([workspace_id, status, created_at(sort: Desc)])
   @@index([parent_id])
   @@index([assignee_id])
+}
+
+model Attachment {
+  id           String   @id @default(cuid())
+  filename     String
+  original_name String
+  url          String
+  size         Int
+  mime_type    String
+  uploaded_by  String
+  ticket_id    String
+  workspace_id String
+  created_at   DateTime @default(now())
+
+  uploader  User      @relation(fields: [uploaded_by], references: [id], onDelete: Cascade)
+  ticket    Ticket    @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@index([ticket_id])
+  @@index([workspace_id])
 }
 
 model Comment {

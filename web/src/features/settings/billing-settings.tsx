@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useFetchSubscription, useCreateCheckout, useCreatePortal } from "@/hooks/billing";
+import { usePermission, PERMISSION_LABEL } from "@/hooks/usePermission";
 import type { WorkspacePlan } from "@/types";
 
 interface PlanConfig {
@@ -115,12 +116,16 @@ export const BillingSettings = () => {
   const { data: subscription, isLoading } = useFetchSubscription();
   const checkoutMutation = useCreateCheckout();
   const portalMutation = useCreatePortal();
+  const canBilling = usePermission("billing:manage");
+  const billingTitle = !canBilling ? `Requires: ${PERMISSION_LABEL["billing:manage"]}` : undefined;
 
   const handleUpgrade = (plan: "pro" | "enterprise") => {
+    if (!canBilling) return;
     checkoutMutation.mutate({ plan }, { onError: () => toast.error("Failed to start checkout") });
   };
 
   const handleManageBilling = () => {
+    if (!canBilling) return;
     portalMutation.mutate(undefined, {
       onError: () => toast.error("Failed to open billing portal"),
     });
@@ -186,7 +191,8 @@ export const BillingSettings = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleManageBilling}
-                disabled={portalMutation.isPending}
+                disabled={!canBilling || portalMutation.isPending}
+                title={billingTitle}
               >
                 {portalMutation.isPending ? (
                   <Loader2 className="size-3.5 animate-spin" />
@@ -273,7 +279,8 @@ export const BillingSettings = () => {
                       size="sm"
                       className="w-full"
                       onClick={() => handleUpgrade(plan.key as "pro" | "enterprise")}
-                      disabled={checkoutMutation.isPending}
+                      disabled={!canBilling || checkoutMutation.isPending}
+                      title={billingTitle}
                     >
                       {isCheckingOut ? (
                         <Loader2 className="size-3.5 animate-spin" />
@@ -288,7 +295,8 @@ export const BillingSettings = () => {
                       size="sm"
                       className="w-full"
                       onClick={handleManageBilling}
-                      disabled={portalMutation.isPending}
+                      disabled={!canBilling || portalMutation.isPending}
+                      title={billingTitle}
                     >
                       {portalMutation.isPending ? (
                         <Loader2 className="size-3.5 animate-spin" />

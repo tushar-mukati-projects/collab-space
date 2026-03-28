@@ -12,6 +12,9 @@ import favorites from "./favorites.routes.js";
 import settings from "./settings.routes.js";
 import billing from "./billing.routes.js";
 import permissions from "./permissions.routes.js";
+import stats from "./stats.routes.js";
+import { upload as uploadMiddleware } from "../middleware/upload.js";
+import { editorUpload } from "../controllers/attachments.controller.js";
 
 const router = Router();
 
@@ -28,5 +31,7 @@ router.use("/favorites", favorites);
 router.use("/settings", settings);
 router.use("/billing", billing);
 router.use("/permissions", permissions);
+router.use("/stats", stats);
+router.post("/upload", uploadMiddleware.single("file"), editorUpload);
 
 export { router as routes };

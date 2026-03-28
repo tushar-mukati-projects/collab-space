@@ -24,7 +24,7 @@ const resolveTheme = (pref: "light" | "dark" | "system"): "light" | "dark" => {
 export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const theme = useUIStore((s) => s.theme);
   const setTheme = useUIStore((s) => s.setTheme);
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isLoaded: isAuthLoaded } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const { hasWorkspace, appearance } = useAppGate();
@@ -85,7 +85,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!isSignedIn) return null;
+  if (!isAuthLoaded || !isSignedIn) return null;
 
   if (isMeetingRoom) {
     return (

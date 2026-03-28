@@ -5,6 +5,8 @@ import {
   deserializePriority,
   deserializeParentType,
 } from "../utils.js";
+import { sendTicketAssignedEmail } from "./email.service.js";
+import { logger } from "../logger.js";
 
 export interface TicketListFilters {
   assignees?: string[];
@@ -268,6 +270,47 @@ export const updateTicket = async (
         ticket_id: ticket.id,
       },
     });
+  }
+
+  if (
+    data.assignee !== undefined &&
+    data.assignee !== null &&
+    data.assignee !== existing.assignee_id
+  ) {
+    await prisma.activity.create({
+      data: {
+        type: "ticket_assigned",
+        message: `assigned this ticket`,
+        user_id: userId,
+        ticket_id: ticket.id,
+      },
+    });
+
+    const [assignee, actor] = await Promise.all([
+      prisma.user.findUnique({ where: { id: data.assignee }, select: { email: true, name: true } }),
+      prisma.user.findUnique({ where: { id: userId }, select: { name: true } }),
+    ]);
+
+    if (assignee) {
+      await prisma.notification.create({
+        data: {
+          type: "ticket_assigned",
+          title: "Ticket Assigned",
+          message: `${actor?.name ?? "Someone"} assigned you to "${ticket.title}"`,
+          link: `/ticket/${ticket.id}`,
+          actor_id: userId,
+          user_id: data.assignee,
+        },
+      });
+
+      sendTicketAssignedEmail(
+        assignee.email,
+        assignee.name,
+        ticket.title,
+        ticket.id,
+        actor?.name ?? "A teammate",
+      ).catch((err) => logger.error("Assign email failed", { error: err.message }));
+    }
   }
 
   const subTickets = await prisma.ticket.findMany({
