@@ -13,6 +13,8 @@ import {
   PhoneOff,
   Send,
   ChevronLeft,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,217 +23,108 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useWebRTC } from "@/hooks/meetings";
 import type { Meeting, User } from "@/types";
 
 interface MeetingRoomProps {
   meeting: Meeting;
   users: User[];
   currentUserId: string;
+  currentUserName: string;
   onLeave: () => void;
-}
-
-interface ChatMessage {
-  id: string;
-  userId: string;
-  text: string;
-  timestamp: Date;
 }
 
 type SidePanel = "chat" | "participants" | null;
 
-export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingRoomProps) => {
-  const [isMicOn, setIsMicOn] = React.useState(false);
-  const [isCameraOn, setIsCameraOn] = React.useState(false);
-  const [isScreenSharing, setIsScreenSharing] = React.useState(false);
-  const [isRecording] = React.useState(false);
+const RemoteVideo = ({ stream }: { stream: MediaStream }) => {
+  const ref = React.useRef<HTMLVideoElement>(null);
+  React.useEffect(() => {
+    if (ref.current) ref.current.srcObject = stream;
+  }, [stream]);
+  return <video ref={ref} autoPlay playsInline className="size-full object-cover" />;
+};
+
+export const MeetingRoom = ({
+  meeting,
+  users,
+  currentUserId,
+  currentUserName,
+  onLeave,
+}: MeetingRoomProps) => {
+  const {
+    localStream,
+    screenStream,
+    peers,
+    isMicOn,
+    isCameraOn,
+    isScreenSharing,
+    mediaError,
+    chatMessages,
+    isConnected,
+    toggleMic,
+    toggleCamera,
+    toggleScreenShare,
+    sendChatMessage,
+    disconnect,
+  } = useWebRTC({ roomId: meeting.room_id, userId: currentUserId, userName: currentUserName });
+
   const [sidePanel, setSidePanel] = React.useState<SidePanel>(null);
   const [chatInput, setChatInput] = React.useState("");
-  const [chatMessages, setChatMessages] = React.useState<ChatMessage[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = React.useState(0);
-  const [mediaError, setMediaError] = React.useState<string | null>(null);
-
-  const localStreamRef = React.useRef<MediaStream | null>(null);
-  const screenStreamRef = React.useRef<MediaStream | null>(null);
-  const localVideoElRef = React.useRef<HTMLVideoElement | null>(null);
-  const screenVideoElRef = React.useRef<HTMLVideoElement | null>(null);
   const chatEndRef = React.useRef<HTMLDivElement>(null);
 
-  const localVideoRef = (node: HTMLVideoElement | null) => {
-    localVideoElRef.current = node;
-    if (node && localStreamRef.current) node.srcObject = localStreamRef.current;
-  };
+  const localVideoRef = React.useCallback(
+    (node: HTMLVideoElement | null) => {
+      if (node && localStream) node.srcObject = localStream;
+    },
+    [localStream],
+  );
 
-  const screenVideoRef = (node: HTMLVideoElement | null) => {
-    screenVideoElRef.current = node;
-    if (node && screenStreamRef.current) node.srcObject = screenStreamRef.current;
-  };
+  const screenVideoRef = React.useCallback(
+    (node: HTMLVideoElement | null) => {
+      if (node && screenStream) node.srcObject = screenStream;
+    },
+    [screenStream],
+  );
 
   React.useEffect(() => {
-    const interval = setInterval(() => {
-      setElapsedSeconds((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(interval);
+    const iv = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
+    return () => clearInterval(iv);
   }, []);
 
   React.useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
-  React.useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
-          audio: true,
-        });
-        if (cancelled) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
-        localStreamRef.current = stream;
-        if (localVideoElRef.current) localVideoElRef.current.srcObject = stream;
-        setIsCameraOn(true);
-        setIsMicOn(true);
-      } catch {
-        setMediaError("Could not access camera/mic. Check permissions.");
-      }
-    })();
-    return () => {
-      cancelled = true;
-      localStreamRef.current?.getTracks().forEach((t) => t.stop());
-      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
-    };
-  }, []);
-
-  const toggleCamera = async () => {
-    if (isCameraOn) {
-      const stream = localStreamRef.current;
-      if (stream) {
-        stream.getVideoTracks().forEach((t) => t.stop());
-      }
-      setIsCameraOn(false);
-    } else {
-      try {
-        setMediaError(null);
-        const stream = localStreamRef.current;
-        if (stream && stream.getAudioTracks().length > 0) {
-          const videoStream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
-          });
-          videoStream.getVideoTracks().forEach((t) => stream.addTrack(t));
-        } else {
-          const newStream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
-            audio: true,
-          });
-          localStreamRef.current = newStream;
-          setIsMicOn(true);
-        }
-        if (localVideoElRef.current && localStreamRef.current) {
-          localVideoElRef.current.srcObject = localStreamRef.current;
-        }
-        setIsCameraOn(true);
-      } catch {
-        setMediaError("Could not access camera.");
-      }
-    }
-  };
-
-  const toggleMic = async () => {
-    const stream = localStreamRef.current;
-    if (stream) {
-      const audioTracks = stream.getAudioTracks();
-      if (audioTracks.length > 0) {
-        audioTracks.forEach((t) => {
-          t.enabled = !t.enabled;
-        });
-        setIsMicOn(!isMicOn);
-        return;
-      }
-    }
-    try {
-      const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (localStreamRef.current) {
-        audioStream.getAudioTracks().forEach((t) => localStreamRef.current!.addTrack(t));
-      } else {
-        localStreamRef.current = audioStream;
-      }
-      setIsMicOn(true);
-    } catch {
-      setMediaError("Could not access microphone.");
-    }
-  };
-
-  const toggleScreenShare = async () => {
-    if (isScreenSharing) {
-      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
-      screenStreamRef.current = null;
-      setIsScreenSharing(false);
-    } else {
-      try {
-        const stream = await navigator.mediaDevices.getDisplayMedia({
-          video: { displaySurface: "monitor" },
-          audio: false,
-        });
-        screenStreamRef.current = stream;
-        if (screenVideoElRef.current) screenVideoElRef.current.srcObject = stream;
-        stream.getVideoTracks()[0].onended = () => {
-          screenStreamRef.current = null;
-          setIsScreenSharing(false);
-        };
-        setIsScreenSharing(true);
-      } catch {}
-    }
-  };
-
-  const handleLeave = () => {
-    localStreamRef.current?.getTracks().forEach((t) => t.stop());
-    screenStreamRef.current?.getTracks().forEach((t) => t.stop());
-    localStreamRef.current = null;
-    screenStreamRef.current = null;
-    onLeave();
-  };
+  const getUserName = (userId: string) => users.find((u) => u.id === userId)?.name ?? userId;
+  const getUserAvatar = (userId: string) => users.find((u) => u.id === userId)?.avatar ?? "";
+  const getUserInitials = (userId: string) =>
+    getUserName(userId)
+      .split(" ")
+      .map((n) => n[0])
+      .join("");
 
   const formatDuration = (totalSeconds: number) => {
     const hrs = Math.floor(totalSeconds / 3600);
     const mins = Math.floor((totalSeconds % 3600) / 60);
     const secs = totalSeconds % 60;
-    if (hrs > 0) {
+    if (hrs > 0)
       return `${hrs}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-    }
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const participants = meeting.participants
-    .map((id) => users.find((u) => u.id === id))
-    .filter(Boolean) as User[];
+  const formatMessageTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-  const getUserName = (userId: string) => users.find((u) => u.id === userId)?.name ?? "Unknown";
-
-  const getUserAvatar = (userId: string) => users.find((u) => u.id === userId)?.avatar ?? "";
-
-  const getUserInitials = (userId: string) => {
-    const name = getUserName(userId);
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("");
+  const handleLeave = () => {
+    disconnect();
+    onLeave();
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
-
-    setChatMessages((prev) => [
-      ...prev,
-      {
-        id: `msg_${Date.now()}`,
-        userId: currentUserId,
-        text: chatInput.trim(),
-        timestamp: new Date(),
-      },
-    ]);
+    sendChatMessage(chatInput.trim());
     setChatInput("");
   };
 
@@ -239,17 +132,12 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
     setSidePanel((prev) => (prev === panel ? null : panel));
   };
 
-  const formatMessageTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
-
-  const showScreenShareMain = isScreenSharing;
-  const participantCount = participants.length;
-  const gridCols = showScreenShareMain
+  const totalInRoom = 1 + peers.length;
+  const gridCols = isScreenSharing
     ? "grid-cols-1"
-    : participantCount <= 1
+    : totalInRoom <= 1
       ? "grid-cols-1"
-      : participantCount <= 4
+      : totalInRoom <= 4
         ? "grid-cols-2"
         : "grid-cols-3";
 
@@ -268,21 +156,22 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
           <div className="flex flex-col">
             <span className="text-sm font-medium text-white">{meeting.title}</span>
             <span className="text-xs text-zinc-500">
-              {participants.length} participant{participants.length !== 1 ? "s" : ""}
+              {totalInRoom} participant{totalInRoom !== 1 ? "s" : ""}
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          {isRecording && (
-            <div className="flex items-center gap-1.5 rounded-full bg-red-500/20 px-2.5 py-1">
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-500 opacity-75" />
-                <span className="relative inline-flex size-2 rounded-full bg-red-500" />
-              </span>
-              <span className="text-xs font-medium text-red-400">REC</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1.5 rounded-full bg-zinc-800 px-2.5 py-1">
+            {isConnected ? (
+              <Wifi className="size-3 text-emerald-400" />
+            ) : (
+              <WifiOff className="size-3 text-red-400" />
+            )}
+            <span className={cn("text-xs", isConnected ? "text-emerald-400" : "text-red-400")}>
+              {isConnected ? "Connected" : "Connecting..."}
+            </span>
+          </div>
 
           {mediaError && (
             <div className="max-w-xs rounded-full bg-amber-500/20 px-3 py-1">
@@ -291,16 +180,14 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
           )}
 
           <div className="rounded-full bg-zinc-800 px-3 py-1">
-            <span className="font-mono text-xs text-zinc-300">
-              {formatDuration(elapsedSeconds)}
-            </span>
+            <span className="font-mono text-xs text-zinc-300">{formatDuration(elapsedSeconds)}</span>
           </div>
         </div>
       </div>
 
       <div className="flex flex-1 gap-0 overflow-hidden">
         <div className={cn("flex-1 p-3 transition-all", sidePanel ? "pr-0" : "")}>
-          {showScreenShareMain ? (
+          {isScreenSharing ? (
             <div className="flex h-full flex-col gap-2">
               <div className="relative flex-1 overflow-hidden rounded-xl bg-zinc-900 ring-2 ring-indigo-500/60">
                 <video
@@ -313,9 +200,10 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
                   <span className="text-xs text-zinc-200">Your screen</span>
                 </div>
               </div>
+
               <div className="flex h-28 shrink-0 gap-2 overflow-x-auto">
                 <div className="relative flex w-40 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-900 ring-2 ring-indigo-500/60">
-                  {isCameraOn ? (
+                  {localStream && (
                     <video
                       ref={localVideoRef}
                       autoPlay
@@ -323,8 +211,9 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
                       muted
                       className="size-full -scale-x-100 object-cover"
                     />
-                  ) : (
-                    <div className="flex flex-col items-center gap-1">
+                  )}
+                  {(!isCameraOn || !localStream) && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900">
                       <Avatar size="sm">
                         <AvatarImage src={getUserAvatar(currentUserId)} />
                         <AvatarFallback className="bg-zinc-700 text-xs text-zinc-300">
@@ -340,27 +229,33 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
                     </div>
                   )}
                 </div>
-                {participants
-                  .filter((u) => u.id !== currentUserId)
-                  .map((user) => (
-                    <div
-                      key={user.id}
-                      className="relative flex w-40 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-900 ring-1 ring-zinc-800"
-                    >
-                      <div className="flex flex-col items-center gap-1">
+
+                {peers.map((peer) => (
+                  <div
+                    key={peer.socketId}
+                    className="relative flex w-40 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-900 ring-1 ring-zinc-800"
+                  >
+                    {peer.stream && <RemoteVideo stream={peer.stream} />}
+                    {(!peer.isCameraOn || !peer.stream) && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900">
                         <Avatar size="sm">
-                          <AvatarImage src={user.avatar} alt={user.name} />
+                          <AvatarImage src={getUserAvatar(peer.userId)} alt={peer.userName} />
                           <AvatarFallback className="bg-zinc-700 text-xs text-zinc-300">
-                            {user.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                            {getUserInitials(peer.userId)}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-[10px] text-zinc-400">{user.name.split(" ")[0]}</span>
+                        <span className="text-[10px] text-zinc-400">
+                          {peer.userName.split(" ")[0]}
+                        </span>
                       </div>
-                    </div>
-                  ))}
+                    )}
+                    {!peer.isMicOn && (
+                      <div className="absolute top-1 right-1 rounded-full bg-red-500/80 p-0.5">
+                        <MicOff className="size-2.5 text-white" />
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           ) : (
@@ -368,65 +263,65 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
               className={cn(
                 "grid h-full gap-2",
                 gridCols,
-                participantCount <= 2 ? "grid-rows-1" : "auto-rows-fr",
+                totalInRoom <= 2 ? "grid-rows-1" : "auto-rows-fr",
               )}
             >
-              {participants.map((user) => {
-                const isCurrentUser = user.id === currentUserId;
-                return (
-                  <div
-                    key={user.id}
-                    className={cn(
-                      "relative flex items-center justify-center overflow-hidden rounded-xl",
-                      isCurrentUser ? "ring-2 ring-indigo-500/60" : "ring-1 ring-zinc-800",
-                      "bg-zinc-900",
-                    )}
-                  >
-                    {isCurrentUser && isCameraOn ? (
-                      <video
-                        ref={localVideoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className="size-full -scale-x-100 object-cover"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center gap-3">
-                        <Avatar size="lg" className="size-16 ring-0 after:ring-0">
-                          <AvatarImage src={user.avatar} alt={user.name} />
-                          <AvatarFallback className="bg-zinc-700 text-lg text-zinc-300">
-                            {user.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-medium text-zinc-200">
-                          {isCurrentUser ? "You" : user.name}
-                        </span>
-                        {isCurrentUser && !isCameraOn && (
-                          <span className="text-xs text-zinc-500">Camera off</span>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-1 backdrop-blur-sm">
-                      <span className="text-xs text-zinc-200">
-                        {isCurrentUser ? "You" : user.name.split(" ")[0]}
-                      </span>
-                      {isCurrentUser && !isMicOn && <MicOff className="size-3 text-red-400" />}
-                    </div>
-
-                    {isCurrentUser && (
-                      <div className="absolute top-2 right-2">
-                        <Badge className="bg-indigo-500/20 px-1.5 py-0 text-[10px] text-indigo-300">
-                          You
-                        </Badge>
-                      </div>
-                    )}
+              <div className="relative flex items-center justify-center overflow-hidden rounded-xl bg-zinc-900 ring-2 ring-indigo-500/60">
+                {localStream && (
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="size-full -scale-x-100 object-cover"
+                  />
+                )}
+                {(!isCameraOn || !localStream) && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900">
+                    <Avatar size="lg" className="size-16 ring-0 after:ring-0">
+                      <AvatarImage src={getUserAvatar(currentUserId)} />
+                      <AvatarFallback className="bg-zinc-700 text-lg text-zinc-300">
+                        {getUserInitials(currentUserId)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium text-zinc-200">You</span>
+                    {!isCameraOn && <span className="text-xs text-zinc-500">Camera off</span>}
                   </div>
-                );
-              })}
+                )}
+                <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-1 backdrop-blur-sm">
+                  <span className="text-xs text-zinc-200">You</span>
+                  {!isMicOn && <MicOff className="size-3 text-red-400" />}
+                </div>
+                <div className="absolute top-2 right-2">
+                  <Badge className="bg-indigo-500/20 px-1.5 py-0 text-[10px] text-indigo-300">
+                    You
+                  </Badge>
+                </div>
+              </div>
+
+              {peers.map((peer) => (
+                <div
+                  key={peer.socketId}
+                  className="relative flex items-center justify-center overflow-hidden rounded-xl bg-zinc-900 ring-1 ring-zinc-800"
+                >
+                  {peer.stream && <RemoteVideo stream={peer.stream} />}
+                  {(!peer.isCameraOn || !peer.stream) && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900">
+                      <Avatar size="lg" className="size-16 ring-0 after:ring-0">
+                        <AvatarImage src={getUserAvatar(peer.userId)} alt={peer.userName} />
+                        <AvatarFallback className="bg-zinc-700 text-lg text-zinc-300">
+                          {getUserInitials(peer.userId)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm font-medium text-zinc-200">{peer.userName}</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-1 backdrop-blur-sm">
+                    <span className="text-xs text-zinc-200">{peer.userName.split(" ")[0]}</span>
+                    {!peer.isMicOn && <MicOff className="size-3 text-red-400" />}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -532,60 +427,53 @@ export const MeetingRoom = ({ meeting, users, currentUserId, onLeave }: MeetingR
             {sidePanel === "participants" && (
               <ScrollArea className="flex-1 p-3">
                 <div className="flex flex-col gap-1">
-                  {participants.map((user) => {
-                    const isCurrentUser = user.id === currentUserId;
-                    return (
-                      <div
-                        key={user.id}
-                        className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-zinc-800/50"
-                      >
-                        <Avatar size="sm">
-                          <AvatarImage src={user.avatar} alt={user.name} />
-                          <AvatarFallback className="bg-zinc-700 text-xs text-zinc-300">
-                            {user.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-1 flex-col">
-                          <span className="text-sm text-zinc-200">
-                            {user.name}
-                            {isCurrentUser && (
-                              <span className="ml-1 text-xs text-zinc-500">(You)</span>
-                            )}
-                          </span>
-                          <span className="text-xs text-zinc-500">{user.role}</span>
+                  <div className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-zinc-800/50">
+                    <Avatar size="sm">
+                      <AvatarImage src={getUserAvatar(currentUserId)} />
+                      <AvatarFallback className="bg-zinc-700 text-xs text-zinc-300">
+                        {getUserInitials(currentUserId)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-1 flex-col">
+                      <span className="text-sm text-zinc-200">
+                        {currentUserName}
+                        <span className="ml-1 text-xs text-zinc-500">(You)</span>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className={cn("rounded-full p-1", !isMicOn ? "bg-red-500/20" : "bg-zinc-800")}>
+                        {!isMicOn ? <MicOff className="size-3 text-red-400" /> : <Mic className="size-3 text-zinc-400" />}
+                      </div>
+                      <div className={cn("rounded-full p-1", !isCameraOn ? "bg-red-500/20" : "bg-zinc-800")}>
+                        {!isCameraOn ? <CameraOff className="size-3 text-red-400" /> : <Camera className="size-3 text-zinc-400" />}
+                      </div>
+                    </div>
+                  </div>
+
+                  {peers.map((peer) => (
+                    <div
+                      key={peer.socketId}
+                      className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-zinc-800/50"
+                    >
+                      <Avatar size="sm">
+                        <AvatarImage src={getUserAvatar(peer.userId)} alt={peer.userName} />
+                        <AvatarFallback className="bg-zinc-700 text-xs text-zinc-300">
+                          {getUserInitials(peer.userId)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-1 flex-col">
+                        <span className="text-sm text-zinc-200">{peer.userName}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className={cn("rounded-full p-1", !peer.isMicOn ? "bg-red-500/20" : "bg-zinc-800")}>
+                          {!peer.isMicOn ? <MicOff className="size-3 text-red-400" /> : <Mic className="size-3 text-zinc-400" />}
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <div
-                            className={cn(
-                              "rounded-full p-1",
-                              isCurrentUser && !isMicOn ? "bg-red-500/20" : "bg-zinc-800",
-                            )}
-                          >
-                            {isCurrentUser && !isMicOn ? (
-                              <MicOff className="size-3 text-red-400" />
-                            ) : (
-                              <Mic className="size-3 text-zinc-400" />
-                            )}
-                          </div>
-                          <div
-                            className={cn(
-                              "rounded-full p-1",
-                              isCurrentUser && !isCameraOn ? "bg-red-500/20" : "bg-zinc-800",
-                            )}
-                          >
-                            {isCurrentUser && !isCameraOn ? (
-                              <CameraOff className="size-3 text-red-400" />
-                            ) : (
-                              <Camera className="size-3 text-zinc-400" />
-                            )}
-                          </div>
+                        <div className={cn("rounded-full p-1", !peer.isCameraOn ? "bg-red-500/20" : "bg-zinc-800")}>
+                          {!peer.isCameraOn ? <CameraOff className="size-3 text-red-400" /> : <Camera className="size-3 text-zinc-400" />}
                         </div>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               </ScrollArea>
             )}

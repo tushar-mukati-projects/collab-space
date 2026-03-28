@@ -8,6 +8,7 @@ import { logger } from "./logger.js";
 import { authMiddleware, workspaceMiddleware } from "./middleware/auth.js";
 import { routes } from "./routes/index.js";
 import { startCollab } from "./collab-server.js";
+import { startMeetingSignaling } from "./meeting-signaling.js";
 import { webhook as stripeWebhook } from "./controllers/billing.controller.js";
 import type { Request, Response, NextFunction } from "express";
 
@@ -28,7 +29,6 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
-// Stripe webhook needs raw body — must be before express.json()
 app.post("/api/billing/webhook", express.raw({ type: "application/json" }), stripeWebhook);
 
 app.use(express.json());
@@ -46,9 +46,19 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 const server = createServer(app);
-startCollab(server);
+const collabWss = startCollab();
+startMeetingSignaling(server, config.CLIENT_URL);
+
+server.on("upgrade", (req, socket, head) => {
+  if ((req.url ?? "").startsWith("/collab")) {
+    collabWss.handleUpgrade(req, socket, head, (ws) => {
+      collabWss.emit("connection", ws, req);
+    });
+  }
+});
 
 server.listen(config.PORT, () => {
   logger.info(`Server started on port ${config.PORT}`);
   logger.info(`WebSocket available at /collab`);
+  logger.info(`Meeting signaling available at /meeting-socket`);
 });

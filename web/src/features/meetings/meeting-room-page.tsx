@@ -34,6 +34,7 @@ export const MeetingRoomPage = ({ meetingId }: MeetingRoomPageProps) => {
       meeting={meeting}
       users={users}
       currentUserId={clerkUser?.id ?? "usr_01"}
+      currentUserName={clerkUser?.fullName ?? clerkUser?.firstName ?? "You"}
       onLeave={handleLeave}
     />
   );

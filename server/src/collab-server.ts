@@ -2,7 +2,7 @@ import { Hocuspocus } from "@hocuspocus/server";
 import { Database } from "@hocuspocus/extension-database";
 import { WebSocketServer } from "ws";
 import pg from "pg";
-import type { Server as HttpServer } from "http";
+
 import { logger } from "./logger.js";
 
 const pool = new pg.Pool({
@@ -58,10 +58,11 @@ const hocuspocus = new Hocuspocus({
   ],
 });
 
-export const startCollab = (server: HttpServer) => {
-  const wss = new WebSocketServer({ server, path: "/collab" });
+export const startCollab = () => {
+  const wss = new WebSocketServer({ noServer: true });
   wss.on("connection", (ws, req) => {
     logger.debug("New collab WebSocket connection", { url: req.url });
     hocuspocus.handleConnection(ws, req);
   });
+  return wss;
 };
