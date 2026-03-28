@@ -12,6 +12,7 @@ import { billingHandlers } from "./billingHandler";
 import { attachmentHandlers } from "./attachmentHandler";
 import { statsHandlers } from "./statsHandler";
 import { permissionHandlers } from "./permissionHandler";
+import { aiHandlers } from "./aiHandler";
 
 export const handlers = [
   ...userHandlers,
@@ -28,4 +29,5 @@ export const handlers = [
   ...attachmentHandlers,
   ...statsHandlers,
   ...permissionHandlers,
+  ...aiHandlers,
 ];

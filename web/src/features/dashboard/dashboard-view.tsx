@@ -55,8 +55,6 @@ const STATUS_ICONS: Record<string, React.ElementType> = {
   done: CheckCircle2,
 };
 
-// --- Shared components ---
-
 interface StatCardProps {
   label: string;
   value: number;
@@ -170,8 +168,6 @@ const formatDueLabel = (dateStr: string) => {
   if (isTomorrow(d)) return "Tomorrow";
   return format(d, "MMM d");
 };
-
-// --- Main Component ---
 
 export const DashboardView = () => {
   const { data: stats, isLoading } = useFetchStats();

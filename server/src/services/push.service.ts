@@ -47,8 +47,6 @@ export const sendPushToUser = async (userId: string, title: string, body: string
 
   const payload = JSON.stringify({ title, body, url: url ?? "/" });
 
-  // TODO: Install web-push and implement actual push delivery
-  // For now log that push would be sent
   logger.info("Push notification queued", {
     userId,
     recipientCount: subscriptions.length,

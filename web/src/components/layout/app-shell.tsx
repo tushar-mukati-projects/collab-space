@@ -9,6 +9,7 @@ import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { TopNav } from "./top-nav";
 import { LeftNav } from "./left-nav";
 import { CommandPalette } from "./command-palette";
+import { AiChat } from "./ai-chat";
 
 const AUTH_ROUTES = ["/login", "/signup"];
 const ONBOARDING_ROUTE = "/onboarding";
@@ -110,6 +111,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
         </main>
       </div>
       {hasWorkspace && <CommandPalette />}
+      {hasWorkspace && <AiChat />}
     </div>
   );
 };

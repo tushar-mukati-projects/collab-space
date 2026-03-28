@@ -14,6 +14,7 @@ import billing from "./billing.routes.js";
 import permissions from "./permissions.routes.js";
 import stats from "./stats.routes.js";
 import upload from "./upload.routes.js";
+import ai from "./ai.routes.js";
 
 const router = Router();
 
@@ -32,5 +33,6 @@ router.use("/billing", billing);
 router.use("/permissions", permissions);
 router.use("/stats", stats);
 router.use("/upload", upload);
+router.use("/ai", ai);
 
 export { router as routes };

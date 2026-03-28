@@ -11,14 +11,12 @@ export const statsHandlers = [
     const users = mockUsers;
     const userMap = new Map(users.map((u) => [u.id, u]));
 
-    // By status
     const statusCounts: Record<string, number> = {};
     for (const t of _tickets) {
       statusCounts[t.status] = (statusCounts[t.status] ?? 0) + 1;
     }
     const byStatus = Object.entries(statusCounts).map(([status, count]) => ({ status, count }));
 
-    // Daily created (last 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -39,7 +37,6 @@ export const statsHandlers = [
       cursor.setDate(cursor.getDate() + 1);
     }
 
-    // Upcoming deadlines (next 7 days, not done)
     const sevenDays = new Date();
     sevenDays.setDate(sevenDays.getDate() + 7);
     const upcomingDeadlines = _tickets
@@ -67,7 +64,6 @@ export const statsHandlers = [
           : null,
       }));
 
-    // Overdue tickets
     const overdueTickets = _tickets
       .filter((t) => t.due_date && new Date(t.due_date) < now && t.status !== "done")
       .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime())
@@ -87,7 +83,6 @@ export const statsHandlers = [
           : null,
       }));
 
-    // Recent activity feed
     const sortedActivities = [..._activities]
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 15);
@@ -112,7 +107,6 @@ export const statsHandlers = [
       };
     });
 
-    // Meetings this week
     const weekEnd = new Date();
     weekEnd.setDate(weekEnd.getDate() + 7);
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -139,7 +133,6 @@ export const statsHandlers = [
         })),
       }));
 
-    // Member summary
     const memberSummary = users.map((u) => {
       const assigned = _tickets.filter((t) => t.assignee === u.id);
       const completedCount = assigned.filter((t) => t.status === "done").length;
@@ -152,7 +145,6 @@ export const statsHandlers = [
       };
     });
 
-    // Summary
     const total = _tickets.length;
     const completed = _tickets.filter((t) => t.status === "done").length;
     const inProgress = _tickets.filter((t) => t.status === "in-progress").length;
