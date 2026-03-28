@@ -4,10 +4,7 @@ import * as React from "react";
 import { io, type Socket } from "socket.io-client";
 
 const ICE_SERVERS: RTCConfiguration = {
-  iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" },
-  ],
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }],
 };
 
 export interface RemotePeer {
@@ -84,7 +81,14 @@ export const useWebRTC = ({ roomId, userId, userName }: UseWebRTCProps) => {
         }
         return [
           ...prev,
-          { socketId: remoteSocketId, userId: remoteUserId, userName: remoteUserName, stream, isMicOn: true, isCameraOn: true },
+          {
+            socketId: remoteSocketId,
+            userId: remoteUserId,
+            userName: remoteUserName,
+            stream,
+            isMicOn: true,
+            isCameraOn: true,
+          },
         ];
       });
     };
@@ -116,7 +120,8 @@ export const useWebRTC = ({ roomId, userId, userName }: UseWebRTCProps) => {
         setMediaError("Could not access camera/mic. Check permissions.");
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") ?? "http://localhost:4000";
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") ?? "http://localhost:4000";
       const socket = io(baseUrl, { path: "/meeting-socket", transports: ["websocket", "polling"] });
       if (disposed) {
         socket.disconnect();
@@ -167,54 +172,81 @@ export const useWebRTC = ({ roomId, userId, userName }: UseWebRTCProps) => {
 
       socket.on(
         "participant-joined",
-        ({ socketId: sid, userId: uid, userName: uname }: { socketId: string; userId: string; userName: string }) => {
+        ({
+          socketId: sid,
+          userId: uid,
+          userName: uname,
+        }: {
+          socketId: string;
+          userId: string;
+          userName: string;
+        }) => {
           if (disposed) return;
           peerInfoRef.current.set(sid, { userId: uid, userName: uname });
           setPeers((prev) => {
             if (prev.some((p) => p.socketId === sid)) return prev;
-            return [...prev, { socketId: sid, userId: uid, userName: uname, stream: null, isMicOn: true, isCameraOn: true }];
+            return [
+              ...prev,
+              {
+                socketId: sid,
+                userId: uid,
+                userName: uname,
+                stream: null,
+                isMicOn: true,
+                isCameraOn: true,
+              },
+            ];
           });
         },
       );
 
-      socket.on("offer", async ({ from, offer }: { from: string; offer: RTCSessionDescriptionInit }) => {
-        if (disposed) return;
-        const info = peerInfoRef.current.get(from) ?? { userId: "unknown", userName: "Unknown" };
-        let pc = pcsRef.current.get(from);
-        if (!pc) pc = createPC(from, info.userId, info.userName);
-        try {
-          await pc.setRemoteDescription(new RTCSessionDescription(offer));
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          socket.emit("answer", { to: from, answer });
-        } catch (err) {
-          console.error("Failed to handle offer:", err);
-        }
-      });
-
-      socket.on("answer", async ({ from, answer }: { from: string; answer: RTCSessionDescriptionInit }) => {
-        if (disposed) return;
-        const pc = pcsRef.current.get(from);
-        if (pc) {
+      socket.on(
+        "offer",
+        async ({ from, offer }: { from: string; offer: RTCSessionDescriptionInit }) => {
+          if (disposed) return;
+          const info = peerInfoRef.current.get(from) ?? { userId: "unknown", userName: "Unknown" };
+          let pc = pcsRef.current.get(from);
+          if (!pc) pc = createPC(from, info.userId, info.userName);
           try {
-            await pc.setRemoteDescription(new RTCSessionDescription(answer));
+            await pc.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            socket.emit("answer", { to: from, answer });
           } catch (err) {
-            console.error("Failed to set remote description:", err);
+            console.error("Failed to handle offer:", err);
           }
-        }
-      });
+        },
+      );
 
-      socket.on("ice-candidate", async ({ from, candidate }: { from: string; candidate: RTCIceCandidateInit }) => {
-        if (disposed) return;
-        const pc = pcsRef.current.get(from);
-        if (pc && candidate) {
-          try {
-            await pc.addIceCandidate(new RTCIceCandidate(candidate));
-          } catch (err) {
-            console.error("Failed to add ICE candidate:", err);
+      socket.on(
+        "answer",
+        async ({ from, answer }: { from: string; answer: RTCSessionDescriptionInit }) => {
+          if (disposed) return;
+          const pc = pcsRef.current.get(from);
+          if (pc) {
+            try {
+              await pc.setRemoteDescription(new RTCSessionDescription(answer));
+            } catch (err) {
+              console.error("Failed to set remote description:", err);
+            }
           }
-        }
-      });
+        },
+      );
+
+      socket.on(
+        "ice-candidate",
+        async ({ from, candidate }: { from: string; candidate: RTCIceCandidateInit }) => {
+          if (disposed) return;
+          const pc = pcsRef.current.get(from);
+          if (pc && candidate) {
+            try {
+              await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            } catch (err) {
+              console.error("Failed to add ICE candidate:", err);
+            }
+          }
+        },
+      );
 
       socket.on("participant-left", ({ socketId: sid }: { socketId: string }) => {
         if (disposed) return;
@@ -229,9 +261,19 @@ export const useWebRTC = ({ roomId, userId, userName }: UseWebRTCProps) => {
 
       socket.on(
         "participant-media-state",
-        ({ socketId: sid, isMicOn: mic, isCameraOn: cam }: { socketId: string; isMicOn: boolean; isCameraOn: boolean }) => {
+        ({
+          socketId: sid,
+          isMicOn: mic,
+          isCameraOn: cam,
+        }: {
+          socketId: string;
+          isMicOn: boolean;
+          isCameraOn: boolean;
+        }) => {
           if (disposed) return;
-          setPeers((prev) => prev.map((p) => (p.socketId === sid ? { ...p, isMicOn: mic, isCameraOn: cam } : p)));
+          setPeers((prev) =>
+            prev.map((p) => (p.socketId === sid ? { ...p, isMicOn: mic, isCameraOn: cam } : p)),
+          );
         },
       );
 
@@ -255,7 +297,6 @@ export const useWebRTC = ({ roomId, userId, userName }: UseWebRTCProps) => {
       screenStreamRef.current = null;
       peerInfoRef.current.clear();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, userId, userName]);
 
   const replaceVideoTrackInPeers = React.useCallback((newTrack: MediaStreamTrack | null) => {
@@ -269,7 +310,9 @@ export const useWebRTC = ({ roomId, userId, userName }: UseWebRTCProps) => {
     const stream = localStreamRef.current;
     if (!stream) return;
     const next = !micRef.current;
-    stream.getAudioTracks().forEach((t) => { t.enabled = next; });
+    stream.getAudioTracks().forEach((t) => {
+      t.enabled = next;
+    });
     micRef.current = next;
     setIsMicOn(next);
     socketRef.current?.emit("media-state", { isMicOn: next, isCameraOn: camRef.current });
@@ -280,14 +323,18 @@ export const useWebRTC = ({ roomId, userId, userName }: UseWebRTCProps) => {
     if (!stream) return;
 
     if (camRef.current) {
-      stream.getVideoTracks().forEach((t) => { t.enabled = false; });
+      stream.getVideoTracks().forEach((t) => {
+        t.enabled = false;
+      });
       camRef.current = false;
       setIsCameraOn(false);
       socketRef.current?.emit("media-state", { isMicOn: micRef.current, isCameraOn: false });
     } else {
       const videoTracks = stream.getVideoTracks();
       if (videoTracks.length > 0) {
-        videoTracks.forEach((t) => { t.enabled = true; });
+        videoTracks.forEach((t) => {
+          t.enabled = true;
+        });
       } else {
         try {
           const vs = await navigator.mediaDevices.getUserMedia({

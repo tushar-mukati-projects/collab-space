@@ -2,13 +2,14 @@
 
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
-import { User, Building2, Bell, Palette, CreditCard } from "lucide-react";
+import { User, Building2, Bell, Palette, CreditCard, Shield } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ProfileSettings } from "./profile-settings";
 import { WorkspaceSettings } from "./workspace-settings";
 import { NotificationSettings } from "./notification-settings";
 import { AppearanceSettings } from "./appearance-settings";
 import { BillingSettings } from "./billing-settings";
+import { PermissionsSettings } from "./permissions-settings";
 
 export const SettingsView = () => {
   const searchParams = useSearchParams();
@@ -41,6 +42,10 @@ export const SettingsView = () => {
                 <Bell className="size-4" />
                 <span className="hidden sm:inline">Notifications</span>
               </TabsTrigger>
+              <TabsTrigger value="permissions">
+                <Shield className="size-4" />
+                <span className="hidden sm:inline">Permissions</span>
+              </TabsTrigger>
               <TabsTrigger value="appearance">
                 <Palette className="size-4" />
                 <span className="hidden sm:inline">Appearance</span>
@@ -58,6 +63,9 @@ export const SettingsView = () => {
             </TabsContent>
             <TabsContent value="notifications">
               <NotificationSettings />
+            </TabsContent>
+            <TabsContent value="permissions">
+              <PermissionsSettings />
             </TabsContent>
             <TabsContent value="appearance">
               <AppearanceSettings />

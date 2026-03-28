@@ -21,7 +21,10 @@ interface SendEmailOptions {
 
 const sendEmail = async (options: SendEmailOptions): Promise<{ success: boolean }> => {
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    logger.warn("SMTP not configured, skipping email", { to: options.to, subject: options.subject });
+    logger.warn("SMTP not configured, skipping email", {
+      to: options.to,
+      subject: options.subject,
+    });
     return { success: true };
   }
 

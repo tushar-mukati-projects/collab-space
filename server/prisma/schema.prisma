@@ -123,6 +123,7 @@ model Workspace {
   appearance_prefs    AppearancePrefs[]
   favorites           Favorite[]
   push_subscriptions  PushSubscription[]
+  role_permissions    RolePermission[]
 }
 
 model WorkspaceMember {
@@ -327,4 +328,16 @@ model PushSubscription {
   workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
+}
+
+model RolePermission {
+  id           String   @id @default(cuid())
+  workspace_id String
+  role         UserRole
+  permission   String
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@unique([workspace_id, role, permission])
+  @@index([workspace_id, role])
 }

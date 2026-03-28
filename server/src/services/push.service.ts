@@ -52,7 +52,11 @@ export const sendPushToUser = async (userId: string, title: string, body: string
       void sub;
       void payload;
     } catch (err: any) {
-      logger.error("Push notification failed", { userId, endpoint: sub.endpoint, error: err.message });
+      logger.error("Push notification failed", {
+        userId,
+        endpoint: sub.endpoint,
+        error: err.message,
+      });
     }
   }
 };

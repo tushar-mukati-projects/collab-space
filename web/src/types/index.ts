@@ -48,6 +48,8 @@ export interface Workspace {
   members: User[];
   plan: WorkspacePlan;
   invited_emails: string[];
+  current_user_role: UserRole;
+  current_user_permissions: string[];
 }
 
 export interface Label {

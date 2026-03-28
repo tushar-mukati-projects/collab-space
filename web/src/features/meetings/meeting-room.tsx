@@ -180,7 +180,9 @@ export const MeetingRoom = ({
           )}
 
           <div className="rounded-full bg-zinc-800 px-3 py-1">
-            <span className="font-mono text-xs text-zinc-300">{formatDuration(elapsedSeconds)}</span>
+            <span className="font-mono text-xs text-zinc-300">
+              {formatDuration(elapsedSeconds)}
+            </span>
           </div>
         </div>
       </div>
@@ -441,11 +443,29 @@ export const MeetingRoom = ({
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <div className={cn("rounded-full p-1", !isMicOn ? "bg-red-500/20" : "bg-zinc-800")}>
-                        {!isMicOn ? <MicOff className="size-3 text-red-400" /> : <Mic className="size-3 text-zinc-400" />}
+                      <div
+                        className={cn(
+                          "rounded-full p-1",
+                          !isMicOn ? "bg-red-500/20" : "bg-zinc-800",
+                        )}
+                      >
+                        {!isMicOn ? (
+                          <MicOff className="size-3 text-red-400" />
+                        ) : (
+                          <Mic className="size-3 text-zinc-400" />
+                        )}
                       </div>
-                      <div className={cn("rounded-full p-1", !isCameraOn ? "bg-red-500/20" : "bg-zinc-800")}>
-                        {!isCameraOn ? <CameraOff className="size-3 text-red-400" /> : <Camera className="size-3 text-zinc-400" />}
+                      <div
+                        className={cn(
+                          "rounded-full p-1",
+                          !isCameraOn ? "bg-red-500/20" : "bg-zinc-800",
+                        )}
+                      >
+                        {!isCameraOn ? (
+                          <CameraOff className="size-3 text-red-400" />
+                        ) : (
+                          <Camera className="size-3 text-zinc-400" />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -465,11 +485,29 @@ export const MeetingRoom = ({
                         <span className="text-sm text-zinc-200">{peer.userName}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <div className={cn("rounded-full p-1", !peer.isMicOn ? "bg-red-500/20" : "bg-zinc-800")}>
-                          {!peer.isMicOn ? <MicOff className="size-3 text-red-400" /> : <Mic className="size-3 text-zinc-400" />}
+                        <div
+                          className={cn(
+                            "rounded-full p-1",
+                            !peer.isMicOn ? "bg-red-500/20" : "bg-zinc-800",
+                          )}
+                        >
+                          {!peer.isMicOn ? (
+                            <MicOff className="size-3 text-red-400" />
+                          ) : (
+                            <Mic className="size-3 text-zinc-400" />
+                          )}
                         </div>
-                        <div className={cn("rounded-full p-1", !peer.isCameraOn ? "bg-red-500/20" : "bg-zinc-800")}>
-                          {!peer.isCameraOn ? <CameraOff className="size-3 text-red-400" /> : <Camera className="size-3 text-zinc-400" />}
+                        <div
+                          className={cn(
+                            "rounded-full p-1",
+                            !peer.isCameraOn ? "bg-red-500/20" : "bg-zinc-800",
+                          )}
+                        >
+                          {!peer.isCameraOn ? (
+                            <CameraOff className="size-3 text-red-400" />
+                          ) : (
+                            <Camera className="size-3 text-zinc-400" />
+                          )}
                         </div>
                       </div>
                     </div>

@@ -1,6 +1,7 @@
 import { prisma } from "../db.js";
 import { WORKSPACE_ROLES } from "../constants.js";
 import { logger } from "../logger.js";
+import { seedWorkspacePermissions } from "./permission.service.js";
 
 type ClerkUser = { id: string; email: string; name: string; avatar: string };
 
@@ -38,6 +39,8 @@ export const getUserWorkspaceWithMembers = async (userId: string) => {
   if (!membership) return null;
 
   const workspace = membership.workspace;
+  const { getPermissionsForRole } = await import("./permission.service.js");
+  const permissions = await getPermissionsForRole(workspace.id, membership.role);
 
   return {
     id: workspace.id,
@@ -46,6 +49,8 @@ export const getUserWorkspaceWithMembers = async (userId: string) => {
     logo: workspace.logo,
     plan: workspace.plan,
     invited_emails: workspace.invited_emails,
+    current_user_role: membership.role,
+    current_user_permissions: Array.from(permissions),
     members: workspace.members.map((m: any) => ({
       id: m.user.id,
       name: m.user.name,
@@ -120,6 +125,7 @@ export const createWorkspace = async (
     },
   });
 
+  await seedWorkspacePermissions(workspace.id);
   logger.info("Workspace created", { workspaceId: workspace.id, name, userId });
   return workspace;
 };
@@ -198,19 +204,6 @@ export const inviteToWorkspace = async (workspaceId: string, email: string, invi
 
   if (!workspace) return { error: "not_found" as const };
 
-  const callerMembership = await prisma.workspaceMember.findUnique({
-    where: {
-      user_id_workspace_id: {
-        user_id: inviterId,
-        workspace_id: workspaceId,
-      },
-    },
-  });
-
-  if (!callerMembership || callerMembership.role !== WORKSPACE_ROLES.ADMIN) {
-    return { error: "forbidden" as const };
-  }
-
   if (!workspace.invited_emails.includes(email)) {
     await prisma.workspace.update({
       where: { id: workspaceId },
@@ -224,14 +217,9 @@ export const inviteToWorkspace = async (workspaceId: string, email: string, invi
   return { error: null };
 };
 
-export const revokeInvite = async (workspaceId: string, email: string, callerId: string) => {
+export const revokeInvite = async (workspaceId: string, email: string) => {
   const workspace = await prisma.workspace.findUnique({ where: { id: workspaceId } });
   if (!workspace) return { error: "not_found" as const };
-
-  const caller = await prisma.workspaceMember.findUnique({
-    where: { user_id_workspace_id: { user_id: callerId, workspace_id: workspaceId } },
-  });
-  if (!caller || caller.role !== WORKSPACE_ROLES.ADMIN) return { error: "forbidden" as const };
 
   await prisma.workspace.update({
     where: { id: workspaceId },
@@ -241,11 +229,6 @@ export const revokeInvite = async (workspaceId: string, email: string, callerId:
 };
 
 export const removeMember = async (workspaceId: string, memberId: string, callerId: string) => {
-  const caller = await prisma.workspaceMember.findUnique({
-    where: { user_id_workspace_id: { user_id: callerId, workspace_id: workspaceId } },
-  });
-  if (!caller || caller.role !== WORKSPACE_ROLES.ADMIN) return { error: "forbidden" as const };
-
   const target = await prisma.workspaceMember.findUnique({
     where: { user_id_workspace_id: { user_id: memberId, workspace_id: workspaceId } },
   });
@@ -264,11 +247,6 @@ export const changeMemberRole = async (
   role: string,
   callerId: string,
 ) => {
-  const caller = await prisma.workspaceMember.findUnique({
-    where: { user_id_workspace_id: { user_id: callerId, workspace_id: workspaceId } },
-  });
-  if (!caller || caller.role !== WORKSPACE_ROLES.ADMIN) return { error: "forbidden" as const };
-
   const target = await prisma.workspaceMember.findUnique({
     where: { user_id_workspace_id: { user_id: memberId, workspace_id: workspaceId } },
   });

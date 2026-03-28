@@ -11,6 +11,7 @@ import notifications from "./notifications.routes.js";
 import favorites from "./favorites.routes.js";
 import settings from "./settings.routes.js";
 import billing from "./billing.routes.js";
+import permissions from "./permissions.routes.js";
 
 const router = Router();
 
@@ -26,5 +27,6 @@ router.use("/notifications", notifications);
 router.use("/favorites", favorites);
 router.use("/settings", settings);
 router.use("/billing", billing);
+router.use("/permissions", permissions);
 
 export { router as routes };

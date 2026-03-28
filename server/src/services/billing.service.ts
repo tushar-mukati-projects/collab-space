@@ -142,7 +142,11 @@ export const handleWebhookEvent = async (event: Stripe.Event) => {
             current_period_end: getSubscriptionPeriodEnd(subscription),
           },
         });
-        logger.info("Subscription activated", { workspaceId, plan, subscriptionId: subscription.id });
+        logger.info("Subscription activated", {
+          workspaceId,
+          plan,
+          subscriptionId: subscription.id,
+        });
       }
       break;
     }

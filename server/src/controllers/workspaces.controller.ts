@@ -68,7 +68,6 @@ export const invite = async (req: Request, res: Response) => {
   } = validated(req, inviteToWorkspaceSchema);
   const result = await inviteToWorkspace(id, email, userId);
   if (result.error === "not_found") return res.status(404).json({ error: "Workspace not found" });
-  if (result.error === "forbidden") return res.status(403).json({ error: "Forbidden" });
   try {
     const [inviter, ws] = await Promise.all([
       prisma.user.findUnique({ where: { id: userId }, select: { name: true } }),
@@ -83,11 +82,9 @@ export const revokeInvite = async (req: Request, res: Response) => {
   const {
     params: { id },
     body: { email },
-    userId,
   } = validated(req, revokeInviteSchema);
-  const result = await revokeInviteSvc(id, email, userId);
+  const result = await revokeInviteSvc(id, email);
   if (result.error === "not_found") return res.status(404).json({ error: "Workspace not found" });
-  if (result.error === "forbidden") return res.status(403).json({ error: "Forbidden" });
   res.json({ success: true });
 };
 
@@ -98,7 +95,6 @@ export const removeMember = async (req: Request, res: Response) => {
   } = validated(req, removeMemberSchema);
   const result = await removeMemberSvc(id, memberId, userId);
   if (result.error === "not_found") return res.status(404).json({ error: "Member not found" });
-  if (result.error === "forbidden") return res.status(403).json({ error: "Forbidden" });
   res.json({ success: true });
 };
 
@@ -110,6 +106,5 @@ export const changeRole = async (req: Request, res: Response) => {
   } = validated(req, changeRoleSchema);
   const result = await changeRoleSvc(id, memberId, role, userId);
   if (result.error === "not_found") return res.status(404).json({ error: "Member not found" });
-  if (result.error === "forbidden") return res.status(403).json({ error: "Forbidden" });
   res.json({ success: true });
 };

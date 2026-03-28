@@ -1,5 +1,6 @@
 import type { Request } from "express";
 import type { ZodSchema, z } from "zod";
+import type { Permission } from "./constants.js";
 
 declare global {
   namespace Express {
@@ -15,9 +16,11 @@ export interface AuthedRequest extends Request {
 
 export interface WorkspaceRequest extends AuthedRequest {
   workspaceId: string;
+  memberRole: string;
+  permissions: Set<Permission>;
 }
 
-type Context = { userId: string; workspaceId: string };
+type Context = { userId: string; workspaceId: string; memberRole: string };
 
 export const validated: {
   <T extends ZodSchema>(req: Request, schema: T): z.infer<T> & Context;
@@ -28,5 +31,6 @@ export const validated: {
     ...base,
     userId: (req as any).userId,
     workspaceId: (req as any).workspaceId,
+    memberRole: (req as any).memberRole,
   };
 };

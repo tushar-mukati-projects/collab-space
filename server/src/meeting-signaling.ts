@@ -31,7 +31,13 @@ export const startMeetingSignaling = (server: HttpServer, clientUrl: string) => 
 
         if (!rooms.has(roomId)) rooms.set(roomId, new Map());
         const room = rooms.get(roomId)!;
-        room.set(socket.id, { socketId: socket.id, userId, userName, isMicOn: true, isCameraOn: true });
+        room.set(socket.id, {
+          socketId: socket.id,
+          userId,
+          userName,
+          isMicOn: true,
+          isCameraOn: true,
+        });
 
         const existing = Array.from(room.values()).filter((p) => p.socketId !== socket.id);
         socket.emit("existing-participants", existing);

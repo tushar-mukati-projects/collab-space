@@ -39,6 +39,22 @@ export const workspaceHandlers = [
       members: [],
       plan: "pro",
       invited_emails: [],
+      current_user_role: "admin",
+      current_user_permissions: [
+        "ticket:view",
+        "ticket:create",
+        "ticket:edit",
+        "ticket:delete",
+        "ticket:comment",
+        "board:create",
+        "board:delete",
+        "label:manage",
+        "member:invite",
+        "member:remove",
+        "member:role",
+        "billing:manage",
+        "settings:manage",
+      ],
     };
     _workspaces.push(workspace);
     return HttpResponse.json(workspace, { status: 201 });
