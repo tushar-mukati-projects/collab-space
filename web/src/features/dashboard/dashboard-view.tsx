@@ -24,11 +24,9 @@ import {
   CalendarClock,
   Video,
   Users,
-  ArrowRight,
   Circle,
   CircleDashed,
   Eye,
-  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -47,14 +45,6 @@ const STATUS_LABELS: Record<string, string> = {
   "in-progress": "In Progress",
   "in-review": "In Review",
   done: "Done",
-};
-
-const PRIORITY_COLORS: Record<string, string> = {
-  urgent: "text-red-500",
-  high: "text-orange-500",
-  medium: "text-blue-500",
-  low: "text-green-500",
-  none: "text-muted-foreground",
 };
 
 const STATUS_ICONS: Record<string, React.ElementType> = {
@@ -79,7 +69,7 @@ const StatCard = ({ label, value, icon: Icon, color, subtitle }: StatCardProps) 
   <div className="border-border/60 bg-card rounded-2xl border p-5 shadow-xs transition-all hover:shadow-sm">
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+        <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
           {label}
         </p>
         <p className="mt-1 text-3xl font-bold tracking-tight">{value}</p>
@@ -117,12 +107,26 @@ const Card = ({
   </div>
 );
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface TooltipPayloadEntry {
+  color?: string;
+  name?: string;
+  value?: number;
+}
+
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: TooltipPayloadEntry[];
+  label?: string;
+}) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="border-border/60 bg-background rounded-xl border px-3 py-2 text-xs shadow-lg">
       <p className="font-medium">{label}</p>
-      {payload.map((entry: any, i: number) => (
+      {payload.map((entry: TooltipPayloadEntry, i: number) => (
         <p key={i} style={{ color: entry.color }} className="mt-0.5">
           {entry.name ?? "Count"}: <span className="font-semibold">{entry.value}</span>
         </p>
@@ -175,9 +179,7 @@ export const DashboardView = () => {
   if (isLoading || !stats) return <DashboardSkeleton />;
 
   const completionRate =
-    stats.summary.total > 0
-      ? Math.round((stats.summary.completed / stats.summary.total) * 100)
-      : 0;
+    stats.summary.total > 0 ? Math.round((stats.summary.completed / stats.summary.total) * 100) : 0;
 
   const statusData = stats.byStatus.map((s) => ({
     name: STATUS_LABELS[s.status] ?? s.status,
@@ -250,9 +252,7 @@ export const DashboardView = () => {
                   verticalAlign="bottom"
                   iconType="circle"
                   iconSize={8}
-                  formatter={(value) => (
-                    <span className="text-foreground text-xs">{value}</span>
-                  )}
+                  formatter={(value) => <span className="text-foreground text-xs">{value}</span>}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -411,7 +411,15 @@ export const DashboardView = () => {
                     href={`/ticket/${t.id}`}
                     className="hover:bg-accent/40 flex items-center gap-2.5 rounded-xl p-2 transition-colors"
                   >
-                    <StatusIcon className={cn("size-3.5 shrink-0", STATUS_COLORS[t.status] ? `text-[${STATUS_COLORS[t.status]}]` : "text-muted-foreground")} style={{ color: STATUS_COLORS[t.status] }} />
+                    <StatusIcon
+                      className={cn(
+                        "size-3.5 shrink-0",
+                        STATUS_COLORS[t.status]
+                          ? `text-[${STATUS_COLORS[t.status]}]`
+                          : "text-muted-foreground",
+                      )}
+                      style={{ color: STATUS_COLORS[t.status] }}
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-medium">{t.title}</p>
                     </div>
@@ -432,7 +440,10 @@ export const DashboardView = () => {
                     href={`/ticket/${t.id}`}
                     className="hover:bg-accent/40 flex items-center gap-2.5 rounded-xl p-2 transition-colors"
                   >
-                    <StatusIcon className="size-3.5 shrink-0" style={{ color: STATUS_COLORS[t.status] }} />
+                    <StatusIcon
+                      className="size-3.5 shrink-0"
+                      style={{ color: STATUS_COLORS[t.status] }}
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-medium">{t.title}</p>
                     </div>
@@ -470,9 +481,7 @@ export const DashboardView = () => {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {stats.memberSummary.map((m) => {
               const rate =
-                m.assigned_count > 0
-                  ? Math.round((m.completed_count / m.assigned_count) * 100)
-                  : 0;
+                m.assigned_count > 0 ? Math.round((m.completed_count / m.assigned_count) * 100) : 0;
               return (
                 <div
                   key={m.id}
@@ -480,9 +489,7 @@ export const DashboardView = () => {
                 >
                   <Avatar size="sm" className="size-9 shrink-0">
                     <AvatarImage src={m.avatar} />
-                    <AvatarFallback className="text-xs">
-                      {getUserInitials(m.name)}
-                    </AvatarFallback>
+                    <AvatarFallback className="text-xs">{getUserInitials(m.name)}</AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{m.name}</p>

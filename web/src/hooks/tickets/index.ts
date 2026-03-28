@@ -7,4 +7,6 @@ export { useDeleteTicket } from "./useDeleteTicket";
 export { useFetchComments } from "./useFetchComments";
 export { useFetchActivities } from "./useFetchActivities";
 export { useCreateComment } from "./useCreateComment";
-export { useFetchAttachments, useUploadAttachment, useDeleteAttachment } from "./useAttachments";
+export { useFetchAttachments } from "./useFetchAttachments";
+export { useUploadAttachment } from "./useUploadAttachment";
+export { useDeleteAttachment } from "./useDeleteAttachment";

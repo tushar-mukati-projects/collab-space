@@ -13,8 +13,17 @@ const generateId = (prefix: string): string => {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
 };
 
+const toResponse = (a: StoredAttachment): Attachment => ({
+  id: a.id,
+  filename: a.filename,
+  url: a.url,
+  size: a.size,
+  mime_type: a.mime_type,
+  uploaded_by: a.uploaded_by,
+  created_at: a.created_at,
+});
+
 export const attachmentHandlers = [
-  // Editor file upload (returns persistent URL for embedded images)
   http.post(mockUrl("/upload"), async ({ request }) => {
     await delay(400);
     const formData = await request.formData();
@@ -29,9 +38,7 @@ export const attachmentHandlers = [
     const ticket = _tickets.find((t) => t.id === ticketId);
     if (!ticket) return HttpResponse.json({ error: "Ticket not found" }, { status: 404 });
 
-    const result: Attachment[] = _attachments
-      .filter((a) => a.ticket_id === ticketId)
-      .map(({ ticket_id: _, ...rest }) => rest);
+    const result = _attachments.filter((a) => a.ticket_id === ticketId).map(toResponse);
     return HttpResponse.json(result);
   }),
 
@@ -57,8 +64,7 @@ export const attachmentHandlers = [
     };
     _attachments.push(attachment);
 
-    const { ticket_id: _, ...response } = attachment;
-    return HttpResponse.json(response, { status: 201 });
+    return HttpResponse.json(toResponse(attachment), { status: 201 });
   }),
 
   http.delete(mockUrl("/tickets/:id/attachments/:attachmentId"), async ({ params }) => {

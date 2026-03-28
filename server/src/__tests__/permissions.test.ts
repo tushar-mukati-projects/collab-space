@@ -1,4 +1,9 @@
-import { ALL_PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, PERMISSIONS, WORKSPACE_ROLES } from "../constants";
+import {
+  ALL_PERMISSIONS,
+  DEFAULT_ROLE_PERMISSIONS,
+  PERMISSIONS,
+  WORKSPACE_ROLES,
+} from "../constants";
 
 describe("Permission constants", () => {
   it("has all expected permissions defined", () => {

@@ -74,7 +74,9 @@ export const invite = async (req: Request, res: Response) => {
       prisma.workspace.findUnique({ where: { id }, select: { name: true } }),
     ]);
     await sendInvitationEmail(email, ws?.name ?? "CollabSpace", inviter?.name ?? "A team member");
-  } catch {}
+  } catch {
+    // Email delivery is best-effort — don't block the invite response
+  }
   res.json({ success: true });
 };
 

@@ -1,15 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import { API_ROUTES, QUERY_KEYS } from "./constants";
-
-interface WorkspaceInvitation {
-  id: string;
-  name: string;
-  slug: string;
-  logo: string;
-  plan: string;
-  member_count: number;
-}
+import type { WorkspaceInvitation } from "@/types";
 
 export const useFetchInvitations = (email: string | undefined) => {
   return useQuery({
@@ -23,5 +15,3 @@ export const useFetchInvitations = (email: string | undefined) => {
     enabled: !!email,
   });
 };
-
-export type { WorkspaceInvitation };

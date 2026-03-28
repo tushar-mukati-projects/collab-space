@@ -1,24 +1,9 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockUsers } from "../data";
 import { mockUrl } from "../config";
-import type { User } from "@/types";
+import type { User, NotificationPreferences, AppearancePreferences } from "@/types";
 
 const _currentUser: User = structuredClone(mockUsers[0]);
-
-interface NotificationPreferences {
-  ticket_assigned: boolean;
-  mentioned: boolean;
-  meeting_starting: boolean;
-  status_changed: boolean;
-  email_enabled: boolean;
-  push_enabled: boolean;
-}
-
-interface AppearancePreferences {
-  theme: "light" | "dark" | "system";
-  accent_color: string;
-  font_size: "compact" | "default" | "comfortable";
-}
 
 const _notificationPrefs: NotificationPreferences = {
   ticket_assigned: true,

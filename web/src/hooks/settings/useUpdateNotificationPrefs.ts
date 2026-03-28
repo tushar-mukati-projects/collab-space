@@ -1,15 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 import { API_ROUTES, QUERY_KEYS } from "./constants";
-
-interface NotificationPreferences {
-  ticket_assigned: boolean;
-  mentioned: boolean;
-  meeting_starting: boolean;
-  status_changed: boolean;
-  email_enabled: boolean;
-  push_enabled: boolean;
-}
+import type { NotificationPreferences } from "@/types";
 
 export const useUpdateNotificationPrefs = () => {
   const queryClient = useQueryClient();

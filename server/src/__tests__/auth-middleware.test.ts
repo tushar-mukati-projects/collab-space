@@ -145,10 +145,7 @@ describe("requirePermission", () => {
   });
 
   it("checks multiple permissions - passes when all present", () => {
-    const middleware = requirePermission(
-      "ticket:view" as Permission,
-      "ticket:edit" as Permission,
-    );
+    const middleware = requirePermission("ticket:view" as Permission, "ticket:edit" as Permission);
     const req = {
       permissions: new Set(["ticket:view", "ticket:edit", "ticket:create"]),
     } as any;

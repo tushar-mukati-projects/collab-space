@@ -120,9 +120,7 @@ describe("listTickets", () => {
 
   it("includes sub-ticket counts", async () => {
     (prisma.ticket.findMany as jest.Mock).mockResolvedValue([mockTicket]);
-    (prisma.ticket.groupBy as jest.Mock).mockResolvedValue([
-      { parent_id: "tkt_1", _count: 3 },
-    ]);
+    (prisma.ticket.groupBy as jest.Mock).mockResolvedValue([{ parent_id: "tkt_1", _count: 3 }]);
 
     const result = await listTickets("ws_1", {});
 
@@ -169,11 +167,7 @@ describe("createTicket", () => {
     });
     (prisma.activity.create as jest.Mock).mockResolvedValue({});
 
-    const result = await createTicket(
-      { title: "New ticket" },
-      "user_1",
-      "ws_1",
-    );
+    const result = await createTicket({ title: "New ticket" }, "user_1", "ws_1");
 
     expect(prisma.ticket.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -199,11 +193,7 @@ describe("createTicket", () => {
     (prisma.ticket.create as jest.Mock).mockResolvedValue(mockTicket);
     (prisma.activity.create as jest.Mock).mockResolvedValue({});
 
-    await createTicket(
-      { title: "Labeled ticket", labels: ["lbl_1", "lbl_2"] },
-      "user_1",
-      "ws_1",
-    );
+    await createTicket({ title: "Labeled ticket", labels: ["lbl_1", "lbl_2"] }, "user_1", "ws_1");
 
     const call = (prisma.ticket.create as jest.Mock).mock.calls[0][0];
     expect(call.data.labels).toEqual({
@@ -227,12 +217,7 @@ describe("updateTicket", () => {
     });
     (prisma.ticket.findMany as jest.Mock).mockResolvedValue([]);
 
-    const result = await updateTicket(
-      "tkt_1",
-      { status: "in-progress" },
-      "user_1",
-      "ws_1",
-    );
+    const result = await updateTicket("tkt_1", { status: "in-progress" }, "user_1", "ws_1");
 
     expect(result).toBeDefined();
     expect(prisma.ticket.update).toHaveBeenCalledWith(
@@ -272,8 +257,7 @@ describe("updateTicket", () => {
     (prisma.user.findUnique as jest.Mock).mockImplementation(({ where }: any) => {
       if (where.id === "user_2")
         return Promise.resolve({ email: "new@test.com", name: "New User" });
-      if (where.id === "user_1")
-        return Promise.resolve({ name: "Assigner" });
+      if (where.id === "user_1") return Promise.resolve({ name: "Assigner" });
       return Promise.resolve(null);
     });
 

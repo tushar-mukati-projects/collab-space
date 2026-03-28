@@ -70,9 +70,7 @@ export const uploadAttachment = async (
     throw new Error(`Upload failed: ${error.message}`);
   }
 
-  const { data: urlData } = supabase.storage
-    .from(config.SUPABASE_BUCKET)
-    .getPublicUrl(safeName);
+  const { data: urlData } = supabase.storage.from(config.SUPABASE_BUCKET).getPublicUrl(safeName);
 
   const attachment = await prisma.attachment.create({
     data: {
@@ -156,7 +154,10 @@ export const deleteAttachment = async (
       .remove([attachment.filename]);
 
     if (error) {
-      logger.warn("Supabase delete failed", { error: error.message, filename: attachment.filename });
+      logger.warn("Supabase delete failed", {
+        error: error.message,
+        filename: attachment.filename,
+      });
     }
   }
 
@@ -200,9 +201,7 @@ export const uploadEditorFile = async (
     throw new Error(`Upload failed: ${error.message}`);
   }
 
-  const { data: urlData } = supabase.storage
-    .from(config.SUPABASE_BUCKET)
-    .getPublicUrl(safeName);
+  const { data: urlData } = supabase.storage.from(config.SUPABASE_BUCKET).getPublicUrl(safeName);
 
   return urlData.publicUrl;
 };

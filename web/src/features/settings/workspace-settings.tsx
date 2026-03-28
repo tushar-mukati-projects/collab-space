@@ -188,13 +188,20 @@ export const WorkspaceSettings = () => {
           <CardDescription>Manage workspace members and invitations.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5" title={!canInvite ? `Requires: ${PERMISSION_LABEL["member:invite"]}` : undefined}>
+          <div
+            className="flex flex-col gap-1.5"
+            title={!canInvite ? `Requires: ${PERMISSION_LABEL["member:invite"]}` : undefined}
+          >
             <div className="flex gap-2">
               <Input
                 value={inviteEmail}
                 onChange={(e) => canInvite && (setInviteEmail(e.target.value), setEmailError(""))}
-                onKeyDown={(e) => canInvite && e.key === "Enter" && (e.preventDefault(), handleInvite())}
-                placeholder={canInvite ? "Invite by email address..." : "You don't have permission to invite"}
+                onKeyDown={(e) =>
+                  canInvite && e.key === "Enter" && (e.preventDefault(), handleInvite())
+                }
+                placeholder={
+                  canInvite ? "Invite by email address..." : "You don't have permission to invite"
+                }
                 disabled={!canInvite}
                 className="flex-1"
                 type="email"
@@ -265,13 +272,17 @@ export const WorkspaceSettings = () => {
                   </div>
                   <Select
                     value={member.role}
-                    onValueChange={(role) => canChangeRole && role && handleRoleChange(member.id, role)}
+                    onValueChange={(role) =>
+                      canChangeRole && role && handleRoleChange(member.id, role)
+                    }
                     disabled={!canChangeRole}
                   >
                     <SelectTrigger
                       size="sm"
                       className="h-7 w-auto"
-                      title={!canChangeRole ? `Requires: ${PERMISSION_LABEL["member:role"]}` : undefined}
+                      title={
+                        !canChangeRole ? `Requires: ${PERMISSION_LABEL["member:role"]}` : undefined
+                      }
                     >
                       <SelectValue />
                     </SelectTrigger>
@@ -285,9 +296,12 @@ export const WorkspaceSettings = () => {
                     size="icon-sm"
                     className="text-muted-foreground hover:text-destructive"
                     disabled={!canRemove}
-                    title={!canRemove ? `Requires: ${PERMISSION_LABEL["member:remove"]}` : undefined}
+                    title={
+                      !canRemove ? `Requires: ${PERMISSION_LABEL["member:remove"]}` : undefined
+                    }
                     onClick={() => {
-                      if (canRemove && confirm(`Remove ${member.name}?`)) handleRemoveMember(member.id);
+                      if (canRemove && confirm(`Remove ${member.name}?`))
+                        handleRemoveMember(member.id);
                     }}
                   >
                     <X className="size-3.5" />
@@ -323,9 +337,12 @@ export const WorkspaceSettings = () => {
                       size="icon-sm"
                       className="text-muted-foreground hover:text-destructive"
                       disabled={!canInvite}
-                      title={!canInvite ? `Requires: ${PERMISSION_LABEL["member:invite"]}` : undefined}
+                      title={
+                        !canInvite ? `Requires: ${PERMISSION_LABEL["member:invite"]}` : undefined
+                      }
                       onClick={() => {
-                        if (canInvite && confirm(`Revoke invitation for ${email}?`)) handleRevokeInvite(email);
+                        if (canInvite && confirm(`Revoke invitation for ${email}?`))
+                          handleRevokeInvite(email);
                       }}
                     >
                       <X className="size-3.5" />

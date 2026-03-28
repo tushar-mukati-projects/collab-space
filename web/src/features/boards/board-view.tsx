@@ -85,7 +85,9 @@ export const BoardView = () => {
             variant="outline"
             onClick={() => canManageSettings && setStatusDialogOpen(true)}
             disabled={!canManageSettings}
-            title={!canManageSettings ? `Requires: ${PERMISSION_LABEL["settings:manage"]}` : undefined}
+            title={
+              !canManageSettings ? `Requires: ${PERMISSION_LABEL["settings:manage"]}` : undefined
+            }
             className="gap-1.5"
           >
             <CircleDot className="size-3.5" />
@@ -186,7 +188,9 @@ export const BoardView = () => {
                   }
                 }}
                 disabled={!canDeleteBoard || deleteBoardMutation.isPending}
-                title={!canDeleteBoard ? `Requires: ${PERMISSION_LABEL["board:delete"]}` : undefined}
+                title={
+                  !canDeleteBoard ? `Requires: ${PERMISSION_LABEL["board:delete"]}` : undefined
+                }
                 className={cn(
                   "text-muted-foreground mr-2 inline-flex items-center justify-center rounded-lg p-2 transition-all",
                   canDeleteBoard

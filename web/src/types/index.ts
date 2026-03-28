@@ -269,6 +269,21 @@ export interface WorkspaceInvitation {
   member_count: number;
 }
 
+export interface NotificationPreferences {
+  ticket_assigned: boolean;
+  mentioned: boolean;
+  meeting_starting: boolean;
+  status_changed: boolean;
+  email_enabled: boolean;
+  push_enabled: boolean;
+}
+
+export interface AppearancePreferences {
+  theme: "light" | "dark" | "system";
+  accent_color: string;
+  font_size: "compact" | "default" | "comfortable";
+}
+
 export interface PushSubscriptionInput {
   endpoint: string;
   p256dh: string;

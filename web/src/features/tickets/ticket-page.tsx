@@ -27,7 +27,6 @@ import {
   Star,
   Trash2,
   Check,
-  Paperclip,
   FileText,
   Download,
   Upload,
@@ -70,7 +69,7 @@ import { useFetchUsers } from "@/hooks/users";
 import { useFetchLabels } from "@/hooks/labels";
 import { useFetchFavorites, useToggleFavorite } from "@/hooks/favorites";
 import { usePermission, PERMISSION_LABEL } from "@/hooks/usePermission";
-import type { Ticket, TicketStatus, TicketPriority, User, Label, Comment, Activity, Attachment } from "@/types";
+import type { Ticket, TicketStatus, TicketPriority, User, Label, Comment, Activity } from "@/types";
 
 const statusOptions: {
   value: TicketStatus;
@@ -817,10 +816,11 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
             return (
               <div
                 key={att.id}
-                className="border-border/60 bg-card/80 group flex items-center gap-2.5 rounded-xl border p-2 transition-colors hover:bg-accent/30"
+                className="border-border/60 bg-card/80 group hover:bg-accent/30 flex items-center gap-2.5 rounded-xl border p-2 transition-colors"
               >
                 <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
                   {isImage ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={att.url}
                       alt={att.filename}
@@ -958,7 +958,10 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
         })}
       </div>
 
-      <div className="flex gap-2 pt-2" title={!canComment ? `Requires: ${PERMISSION_LABEL["ticket:comment"]}` : undefined}>
+      <div
+        className="flex gap-2 pt-2"
+        title={!canComment ? `Requires: ${PERMISSION_LABEL["ticket:comment"]}` : undefined}
+      >
         <Input
           placeholder={canComment ? "Add a comment..." : "You don't have permission to comment"}
           value={commentText}

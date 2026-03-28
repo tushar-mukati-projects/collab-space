@@ -13,8 +13,7 @@ import settings from "./settings.routes.js";
 import billing from "./billing.routes.js";
 import permissions from "./permissions.routes.js";
 import stats from "./stats.routes.js";
-import { upload as uploadMiddleware } from "../middleware/upload.js";
-import { editorUpload } from "../controllers/attachments.controller.js";
+import upload from "./upload.routes.js";
 
 const router = Router();
 
@@ -32,6 +31,6 @@ router.use("/settings", settings);
 router.use("/billing", billing);
 router.use("/permissions", permissions);
 router.use("/stats", stats);
-router.post("/upload", uploadMiddleware.single("file"), editorUpload);
+router.use("/upload", upload);
 
 export { router as routes };

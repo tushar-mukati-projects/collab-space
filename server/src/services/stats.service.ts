@@ -82,45 +82,38 @@ export const getWorkspaceStats = async (workspaceId: string) => {
     cursor.setDate(cursor.getDate() + 1);
   }
 
-  // Upcoming deadlines — tickets with due_date in next 7 days that aren't done
+  const toDeadlineItem = (t: (typeof tickets)[number]) => ({
+    id: t.id,
+    title: t.title,
+    status: serializeStatus(t.status),
+    priority: t.priority,
+    due_date: t.due_date,
+    assignee: t.assignee_id
+      ? {
+          id: t.assignee_id,
+          name: userMap.get(t.assignee_id)?.name ?? "Unknown",
+          avatar: userMap.get(t.assignee_id)?.avatar ?? "",
+        }
+      : null,
+  });
+
   const sevenDaysFromNow = new Date();
   sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+
   const upcomingDeadlines = tickets
     .filter(
       (t) =>
-        t.due_date &&
-        t.due_date >= now &&
-        t.due_date <= sevenDaysFromNow &&
-        t.status !== "done",
+        t.due_date && t.due_date >= now && t.due_date <= sevenDaysFromNow && t.status !== "done",
     )
     .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime())
     .slice(0, 8)
-    .map((t) => ({
-      id: t.id,
-      title: t.title,
-      status: serializeStatus(t.status),
-      priority: t.priority,
-      due_date: t.due_date,
-      assignee: t.assignee_id
-        ? { id: t.assignee_id, name: userMap.get(t.assignee_id)?.name ?? "Unknown", avatar: userMap.get(t.assignee_id)?.avatar ?? "" }
-        : null,
-    }));
+    .map(toDeadlineItem);
 
-  // Also include overdue tickets
   const overdueTickets = tickets
     .filter((t) => t.due_date && t.due_date < now && t.status !== "done")
     .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime())
     .slice(0, 5)
-    .map((t) => ({
-      id: t.id,
-      title: t.title,
-      status: serializeStatus(t.status),
-      priority: t.priority,
-      due_date: t.due_date,
-      assignee: t.assignee_id
-        ? { id: t.assignee_id, name: userMap.get(t.assignee_id)?.name ?? "Unknown", avatar: userMap.get(t.assignee_id)?.avatar ?? "" }
-        : null,
-    }));
+    .map(toDeadlineItem);
 
   // Recent activity feed
   const activityFeed = recentActivities.map((a) => ({
@@ -128,7 +121,11 @@ export const getWorkspaceStats = async (workspaceId: string) => {
     type: a.type,
     message: a.message,
     user: userMap.get(a.user_id)
-      ? { id: a.user_id, name: userMap.get(a.user_id)!.name, avatar: userMap.get(a.user_id)!.avatar }
+      ? {
+          id: a.user_id,
+          name: userMap.get(a.user_id)!.name,
+          avatar: userMap.get(a.user_id)!.avatar,
+        }
       : { id: a.user_id, name: "Unknown", avatar: "" },
     ticket: { id: a.ticket_id, title: a.ticket.title },
     created_at: a.created_at,

@@ -10,16 +10,7 @@ import { useFetchWorkspace } from "@/hooks/workspace";
 import { useTickets } from "@/hooks/tickets";
 import { useFetchFavorites } from "@/hooks/favorites";
 import { cn } from "@/lib/utils";
-import {
-  Search,
-  Settings,
-  LogOut,
-  LayoutGrid,
-  Video,
-  Ticket,
-  Star,
-  BarChart3,
-} from "lucide-react";
+import { Search, Settings, LogOut, LayoutGrid, Video, Ticket, Star, BarChart3 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { NotificationPanel } from "@/components/layout/notification-panel";
@@ -45,7 +36,7 @@ const statusDot: Record<string, string> = {
 };
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-muted-foreground/60 px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em]">
+  <p className="text-muted-foreground/60 px-3 pt-3 pb-1 text-[10px] font-semibold tracking-[0.12em] uppercase">
     {children}
   </p>
 );
@@ -92,7 +83,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
         <Link
           href="/dashboard"
           onClick={onClose}
-          className="hover:bg-accent/60 active:scale-[0.98] flex items-center gap-2.5 rounded-xl px-2 py-1.5 transition-all duration-200"
+          className="hover:bg-accent/60 flex items-center gap-2.5 rounded-xl px-2 py-1.5 transition-all duration-200 active:scale-[0.98]"
         >
           <span className="bg-primary text-primary-foreground shadow-primary/20 flex size-7 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold shadow-sm">
             {wsInitials}
@@ -135,9 +126,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
                 className={cn(
                   navItemBase,
                   "relative",
-                  isActive
-                    ? "bg-primary/10 text-foreground font-semibold"
-                    : navItemHover,
+                  isActive ? "bg-primary/10 text-foreground font-semibold" : navItemHover,
                 )}
               >
                 {isActive && (
@@ -158,9 +147,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
           {/* My Tickets */}
           <Popover>
             <PopoverTrigger
-              render={
-                <button type="button" className={cn(navItemBase, navItemHover)} />
-              }
+              render={<button type="button" className={cn(navItemBase, navItemHover)} />}
             >
               <Ticket className="size-4 shrink-0" />
               <span>My Tickets</span>
@@ -217,9 +204,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
           {/* Favorites */}
           <Popover>
             <PopoverTrigger
-              render={
-                <button type="button" className={cn(navItemBase, navItemHover)} />
-              }
+              render={<button type="button" className={cn(navItemBase, navItemHover)} />}
             >
               <Star className="size-4 shrink-0" />
               <span>Favorites</span>
@@ -286,9 +271,7 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
           className={cn(
             navItemBase,
             "relative",
-            pathname === "/settings"
-              ? "bg-primary/10 text-foreground font-semibold"
-              : navItemHover,
+            pathname === "/settings" ? "bg-primary/10 text-foreground font-semibold" : navItemHover,
           )}
         >
           {pathname === "/settings" && (
@@ -315,7 +298,12 @@ export const LeftNav = ({ onClose }: LeftNavProps) => {
 
       {/* User profile */}
       <div className="border-border shrink-0 border-t px-2 py-2">
-        <div className={cn(navItemBase, "hover:bg-accent/40 cursor-default rounded-xl transition-colors")}>
+        <div
+          className={cn(
+            navItemBase,
+            "hover:bg-accent/40 cursor-default rounded-xl transition-colors",
+          )}
+        >
           <Avatar size="sm" className="ring-background shrink-0 ring-2">
             <AvatarImage src={currentUserAvatar} />
             <AvatarFallback className="text-xs">{initials ?? "?"}</AvatarFallback>

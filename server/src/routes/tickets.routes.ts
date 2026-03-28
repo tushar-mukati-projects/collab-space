@@ -65,11 +65,7 @@ router.get(
   validate(ticketIdSchema),
   listActivities,
 );
-router.get(
-  "/:id/attachments",
-  requirePermission(PERMISSIONS.TICKET_VIEW),
-  listAttachments,
-);
+router.get("/:id/attachments", requirePermission(PERMISSIONS.TICKET_VIEW), listAttachments);
 router.post(
   "/:id/attachments",
   requirePermission(PERMISSIONS.TICKET_EDIT),
