@@ -6,7 +6,7 @@ export const mockComments: Comment[] = [
     content:
       "I started looking into this. The leak seems to be in the Yjs document provider \u2014 it\u2019s not cleaning up observers on unmount.",
     author_id: "usr_02",
-    ticket_id: "tkt_02",
+    ticket_id: "abf0760e-7f6f-4e94-94eb-95a5a3c30817",
     created_at: "2026-03-11T10:30:00Z",
   },
   {
@@ -14,14 +14,14 @@ export const mockComments: Comment[] = [
     content:
       "Good catch. Can you check if upgrading to y-websocket 2.1 fixes it? They patched a similar issue last week.",
     author_id: "usr_01",
-    ticket_id: "tkt_02",
+    ticket_id: "abf0760e-7f6f-4e94-94eb-95a5a3c30817",
     created_at: "2026-03-11T11:15:00Z",
   },
   {
     id: "cmt_03",
     content: "Confirmed \u2014 y-websocket 2.1.0 resolves the observer leak. Opening a PR now.",
     author_id: "usr_02",
-    ticket_id: "tkt_02",
+    ticket_id: "abf0760e-7f6f-4e94-94eb-95a5a3c30817",
     created_at: "2026-03-11T14:00:00Z",
   },
   {
@@ -29,7 +29,7 @@ export const mockComments: Comment[] = [
     content:
       "The Figma mockups for this are ready: https://figma.com/file/abc123. Let me know if anything is unclear.",
     author_id: "usr_03",
-    ticket_id: "tkt_05",
+    ticket_id: "f617fce3-78c1-475d-8cae-3633a8c742e8",
     created_at: "2026-03-09T09:00:00Z",
   },
   {
@@ -37,14 +37,14 @@ export const mockComments: Comment[] = [
     content:
       "Looks great! One question \u2014 should the notification badge count include or exclude already-read notifications?",
     author_id: "usr_04",
-    ticket_id: "tkt_05",
+    ticket_id: "f617fce3-78c1-475d-8cae-3633a8c742e8",
     created_at: "2026-03-09T10:30:00Z",
   },
   {
     id: "cmt_06",
     content: "Exclude read ones. Badge should only show unread count. I\u2019ll update the spec.",
     author_id: "usr_03",
-    ticket_id: "tkt_05",
+    ticket_id: "f617fce3-78c1-475d-8cae-3633a8c742e8",
     created_at: "2026-03-09T11:00:00Z",
   },
   {
@@ -52,7 +52,7 @@ export const mockComments: Comment[] = [
     content:
       "SAML integration is working with Okta. Still need to test with Azure AD and OneLogin before we can mark this done.",
     author_id: "usr_04",
-    ticket_id: "tkt_01",
+    ticket_id: "f9c142a5-55db-493c-ba0b-e5f35f721f5a",
     created_at: "2026-03-13T16:00:00Z",
   },
   {
@@ -60,7 +60,7 @@ export const mockComments: Comment[] = [
     content:
       "I\u2019ve added Markdown export. PDF export is trickier \u2014 we might want to use Puppeteer on the server side for accurate rendering.",
     author_id: "usr_02",
-    ticket_id: "tkt_07",
+    ticket_id: "a472f2eb-d05a-4de2-994e-7937560b7c86",
     created_at: "2026-03-06T14:20:00Z",
   },
   {
@@ -68,7 +68,7 @@ export const mockComments: Comment[] = [
     content:
       "Drag and drop is working for the basic case. Need to handle cross-column moves and optimistic updates still.",
     author_id: "usr_04",
-    ticket_id: "tkt_09",
+    ticket_id: "84bc92e8-785e-4d1d-ab83-df9b089d2fdd",
     created_at: "2026-03-14T11:00:00Z",
   },
   {
@@ -76,7 +76,7 @@ export const mockComments: Comment[] = [
     content:
       "Dark mode is looking solid. I\u2019m using CSS custom properties so it\u2019ll be easy to add more themes later.",
     author_id: "usr_03",
-    ticket_id: "tkt_10",
+    ticket_id: "658872b4-cf1f-4864-87a9-c7f84ab31aab",
     created_at: "2026-03-10T13:00:00Z",
   },
 ];
@@ -87,7 +87,7 @@ export const mockActivities: Activity[] = [
     type: "ticket_created",
     message: "created this ticket",
     user_id: "usr_01",
-    ticket_id: "tkt_01",
+    ticket_id: "f9c142a5-55db-493c-ba0b-e5f35f721f5a",
     created_at: "2026-03-01T09:00:00Z",
   },
   {
@@ -95,7 +95,7 @@ export const mockActivities: Activity[] = [
     type: "ticket_assigned",
     message: "assigned ticket to Jordan Okafor",
     user_id: "usr_01",
-    ticket_id: "tkt_01",
+    ticket_id: "f9c142a5-55db-493c-ba0b-e5f35f721f5a",
     created_at: "2026-03-01T09:05:00Z",
   },
   {
@@ -103,7 +103,7 @@ export const mockActivities: Activity[] = [
     type: "ticket_status_changed",
     message: "moved ticket from Todo to In Progress",
     user_id: "usr_04",
-    ticket_id: "tkt_01",
+    ticket_id: "f9c142a5-55db-493c-ba0b-e5f35f721f5a",
     created_at: "2026-03-10T09:00:00Z",
   },
   {
@@ -111,7 +111,7 @@ export const mockActivities: Activity[] = [
     type: "ticket_created",
     message: "created this ticket",
     user_id: "usr_01",
-    ticket_id: "tkt_02",
+    ticket_id: "abf0760e-7f6f-4e94-94eb-95a5a3c30817",
     created_at: "2026-03-10T08:00:00Z",
   },
   {
@@ -119,7 +119,7 @@ export const mockActivities: Activity[] = [
     type: "ticket_status_changed",
     message: "moved ticket from Todo to In Progress",
     user_id: "usr_02",
-    ticket_id: "tkt_02",
+    ticket_id: "abf0760e-7f6f-4e94-94eb-95a5a3c30817",
     created_at: "2026-03-10T10:00:00Z",
   },
   {
@@ -127,7 +127,7 @@ export const mockActivities: Activity[] = [
     type: "comment_added",
     message: "commented on this ticket",
     user_id: "usr_02",
-    ticket_id: "tkt_02",
+    ticket_id: "abf0760e-7f6f-4e94-94eb-95a5a3c30817",
     created_at: "2026-03-11T10:30:00Z",
   },
   {
@@ -135,7 +135,7 @@ export const mockActivities: Activity[] = [
     type: "ticket_status_changed",
     message: "moved ticket from In Progress to In Review",
     user_id: "usr_02",
-    ticket_id: "tkt_02",
+    ticket_id: "abf0760e-7f6f-4e94-94eb-95a5a3c30817",
     created_at: "2026-03-11T14:30:00Z",
   },
   {
@@ -143,7 +143,7 @@ export const mockActivities: Activity[] = [
     type: "ticket_status_changed",
     message: "moved ticket from In Review to Done",
     user_id: "usr_02",
-    ticket_id: "tkt_03",
+    ticket_id: "f7561434-79d3-448b-8cf9-1fbffb7a2cff",
     created_at: "2026-03-04T17:00:00Z",
   },
   {
@@ -151,7 +151,7 @@ export const mockActivities: Activity[] = [
     type: "ticket_created",
     message: "created this ticket",
     user_id: "usr_03",
-    ticket_id: "tkt_05",
+    ticket_id: "f617fce3-78c1-475d-8cae-3633a8c742e8",
     created_at: "2026-03-05T10:00:00Z",
   },
   {
@@ -159,7 +159,7 @@ export const mockActivities: Activity[] = [
     type: "comment_added",
     message: "commented on this ticket",
     user_id: "usr_03",
-    ticket_id: "tkt_05",
+    ticket_id: "f617fce3-78c1-475d-8cae-3633a8c742e8",
     created_at: "2026-03-09T09:00:00Z",
   },
   {
@@ -167,7 +167,7 @@ export const mockActivities: Activity[] = [
     type: "ticket_status_changed",
     message: "moved ticket from In Progress to In Review",
     user_id: "usr_03",
-    ticket_id: "tkt_10",
+    ticket_id: "658872b4-cf1f-4864-87a9-c7f84ab31aab",
     created_at: "2026-03-10T13:00:00Z",
   },
   {
@@ -175,7 +175,7 @@ export const mockActivities: Activity[] = [
     type: "comment_added",
     message: "commented on this ticket",
     user_id: "usr_04",
-    ticket_id: "tkt_09",
+    ticket_id: "84bc92e8-785e-4d1d-ab83-df9b089d2fdd",
     created_at: "2026-03-14T11:00:00Z",
   },
   {
@@ -183,14 +183,14 @@ export const mockActivities: Activity[] = [
     type: "ticket_created",
     message: "created this ticket",
     user_id: "usr_02",
-    ticket_id: "tkt_15",
+    ticket_id: "a78f5144-ff51-4126-9245-a02227715e8d",
     created_at: "2026-03-14T09:00:00Z",
   },
 ];
 
 export const mockTickets: Ticket[] = [
   {
-    id: "tkt_01",
+    id: "f9c142a5-55db-493c-ba0b-e5f35f721f5a",
     title: "Implement SSO login flow",
     created_by: "usr_01",
 
@@ -212,7 +212,7 @@ export const mockTickets: Ticket[] = [
     workspace_id: "ws_01",
   },
   {
-    id: "tkt_02",
+    id: "abf0760e-7f6f-4e94-94eb-95a5a3c30817",
     title: "Fix memory leak in document editor",
     created_by: "usr_01",
 
@@ -234,7 +234,7 @@ export const mockTickets: Ticket[] = [
     workspace_id: "ws_01",
   },
   {
-    id: "tkt_03",
+    id: "f7561434-79d3-448b-8cf9-1fbffb7a2cff",
     title: "Add real-time presence indicators",
     created_by: "usr_01",
 
@@ -256,7 +256,7 @@ export const mockTickets: Ticket[] = [
     workspace_id: "ws_01",
   },
   {
-    id: "tkt_04",
+    id: "d0b3bfb5-d65c-43b9-ab9a-b1ba8a3dfe57",
     title: "Design ticket detail sidebar",
     created_by: "usr_03",
 
@@ -278,7 +278,7 @@ export const mockTickets: Ticket[] = [
     workspace_id: "ws_01",
   },
   {
-    id: "tkt_05",
+    id: "f617fce3-78c1-475d-8cae-3633a8c742e8",
     title: "Build notification center UI",
     created_by: "usr_03",
 
@@ -300,7 +300,7 @@ export const mockTickets: Ticket[] = [
     workspace_id: "ws_01",
   },
   {
-    id: "tkt_06",
+    id: "0056824e-fc26-4e2b-b3f1-7341317e354d",
     title: "Set up end-to-end test suite",
     created_by: "usr_01",
 
@@ -322,7 +322,7 @@ export const mockTickets: Ticket[] = [
     workspace_id: "ws_01",
   },
   {
-    id: "tkt_07",
+    id: "a472f2eb-d05a-4de2-994e-7937560b7c86",
     title: "Add document export (PDF, Markdown)",
     created_by: "usr_02",
 
@@ -344,7 +344,7 @@ export const mockTickets: Ticket[] = [
     workspace_id: "ws_01",
   },
   {
-    id: "tkt_08",
+    id: "6da5bbd3-b6eb-432e-b192-7914d9d478cc",
     title: "Optimize database queries for ticket listing",
     created_by: "usr_01",
 
@@ -366,7 +366,7 @@ export const mockTickets: Ticket[] = [
     workspace_id: "ws_01",
   },
   {
-    id: "tkt_09",
+    id: "84bc92e8-785e-4d1d-ab83-df9b089d2fdd",
     title: "Implement drag-and-drop for board columns",
     created_by: "usr_04",
 
@@ -388,7 +388,7 @@ export const mockTickets: Ticket[] = [
     workspace_id: "ws_01",
   },
   {
-    id: "tkt_10",
+    id: "658872b4-cf1f-4864-87a9-c7f84ab31aab",
     title: "Add dark mode support",
     created_by: "usr_03",
 
@@ -410,7 +410,7 @@ export const mockTickets: Ticket[] = [
     workspace_id: "ws_01",
   },
   {
-    id: "tkt_11",
+    id: "457554d2-53ed-4b98-814d-ce790f399bd3",
     title: "Write API documentation for public endpoints",
     created_by: "usr_01",
 
@@ -432,7 +432,7 @@ export const mockTickets: Ticket[] = [
     workspace_id: "ws_01",
   },
   {
-    id: "tkt_12",
+    id: "32061d93-5a82-43ae-bb68-6fed85ebe498",
     title: "Fix broken avatar upload on Safari",
     created_by: "usr_01",
 
@@ -454,7 +454,7 @@ export const mockTickets: Ticket[] = [
     workspace_id: "ws_01",
   },
   {
-    id: "tkt_13",
+    id: "d20d9986-b80d-4f70-8261-b212b5e31f2f",
     title: "Implement meeting recording playback",
     created_by: "usr_04",
 
@@ -476,7 +476,7 @@ export const mockTickets: Ticket[] = [
     workspace_id: "ws_01",
   },
   {
-    id: "tkt_14",
+    id: "3ee70b95-4641-4a29-ba15-376062ccaa2a",
     title: "Add keyboard shortcuts for common actions",
     created_by: "usr_01",
 
@@ -498,7 +498,7 @@ export const mockTickets: Ticket[] = [
     workspace_id: "ws_01",
   },
   {
-    id: "tkt_15",
+    id: "a78f5144-ff51-4126-9245-a02227715e8d",
     title: "Migrate from REST to tRPC for internal APIs",
     created_by: "usr_02",
 

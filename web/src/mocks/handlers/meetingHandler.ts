@@ -5,10 +5,6 @@ import type { Meeting, CreateMeetingInput } from "@/types";
 
 const _meetings: Meeting[] = structuredClone(mockMeetings);
 
-const generateId = (prefix: string): string => {
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
-};
-
 export const meetingHandlers = [
   http.get(mockUrl("/meetings"), async () => {
     await delay(300);
@@ -28,7 +24,7 @@ export const meetingHandlers = [
     await delay(300);
     const input = (await request.json()) as CreateMeetingInput;
     const meeting: Meeting = {
-      id: generateId("mtg"),
+      id: crypto.randomUUID(),
       title: input.title,
       description: input.description ?? "",
       start_time: input.start_time,

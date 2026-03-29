@@ -9,10 +9,6 @@ interface StoredAttachment extends Attachment {
 
 const _attachments: StoredAttachment[] = [];
 
-const generateId = (prefix: string): string => {
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
-};
-
 const toResponse = (a: StoredAttachment): Attachment => ({
   id: a.id,
   filename: a.filename,
@@ -53,7 +49,7 @@ export const attachmentHandlers = [
     if (!file) return HttpResponse.json({ error: "No file provided" }, { status: 400 });
 
     const attachment: StoredAttachment = {
-      id: generateId("att"),
+      id: crypto.randomUUID(),
       filename: file.name,
       url: URL.createObjectURL(file),
       size: file.size,

@@ -8,7 +8,7 @@ export const mockNotifications: Notification[] = [
     message: 'Priya assigned COL-101 "Implement SSO login flow" to you.',
     read: false,
     created_at: "2026-03-15T08:30:00Z",
-    link: "/tickets/tkt_01",
+    link: "/tickets/f9c142a5-55db-493c-ba0b-e5f35f721f5a",
     actor_id: "usr_01",
   },
   {
@@ -19,7 +19,7 @@ export const mockNotifications: Notification[] = [
       'Marcus mentioned you in a comment on COL-102: "...can you check the WebSocket cleanup?"',
     read: false,
     created_at: "2026-03-15T08:15:00Z",
-    link: "/tickets/tkt_02",
+    link: "/tickets/abf0760e-7f6f-4e94-94eb-95a5a3c30817",
     actor_id: "usr_02",
   },
   {
@@ -39,7 +39,7 @@ export const mockNotifications: Notification[] = [
     message: 'Priya assigned COL-108 "Optimize database queries for ticket listing" to you.',
     read: true,
     created_at: "2026-03-14T16:00:00Z",
-    link: "/tickets/tkt_08",
+    link: "/tickets/6da5bbd3-b6eb-432e-b192-7914d9d478cc",
     actor_id: "usr_01",
   },
   {
@@ -49,7 +49,7 @@ export const mockNotifications: Notification[] = [
     message: 'Marcus moved COL-102 "Fix memory leak in document editor" to In Review.',
     read: true,
     created_at: "2026-03-14T14:30:00Z",
-    link: "/tickets/tkt_02",
+    link: "/tickets/abf0760e-7f6f-4e94-94eb-95a5a3c30817",
     actor_id: "usr_02",
   },
   {
@@ -59,7 +59,7 @@ export const mockNotifications: Notification[] = [
     message: 'Priya assigned COL-105 "Build notification center UI" to you.',
     read: false,
     created_at: "2026-03-14T10:00:00Z",
-    link: "/tickets/tkt_05",
+    link: "/tickets/f617fce3-78c1-475d-8cae-3633a8c742e8",
     actor_id: "usr_01",
   },
   {
@@ -69,7 +69,7 @@ export const mockNotifications: Notification[] = [
     message: 'Elena mentioned you in COL-105: "@Jordan can you handle the badge count logic?"',
     read: true,
     created_at: "2026-03-09T11:00:00Z",
-    link: "/tickets/tkt_05",
+    link: "/tickets/f617fce3-78c1-475d-8cae-3633a8c742e8",
     actor_id: "usr_03",
   },
   {
@@ -79,7 +79,7 @@ export const mockNotifications: Notification[] = [
     message: 'Elena moved COL-110 "Add dark mode support" to In Review.',
     read: true,
     created_at: "2026-03-10T13:00:00Z",
-    link: "/tickets/tkt_10",
+    link: "/tickets/658872b4-cf1f-4864-87a9-c7f84ab31aab",
     actor_id: "usr_03",
   },
   {
@@ -89,7 +89,7 @@ export const mockNotifications: Notification[] = [
     message: 'Elena moved COL-104 "Design ticket detail sidebar" to Done.',
     read: true,
     created_at: "2026-03-11T09:00:00Z",
-    link: "/tickets/tkt_04",
+    link: "/tickets/d0b3bfb5-d65c-43b9-ab9a-b1ba8a3dfe57",
     actor_id: "usr_03",
   },
   {
@@ -109,7 +109,7 @@ export const mockNotifications: Notification[] = [
     message: 'Priya assigned COL-109 "Implement drag-and-drop for board columns" to you.',
     read: true,
     created_at: "2026-03-07T10:30:00Z",
-    link: "/tickets/tkt_09",
+    link: "/tickets/84bc92e8-785e-4d1d-ab83-df9b089d2fdd",
     actor_id: "usr_01",
   },
   {
@@ -119,7 +119,7 @@ export const mockNotifications: Notification[] = [
     message: 'Priya mentioned you in COL-106: "Marcus: Investigate Playwright test flakiness"',
     read: true,
     created_at: "2026-03-07T18:00:00Z",
-    link: "/tickets/tkt_06",
+    link: "/tickets/0056824e-fc26-4e2b-b3f1-7341317e354d",
     actor_id: "usr_01",
   },
 ];

@@ -6,10 +6,6 @@ import type { Favorite } from "@/types";
 
 const _favorites: Favorite[] = structuredClone(mockFavorites);
 
-const generateId = (prefix: string): string => {
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
-};
-
 export const favoriteHandlers = [
   http.get(mockUrl("/favorites"), async () => {
     await delay(200);
@@ -29,7 +25,7 @@ export const favoriteHandlers = [
 
     const ticket = _tickets.find((t) => t.id === ticket_id);
     const favorite: Favorite = {
-      id: generateId("fav"),
+      id: crypto.randomUUID(),
       ticket_id,
       title: ticket?.title ?? "Ticket",
       status: ticket?.status ?? "todo",

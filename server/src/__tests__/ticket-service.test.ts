@@ -41,7 +41,7 @@ import {
 import { sendTicketAssignedEmail } from "../services/email.service";
 
 const mockTicket = {
-  id: "tkt_1",
+  id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   title: "Test ticket",
   description: "A test",
   content: "# Test",
@@ -70,7 +70,7 @@ describe("listTickets", () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({
-      id: "tkt_1",
+      id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       title: "Test ticket",
       status: "todo",
       priority: "high",
@@ -120,7 +120,9 @@ describe("listTickets", () => {
 
   it("includes sub-ticket counts", async () => {
     (prisma.ticket.findMany as jest.Mock).mockResolvedValue([mockTicket]);
-    (prisma.ticket.groupBy as jest.Mock).mockResolvedValue([{ parent_id: "tkt_1", _count: 3 }]);
+    (prisma.ticket.groupBy as jest.Mock).mockResolvedValue([
+      { parent_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", _count: 3 },
+    ]);
 
     const result = await listTickets("ws_1", {});
 
@@ -133,10 +135,10 @@ describe("getTicket", () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(mockTicket);
     (prisma.ticket.findMany as jest.Mock).mockResolvedValue([{ id: "sub_1" }]);
 
-    const result = await getTicket("tkt_1", "ws_1");
+    const result = await getTicket("a1b2c3d4-e5f6-7890-abcd-ef1234567890", "ws_1");
 
     expect(result).toBeDefined();
-    expect(result!.id).toBe("tkt_1");
+    expect(result!.id).toBe("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
     expect(result!.sub_tickets).toEqual(["sub_1"]);
     expect(result!.labels).toEqual(["lbl_1"]);
     expect(result!.comments).toEqual(["cmt_1"]);
@@ -145,7 +147,7 @@ describe("getTicket", () => {
   it("returns null for wrong workspace", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(mockTicket);
 
-    const result = await getTicket("tkt_1", "ws_wrong");
+    const result = await getTicket("a1b2c3d4-e5f6-7890-abcd-ef1234567890", "ws_wrong");
 
     expect(result).toBeNull();
   });
@@ -217,12 +219,17 @@ describe("updateTicket", () => {
     });
     (prisma.ticket.findMany as jest.Mock).mockResolvedValue([]);
 
-    const result = await updateTicket("tkt_1", { status: "in-progress" }, "user_1", "ws_1");
+    const result = await updateTicket(
+      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      { status: "in-progress" },
+      "user_1",
+      "ws_1",
+    );
 
     expect(result).toBeDefined();
     expect(prisma.ticket.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: "tkt_1" },
+        where: { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
         data: expect.objectContaining({ status: "in_progress" }),
       }),
     );
@@ -236,7 +243,12 @@ describe("updateTicket", () => {
     });
     (prisma.ticket.findMany as jest.Mock).mockResolvedValue([]);
 
-    await updateTicket("tkt_1", { status: "done" }, "user_1", "ws_1");
+    await updateTicket(
+      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      { status: "done" },
+      "user_1",
+      "ws_1",
+    );
 
     expect(prisma.activity.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -261,7 +273,12 @@ describe("updateTicket", () => {
       return Promise.resolve(null);
     });
 
-    await updateTicket("tkt_1", { assignee: "user_2" }, "user_1", "ws_1");
+    await updateTicket(
+      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      { assignee: "user_2" },
+      "user_1",
+      "ws_1",
+    );
 
     expect(prisma.notification.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -275,7 +292,7 @@ describe("updateTicket", () => {
       "new@test.com",
       "New User",
       "Test ticket",
-      "tkt_1",
+      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       "Assigner",
     );
   });
@@ -291,7 +308,12 @@ describe("updateTicket", () => {
   it("returns null for wrong workspace", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(existingTicket);
 
-    const result = await updateTicket("tkt_1", { title: "X" }, "user_1", "ws_wrong");
+    const result = await updateTicket(
+      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      { title: "X" },
+      "user_1",
+      "ws_wrong",
+    );
 
     expect(result).toBeNull();
   });
@@ -302,10 +324,12 @@ describe("deleteTicket", () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(mockTicket);
     (prisma.ticket.delete as jest.Mock).mockResolvedValue({});
 
-    const result = await deleteTicket("tkt_1", "ws_1");
+    const result = await deleteTicket("a1b2c3d4-e5f6-7890-abcd-ef1234567890", "ws_1");
 
     expect(result).toBe(true);
-    expect(prisma.ticket.delete).toHaveBeenCalledWith({ where: { id: "tkt_1" } });
+    expect(prisma.ticket.delete).toHaveBeenCalledWith({
+      where: { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
+    });
   });
 
   it("returns false for non-existent ticket", async () => {
@@ -319,7 +343,7 @@ describe("deleteTicket", () => {
   it("returns false for wrong workspace", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(mockTicket);
 
-    const result = await deleteTicket("tkt_1", "ws_wrong");
+    const result = await deleteTicket("a1b2c3d4-e5f6-7890-abcd-ef1234567890", "ws_wrong");
 
     expect(result).toBe(false);
   });
@@ -333,12 +357,12 @@ describe("listComments", () => {
         id: "cmt_1",
         content: "Nice work!",
         author_id: "user_2",
-        ticket_id: "tkt_1",
+        ticket_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         created_at: new Date(),
       },
     ]);
 
-    const result = await listComments("tkt_1", "ws_1");
+    const result = await listComments("a1b2c3d4-e5f6-7890-abcd-ef1234567890", "ws_1");
 
     expect(result).toHaveLength(1);
     expect(result![0].content).toBe("Nice work!");
@@ -347,7 +371,7 @@ describe("listComments", () => {
   it("returns null for wrong workspace", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue({ workspace_id: "ws_other" });
 
-    const result = await listComments("tkt_1", "ws_1");
+    const result = await listComments("a1b2c3d4-e5f6-7890-abcd-ef1234567890", "ws_1");
 
     expect(result).toBeNull();
   });
@@ -360,12 +384,17 @@ describe("createComment", () => {
       id: "cmt_new",
       content: "LGTM",
       author_id: "user_1",
-      ticket_id: "tkt_1",
+      ticket_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       created_at: new Date(),
     });
     (prisma.activity.create as jest.Mock).mockResolvedValue({});
 
-    const result = await createComment("tkt_1", "LGTM", "user_1", "ws_1");
+    const result = await createComment(
+      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "LGTM",
+      "user_1",
+      "ws_1",
+    );
 
     expect(result).toBeDefined();
     expect(result!.content).toBe("LGTM");
@@ -389,14 +418,14 @@ describe("listActivities", () => {
         type: "ticket_created",
         message: "created this ticket",
         user_id: "user_1",
-        ticket_id: "tkt_1",
+        ticket_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         created_at: new Date(),
       },
     ];
 
     ((prisma as any).activity.findMany as jest.Mock).mockResolvedValue(mockActivities);
 
-    const result = await listActivities("tkt_1", "ws_1");
+    const result = await listActivities("a1b2c3d4-e5f6-7890-abcd-ef1234567890", "ws_1");
 
     expect(result).toHaveLength(1);
     expect(result![0].type).toBe("ticket_created");

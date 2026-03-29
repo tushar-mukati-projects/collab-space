@@ -5,10 +5,6 @@ import type { Label, CreateLabelInput, UpdateLabelInput } from "@/types";
 
 const _labels: Label[] = structuredClone(mockLabels);
 
-const generateId = (): string => {
-  return `lbl_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
-};
-
 export const labelHandlers = [
   http.get(mockUrl("/labels"), async () => {
     await delay(200);
@@ -19,7 +15,7 @@ export const labelHandlers = [
     await delay(300);
     const input = (await request.json()) as CreateLabelInput;
     const label: Label = {
-      id: generateId(),
+      id: crypto.randomUUID(),
       name: input.name.trim(),
       color: input.color,
     };

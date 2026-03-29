@@ -3,10 +3,6 @@ import { _workspaces } from "../store";
 import { mockUrl } from "../config";
 import type { Workspace } from "@/types";
 
-const generateId = (prefix: string): string => {
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
-};
-
 export const workspaceHandlers = [
   http.get(mockUrl("/workspace"), async () => {
     await delay(200);
@@ -32,7 +28,7 @@ export const workspaceHandlers = [
       .toUpperCase();
 
     const workspace: Workspace = {
-      id: generateId("ws"),
+      id: crypto.randomUUID(),
       name,
       slug,
       logo: `https://ui-avatars.com/api/?name=${initials}&background=6366f1&color=fff&bold=true`,

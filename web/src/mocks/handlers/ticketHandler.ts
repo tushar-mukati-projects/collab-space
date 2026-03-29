@@ -9,10 +9,6 @@ import type {
   Comment,
 } from "@/types";
 
-const generateId = (prefix: string): string => {
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
-};
-
 const toSummary = (ticket: Ticket): TicketSummary => {
   return {
     id: ticket.id,
@@ -95,7 +91,7 @@ export const ticketHandlers = [
     const parentId = input.parent_id ?? null;
 
     const ticket: Ticket = {
-      id: generateId("tkt"),
+      id: crypto.randomUUID(),
       title: input.title,
       description: input.description ?? "",
       content: input.content ?? "",
@@ -193,7 +189,7 @@ export const ticketHandlers = [
     const input = (await request.json()) as Omit<CreateCommentInput, "ticket_id">;
     const now = new Date().toISOString();
     const comment: Comment = {
-      id: generateId("cmt"),
+      id: crypto.randomUUID(),
       content: input.content,
       author_id: input.author_id,
       ticket_id: ticketId,

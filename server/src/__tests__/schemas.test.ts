@@ -49,7 +49,7 @@ describe("createTicketSchema", () => {
         assignee: "user_123",
         labels: ["lbl_1", "lbl_2"],
         due_date: "2026-04-01T00:00:00Z",
-        parent_id: "tkt_parent",
+        parent_id: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
         parent_type: "ticket",
       },
     });
@@ -74,7 +74,7 @@ describe("createTicketSchema", () => {
 describe("updateTicketSchema", () => {
   it("accepts partial update with id param", () => {
     const result = updateTicketSchema.safeParse({
-      params: { id: "tkt_123" },
+      params: { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
       body: { status: "done" },
     });
     expect(result.success).toBe(true);
@@ -90,7 +90,7 @@ describe("updateTicketSchema", () => {
 
   it("accepts empty body (passthrough)", () => {
     const result = updateTicketSchema.safeParse({
-      params: { id: "tkt_123" },
+      params: { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
       body: {},
     });
     expect(result.success).toBe(true);
@@ -98,7 +98,7 @@ describe("updateTicketSchema", () => {
 
   it("accepts all updatable fields", () => {
     const result = updateTicketSchema.safeParse({
-      params: { id: "tkt_123" },
+      params: { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
       body: {
         title: "Updated title",
         description: "Updated desc",
@@ -116,7 +116,9 @@ describe("updateTicketSchema", () => {
 
 describe("ticketIdSchema", () => {
   it("accepts valid id", () => {
-    const result = ticketIdSchema.safeParse({ params: { id: "tkt_123" } });
+    const result = ticketIdSchema.safeParse({
+      params: { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
+    });
     expect(result.success).toBe(true);
   });
 
@@ -169,7 +171,7 @@ describe("listTicketsSchema", () => {
 describe("createCommentSchema", () => {
   it("accepts valid comment", () => {
     const result = createCommentSchema.safeParse({
-      params: { id: "tkt_123" },
+      params: { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
       body: { content: "Looks good!" },
     });
     expect(result.success).toBe(true);
@@ -177,7 +179,7 @@ describe("createCommentSchema", () => {
 
   it("rejects empty content", () => {
     const result = createCommentSchema.safeParse({
-      params: { id: "tkt_123" },
+      params: { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
       body: { content: "" },
     });
     expect(result.success).toBe(false);
@@ -185,7 +187,7 @@ describe("createCommentSchema", () => {
 
   it("accepts optional author_id", () => {
     const result = createCommentSchema.safeParse({
-      params: { id: "tkt_123" },
+      params: { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
       body: { content: "Great work!", author_id: "user_456" },
     });
     expect(result.success).toBe(true);
