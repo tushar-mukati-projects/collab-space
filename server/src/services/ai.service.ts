@@ -94,7 +94,7 @@ async function executeTool(
       let tickets = await prisma.ticket.findMany({
         where,
         include: {
-          labels: { select: { name: true } },
+          ticketLabels: { include: { label: { select: { name: true } } } },
         },
         orderBy: { created_at: "desc" },
         take: 20,
@@ -126,7 +126,7 @@ async function executeTool(
           priority: t.priority,
           assignee: t.assignee_id ? (userMap.get(t.assignee_id) ?? "Unknown") : "Unassigned",
           due_date: t.due_date?.toISOString().split("T")[0] ?? null,
-          labels: t.labels.map((l) => l.name),
+          labels: t.ticketLabels.map((tl) => tl.label.name),
         })),
       );
     }
@@ -204,7 +204,7 @@ async function executeTool(
     case "get_meetings": {
       const meetings = await prisma.meeting.findMany({
         where: { workspace_id: workspaceId },
-        include: { participants: { select: { id: true } } },
+        include: { participants: { select: { user_id: true } } },
         orderBy: { start_time: "desc" },
         take: 10,
       });
@@ -222,7 +222,7 @@ async function executeTool(
           start_time: m.start_time.toISOString(),
           end_time: m.end_time.toISOString(),
           status: m.status,
-          participants: m.participants.map((p) => userMap.get(p.id) ?? "Unknown"),
+          participants: m.participants.map((p) => userMap.get(p.user_id) ?? "Unknown"),
         })),
       );
     }

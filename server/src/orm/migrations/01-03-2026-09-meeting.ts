@@ -27,10 +27,10 @@ export const up = async (prisma: PrismaClient) => {
   `);
 
   await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "_MeetingParticipants" (
-      "A" TEXT NOT NULL REFERENCES "Meeting"(id) ON DELETE CASCADE,
-      "B" TEXT NOT NULL REFERENCES "User"(id) ON DELETE CASCADE,
-      UNIQUE("A", "B")
+    CREATE TABLE IF NOT EXISTS "MeetingParticipant" (
+      meeting_id TEXT NOT NULL REFERENCES "Meeting"(id) ON DELETE CASCADE,
+      user_id TEXT NOT NULL REFERENCES "User"(id) ON DELETE CASCADE,
+      PRIMARY KEY (meeting_id, user_id)
     )
   `);
 };

@@ -1,6 +1,10 @@
 import { prisma } from "../db.js";
 import { randomUUID } from "crypto";
 
+const participantInclude = {
+  participants: { select: { user_id: true } },
+} as const;
+
 const toMeetingDTO = (m: {
   id: string;
   title: string;
@@ -11,7 +15,7 @@ const toMeetingDTO = (m: {
   room_id: string;
   recording_url: string | null;
   workspace_id: string;
-  participants: { id: string }[];
+  participants: { user_id: string }[];
 }) => {
   return {
     id: m.id,
@@ -19,7 +23,7 @@ const toMeetingDTO = (m: {
     description: m.description,
     start_time: m.start_time,
     end_time: m.end_time,
-    participants: m.participants.map((p) => p.id),
+    participants: m.participants.map((p) => p.user_id),
     status: m.status,
     room_id: m.room_id,
     recording_url: m.recording_url,
@@ -30,7 +34,7 @@ const toMeetingDTO = (m: {
 export const listMeetings = async (workspaceId: string) => {
   const meetings = await prisma.meeting.findMany({
     where: { workspace_id: workspaceId },
-    include: { participants: { select: { id: true } } },
+    include: participantInclude,
     orderBy: { start_time: "asc" },
   });
   return meetings.map(toMeetingDTO);
@@ -39,7 +43,7 @@ export const listMeetings = async (workspaceId: string) => {
 export const getMeeting = async (id: string, workspaceId: string) => {
   const meeting = await prisma.meeting.findFirst({
     where: { id, workspace_id: workspaceId },
-    include: { participants: { select: { id: true } } },
+    include: participantInclude,
   });
   return meeting ? toMeetingDTO(meeting) : null;
 };
@@ -66,10 +70,10 @@ export const createMeeting = async (
       room_id: roomId,
       workspace_id: workspaceId,
       participants: {
-        connect: participantIds.map((id: string) => ({ id })),
+        create: participantIds.map((user_id: string) => ({ user_id })),
       },
     },
-    include: { participants: { select: { id: true } } },
+    include: participantInclude,
   });
 
   return toMeetingDTO(meeting);

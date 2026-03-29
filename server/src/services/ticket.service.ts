@@ -60,7 +60,7 @@ const serializeTicketFull = (ticket: {
   created_at: Date;
   updated_at: Date;
   workspace_id: string;
-  labels: { id: string }[];
+  ticketLabels: { label_id: string }[];
   comments: { id: string }[];
   _subTicketIds?: string[];
 }) => {
@@ -75,7 +75,7 @@ const serializeTicketFull = (ticket: {
     created_by: ticket.created_by,
     parent_id: ticket.parent_id,
     parent_type: ticket.parent_type,
-    labels: ticket.labels.map((l) => l.id),
+    labels: ticket.ticketLabels.map((tl) => tl.label_id),
     due_date: ticket.due_date,
     created_at: ticket.created_at,
     updated_at: ticket.updated_at,
@@ -86,7 +86,7 @@ const serializeTicketFull = (ticket: {
 };
 
 const fullTicketInclude = {
-  labels: { select: { id: true } },
+  ticketLabels: { select: { label_id: true } },
   comments: { select: { id: true } },
 } as const;
 
@@ -112,7 +112,7 @@ export const listTickets = async (workspaceId: string, filters: TicketListFilter
   }
 
   if (filters.labels && filters.labels.length > 0) {
-    where.labels = { some: { id: { in: filters.labels } } };
+    where.ticketLabels = { some: { label_id: { in: filters.labels } } };
   }
 
   if (filters.search_term) {
@@ -135,7 +135,7 @@ export const listTickets = async (workspaceId: string, filters: TicketListFilter
   const tickets = await prisma.ticket.findMany({
     where,
     include: {
-      labels: { select: { id: true } },
+      ticketLabels: { select: { label_id: true } },
     },
     orderBy: { created_at: "desc" },
   });
@@ -161,7 +161,7 @@ export const listTickets = async (workspaceId: string, filters: TicketListFilter
     created_by: t.created_by,
     parent_id: t.parent_id,
     parent_type: t.parent_type,
-    labels: t.labels.map((l: any) => l.id),
+    labels: t.ticketLabels.map((tl: any) => tl.label_id),
     sub_ticket_count: subCountMap.get(t.id) ?? 0,
   }));
 };
@@ -204,9 +204,9 @@ export const createTicket = async (data: CreateTicketData, userId: string, works
       parent_type: resolvedParentType,
       due_date: data.due_date ? new Date(data.due_date) : null,
       workspace_id: workspaceId,
-      labels:
+      ticketLabels:
         data.labels && data.labels.length > 0
-          ? { connect: data.labels.map((id: string) => ({ id })) }
+          ? { create: data.labels.map((label_id: string) => ({ label_id })) }
           : undefined,
     },
     include: fullTicketInclude,
@@ -250,8 +250,9 @@ export const updateTicket = async (
     updateData.parent_type = data.parent_type ? deserializeParentType(data.parent_type) : null;
 
   if (data.labels !== undefined) {
-    updateData.labels = {
-      set: data.labels.map((lid: string) => ({ id: lid })),
+    updateData.ticketLabels = {
+      deleteMany: {},
+      create: data.labels.map((label_id: string) => ({ label_id })),
     };
   }
 

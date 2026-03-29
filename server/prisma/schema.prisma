@@ -84,7 +84,7 @@ model User {
   assigned_tickets   Ticket[]       @relation("TicketAssignee")
   comments           Comment[]
   activities         Activity[]
-  meetings           Meeting[]      @relation("MeetingParticipants")
+  meetings           MeetingParticipant[]
   notifications_sent Notification[] @relation("NotificationActor")
   notifications_recv Notification[] @relation("NotificationRecipient")
   notification_prefs NotificationPrefs[]
@@ -156,8 +156,8 @@ model Label {
   color        String
   workspace_id String
 
-  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
-  tickets   Ticket[]  @relation("TicketLabels")
+  workspace    Workspace     @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  ticketLabels TicketLabel[]
 
   @@index([workspace_id])
 }
@@ -178,14 +178,14 @@ model Ticket {
   created_at   DateTime          @default(now()) @db.Timestamptz(6)
   updated_at   DateTime          @default(now()) @db.Timestamptz(6)
 
-  workspace   Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
-  assignee    User?     @relation("TicketAssignee", fields: [assignee_id], references: [id], onDelete: SetNull)
-  creator     User      @relation("TicketCreator", fields: [created_by], references: [id])
-  labels      Label[]   @relation("TicketLabels")
-  comments    Comment[]
-  activities  Activity[]
-  favorites   Favorite[]
-  attachments Attachment[]
+  workspace    Workspace     @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  assignee     User?         @relation("TicketAssignee", fields: [assignee_id], references: [id], onDelete: SetNull)
+  creator      User          @relation("TicketCreator", fields: [created_by], references: [id])
+  ticketLabels TicketLabel[]
+  comments     Comment[]
+  activities   Activity[]
+  favorites    Favorite[]
+  attachments  Attachment[]
 
   @@index([workspace_id, status, created_at(sort: Desc)])
   @@index([parent_id])
@@ -250,8 +250,8 @@ model Meeting {
   recording_url String?
   workspace_id  String
 
-  workspace    Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
-  participants User[]    @relation("MeetingParticipants")
+  workspace    Workspace              @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  participants MeetingParticipant[]
 
   @@index([workspace_id, start_time])
 }
@@ -358,4 +358,24 @@ model RolePermission {
 
   @@unique([workspace_id, role, permission])
   @@index([workspace_id, role])
+}
+
+model TicketLabel {
+  label_id  String
+  ticket_id String @db.Uuid
+
+  label  Label  @relation(fields: [label_id], references: [id], onDelete: Cascade)
+  ticket Ticket @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+
+  @@id([label_id, ticket_id])
+}
+
+model MeetingParticipant {
+  meeting_id String
+  user_id    String
+
+  meeting Meeting @relation(fields: [meeting_id], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([meeting_id, user_id])
 }

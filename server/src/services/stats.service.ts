@@ -15,7 +15,7 @@ export const getWorkspaceStats = async (workspaceId: string) => {
         assignee_id: true,
         due_date: true,
         created_at: true,
-        labels: { select: { id: true, name: true, color: true } },
+        ticketLabels: { include: { label: { select: { id: true, name: true, color: true } } } },
       },
     }),
     prisma.user.findMany({
@@ -46,7 +46,7 @@ export const getWorkspaceStats = async (workspaceId: string) => {
           lte: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7),
         },
       },
-      include: { participants: { select: { id: true } } },
+      include: { participants: { select: { user_id: true } } },
       orderBy: { start_time: "asc" },
       take: 10,
     }),
@@ -141,9 +141,9 @@ export const getWorkspaceStats = async (workspaceId: string) => {
     room_id: m.room_id,
     participant_count: m.participants.length,
     participants: m.participants.slice(0, 4).map((p) => ({
-      id: p.id,
-      name: userMap.get(p.id)?.name ?? "Unknown",
-      avatar: userMap.get(p.id)?.avatar ?? "",
+      id: p.user_id,
+      name: userMap.get(p.user_id)?.name ?? "Unknown",
+      avatar: userMap.get(p.user_id)?.avatar ?? "",
     })),
   }));
 

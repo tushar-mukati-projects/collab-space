@@ -8,7 +8,7 @@
     "start": "bun src/index.ts",
     "migrate": "bun src/orm/migrate.ts",
     "db:studio": "bun prisma studio",
-    "test": "jest --forceExit",
+    "test": "jest",
     "check": "bun tsc --noEmit && bun eslint && bun prettier --check \"src/**/*.ts\"",
     "check:fix": "bun eslint --fix && bun prettier --write \"src/**/*.ts\" && bun tsc --noEmit"
   },

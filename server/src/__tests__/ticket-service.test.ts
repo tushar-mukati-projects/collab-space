@@ -40,8 +40,12 @@ import {
 } from "../services/ticket.service";
 import { sendTicketAssignedEmail } from "../services/email.service";
 
+const TICKET_ID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+const CREATED_AT = new Date("2026-01-01");
+const UPDATED_AT = new Date("2026-01-01");
+
 const mockTicket = {
-  id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  id: TICKET_ID,
   title: "Test ticket",
   description: "A test",
   content: "# Test",
@@ -53,35 +57,36 @@ const mockTicket = {
   parent_type: null,
   due_date: null,
   workspace_id: "ws_1",
-  created_at: new Date("2026-01-01"),
-  updated_at: new Date("2026-01-01"),
-  labels: [{ id: "lbl_1" }],
+  created_at: CREATED_AT,
+  updated_at: UPDATED_AT,
+  ticketLabels: [{ label_id: "lbl_1" }],
   comments: [{ id: "cmt_1" }],
 };
 
 beforeEach(() => jest.clearAllMocks());
 
 describe("listTickets", () => {
-  it("returns serialized ticket summaries", async () => {
+  it("returns full serialized ticket summary", async () => {
     (prisma.ticket.findMany as jest.Mock).mockResolvedValue([mockTicket]);
     (prisma.ticket.groupBy as jest.Mock).mockResolvedValue([]);
 
     const result = await listTickets("ws_1", {});
 
-    expect(result).toHaveLength(1);
-    expect(result[0]).toMatchObject({
-      id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      title: "Test ticket",
-      status: "todo",
-      priority: "high",
-      assignee: null,
-      labels: ["lbl_1"],
-    });
-    expect(prisma.ticket.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { workspace_id: "ws_1" },
-      }),
-    );
+    expect(result).toEqual([
+      {
+        id: TICKET_ID,
+        title: "Test ticket",
+        status: "todo",
+        due_date: null,
+        priority: "high",
+        assignee: null,
+        created_by: "user_1",
+        parent_id: null,
+        parent_type: null,
+        labels: ["lbl_1"],
+        sub_ticket_count: 0,
+      },
+    ]);
   });
 
   it("applies assignee filter", async () => {
@@ -91,7 +96,10 @@ describe("listTickets", () => {
     await listTickets("ws_1", { assignees: ["user_1"] });
 
     const call = (prisma.ticket.findMany as jest.Mock).mock.calls[0][0];
-    expect(call.where.assignee_id).toEqual({ in: ["user_1"] });
+    expect(call.where).toEqual({
+      workspace_id: "ws_1",
+      assignee_id: { in: ["user_1"] },
+    });
   });
 
   it("applies status filter with deserialization", async () => {
@@ -111,7 +119,6 @@ describe("listTickets", () => {
     await listTickets("ws_1", { search_term: "login" });
 
     const call = (prisma.ticket.findMany as jest.Mock).mock.calls[0][0];
-    expect(call.where.OR).toBeDefined();
     expect(call.where.OR).toEqual([
       { title: { contains: "login", mode: "insensitive" } },
       { description: { contains: "login", mode: "insensitive" } },
@@ -120,34 +127,51 @@ describe("listTickets", () => {
 
   it("includes sub-ticket counts", async () => {
     (prisma.ticket.findMany as jest.Mock).mockResolvedValue([mockTicket]);
-    (prisma.ticket.groupBy as jest.Mock).mockResolvedValue([
-      { parent_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", _count: 3 },
-    ]);
+    (prisma.ticket.groupBy as jest.Mock).mockResolvedValue([{ parent_id: TICKET_ID, _count: 3 }]);
 
     const result = await listTickets("ws_1", {});
 
-    expect(result[0].sub_ticket_count).toBe(3);
+    expect(result[0]).toEqual(
+      expect.objectContaining({
+        id: TICKET_ID,
+        sub_ticket_count: 3,
+      }),
+    );
   });
 });
 
 describe("getTicket", () => {
-  it("returns full ticket with sub-tickets", async () => {
+  it("returns full ticket response", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(mockTicket);
     (prisma.ticket.findMany as jest.Mock).mockResolvedValue([{ id: "sub_1" }]);
 
-    const result = await getTicket("a1b2c3d4-e5f6-7890-abcd-ef1234567890", "ws_1");
+    const result = await getTicket(TICKET_ID, "ws_1");
 
-    expect(result).toBeDefined();
-    expect(result!.id).toBe("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
-    expect(result!.sub_tickets).toEqual(["sub_1"]);
-    expect(result!.labels).toEqual(["lbl_1"]);
-    expect(result!.comments).toEqual(["cmt_1"]);
+    expect(result).toEqual({
+      id: TICKET_ID,
+      title: "Test ticket",
+      description: "A test",
+      content: "# Test",
+      status: "todo",
+      priority: "high",
+      assignee: null,
+      created_by: "user_1",
+      parent_id: null,
+      parent_type: null,
+      labels: ["lbl_1"],
+      due_date: null,
+      created_at: CREATED_AT,
+      updated_at: UPDATED_AT,
+      sub_tickets: ["sub_1"],
+      comments: ["cmt_1"],
+      workspace_id: "ws_1",
+    });
   });
 
   it("returns null for wrong workspace", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(mockTicket);
 
-    const result = await getTicket("a1b2c3d4-e5f6-7890-abcd-ef1234567890", "ws_wrong");
+    const result = await getTicket(TICKET_ID, "ws_wrong");
 
     expect(result).toBeNull();
   });
@@ -162,44 +186,52 @@ describe("getTicket", () => {
 });
 
 describe("createTicket", () => {
-  it("creates ticket and activity", async () => {
-    (prisma.ticket.create as jest.Mock).mockResolvedValue({
-      ...mockTicket,
-      status: "backlog",
-    });
+  it("returns full created ticket response", async () => {
+    const createdTicket = { ...mockTicket, status: "backlog" };
+    (prisma.ticket.create as jest.Mock).mockResolvedValue(createdTicket);
     (prisma.activity.create as jest.Mock).mockResolvedValue({});
 
     const result = await createTicket({ title: "New ticket" }, "user_1", "ws_1");
 
-    expect(prisma.ticket.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          title: "New ticket",
-          created_by: "user_1",
-          workspace_id: "ws_1",
-        }),
-      }),
-    );
-    expect(prisma.activity.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          type: "ticket_created",
-          message: "created this ticket",
-        }),
-      }),
-    );
-    expect(result).toBeDefined();
+    expect(result).toEqual({
+      id: TICKET_ID,
+      title: "Test ticket",
+      description: "A test",
+      content: "# Test",
+      status: "backlog",
+      priority: "high",
+      assignee: null,
+      created_by: "user_1",
+      parent_id: null,
+      parent_type: null,
+      labels: ["lbl_1"],
+      due_date: null,
+      created_at: CREATED_AT,
+      updated_at: UPDATED_AT,
+      sub_tickets: [],
+      comments: ["cmt_1"],
+      workspace_id: "ws_1",
+    });
+
+    expect(prisma.activity.create).toHaveBeenCalledWith({
+      data: {
+        type: "ticket_created",
+        message: "created this ticket",
+        user_id: "user_1",
+        ticket_id: TICKET_ID,
+      },
+    });
   });
 
-  it("connects labels when provided", async () => {
+  it("creates ticket labels when provided", async () => {
     (prisma.ticket.create as jest.Mock).mockResolvedValue(mockTicket);
     (prisma.activity.create as jest.Mock).mockResolvedValue({});
 
     await createTicket({ title: "Labeled ticket", labels: ["lbl_1", "lbl_2"] }, "user_1", "ws_1");
 
     const call = (prisma.ticket.create as jest.Mock).mock.calls[0][0];
-    expect(call.data.labels).toEqual({
-      connect: [{ id: "lbl_1" }, { id: "lbl_2" }],
+    expect(call.data.ticketLabels).toEqual({
+      create: [{ label_id: "lbl_1" }, { label_id: "lbl_2" }],
     });
   });
 });
@@ -211,60 +243,57 @@ describe("updateTicket", () => {
     assignee_id: null,
   };
 
-  it("updates ticket fields", async () => {
+  it("returns full updated ticket response", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(existingTicket);
     (prisma.ticket.update as jest.Mock).mockResolvedValue({
       ...mockTicket,
       status: "in_progress",
     });
-    (prisma.ticket.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.ticket.findMany as jest.Mock).mockResolvedValue([{ id: "sub_1" }]);
 
-    const result = await updateTicket(
-      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      { status: "in-progress" },
-      "user_1",
-      "ws_1",
-    );
+    const result = await updateTicket(TICKET_ID, { status: "in-progress" }, "user_1", "ws_1");
 
-    expect(result).toBeDefined();
-    expect(prisma.ticket.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
-        data: expect.objectContaining({ status: "in_progress" }),
-      }),
-    );
+    expect(result).toEqual({
+      id: TICKET_ID,
+      title: "Test ticket",
+      description: "A test",
+      content: "# Test",
+      status: "in-progress",
+      priority: "high",
+      assignee: null,
+      created_by: "user_1",
+      parent_id: null,
+      parent_type: null,
+      labels: ["lbl_1"],
+      due_date: null,
+      created_at: CREATED_AT,
+      updated_at: UPDATED_AT,
+      sub_tickets: ["sub_1"],
+      comments: ["cmt_1"],
+      workspace_id: "ws_1",
+    });
   });
 
-  it("creates status change activity", async () => {
+  it("creates status change activity with full message", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(existingTicket);
-    (prisma.ticket.update as jest.Mock).mockResolvedValue({
-      ...mockTicket,
-      status: "done",
-    });
+    (prisma.ticket.update as jest.Mock).mockResolvedValue({ ...mockTicket, status: "done" });
     (prisma.ticket.findMany as jest.Mock).mockResolvedValue([]);
 
-    await updateTicket(
-      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      { status: "done" },
-      "user_1",
-      "ws_1",
-    );
+    await updateTicket(TICKET_ID, { status: "done" }, "user_1", "ws_1");
 
-    expect(prisma.activity.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          type: "ticket_status_changed",
-        }),
-      }),
-    );
+    expect(prisma.activity.create).toHaveBeenCalledWith({
+      data: {
+        type: "ticket_status_changed",
+        message: "changed status from todo to done",
+        user_id: "user_1",
+        ticket_id: TICKET_ID,
+      },
+    });
   });
 
-  it("sends email on assignee change", async () => {
+  it("sends email and creates notification on assignee change", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(existingTicket);
-    (prisma.ticket.update as jest.Mock).mockResolvedValue({
-      ...mockTicket,
-      assignee_id: "user_2",
-    });
+    (prisma.ticket.update as jest.Mock).mockResolvedValue({ ...mockTicket, assignee_id: "user_2" });
     (prisma.ticket.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.user.findUnique as jest.Mock).mockImplementation(({ where }: any) => {
       if (where.id === "user_2")
@@ -273,26 +302,33 @@ describe("updateTicket", () => {
       return Promise.resolve(null);
     });
 
-    await updateTicket(
-      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      { assignee: "user_2" },
-      "user_1",
-      "ws_1",
-    );
+    await updateTicket(TICKET_ID, { assignee: "user_2" }, "user_1", "ws_1");
 
-    expect(prisma.notification.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          type: "ticket_assigned",
-          user_id: "user_2",
-        }),
-      }),
-    );
+    expect(prisma.activity.create).toHaveBeenCalledWith({
+      data: {
+        type: "ticket_assigned",
+        message: "assigned this ticket",
+        user_id: "user_1",
+        ticket_id: TICKET_ID,
+      },
+    });
+
+    expect(prisma.notification.create).toHaveBeenCalledWith({
+      data: {
+        type: "ticket_assigned",
+        title: "Ticket Assigned",
+        message: 'Assigner assigned you to "Test ticket"',
+        link: `/ticket/${TICKET_ID}`,
+        actor_id: "user_1",
+        user_id: "user_2",
+      },
+    });
+
     expect(sendTicketAssignedEmail).toHaveBeenCalledWith(
       "new@test.com",
       "New User",
       "Test ticket",
-      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      TICKET_ID,
       "Assigner",
     );
   });
@@ -300,134 +336,138 @@ describe("updateTicket", () => {
   it("returns null for non-existent ticket", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(null);
 
-    const result = await updateTicket("bad_id", { title: "X" }, "user_1", "ws_1");
-
-    expect(result).toBeNull();
+    expect(await updateTicket("bad_id", { title: "X" }, "user_1", "ws_1")).toBeNull();
   });
 
   it("returns null for wrong workspace", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(existingTicket);
 
-    const result = await updateTicket(
-      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      { title: "X" },
-      "user_1",
-      "ws_wrong",
-    );
-
-    expect(result).toBeNull();
+    expect(await updateTicket(TICKET_ID, { title: "X" }, "user_1", "ws_wrong")).toBeNull();
   });
 });
 
 describe("deleteTicket", () => {
-  it("deletes existing ticket", async () => {
+  it("deletes existing ticket and returns true", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(mockTicket);
+    (prisma.ticket.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.ticket.delete as jest.Mock).mockResolvedValue({});
 
-    const result = await deleteTicket("a1b2c3d4-e5f6-7890-abcd-ef1234567890", "ws_1");
+    const result = await deleteTicket(TICKET_ID, "ws_1");
 
     expect(result).toBe(true);
-    expect(prisma.ticket.delete).toHaveBeenCalledWith({
-      where: { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
-    });
+    expect(prisma.ticket.delete).toHaveBeenCalledWith({ where: { id: TICKET_ID } });
   });
 
   it("returns false for non-existent ticket", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(null);
 
-    const result = await deleteTicket("nonexistent", "ws_1");
-
-    expect(result).toBe(false);
+    expect(await deleteTicket("nonexistent", "ws_1")).toBe(false);
   });
 
   it("returns false for wrong workspace", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(mockTicket);
 
-    const result = await deleteTicket("a1b2c3d4-e5f6-7890-abcd-ef1234567890", "ws_wrong");
-
-    expect(result).toBe(false);
+    expect(await deleteTicket(TICKET_ID, "ws_wrong")).toBe(false);
   });
 });
 
 describe("listComments", () => {
-  it("returns comments for valid ticket", async () => {
+  const COMMENT_DATE = new Date("2026-03-15T10:00:00Z");
+
+  it("returns full comment response", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue({ workspace_id: "ws_1" });
     (prisma.comment.findMany as jest.Mock).mockResolvedValue([
       {
         id: "cmt_1",
         content: "Nice work!",
         author_id: "user_2",
-        ticket_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        created_at: new Date(),
+        ticket_id: TICKET_ID,
+        created_at: COMMENT_DATE,
       },
     ]);
 
-    const result = await listComments("a1b2c3d4-e5f6-7890-abcd-ef1234567890", "ws_1");
+    const result = await listComments(TICKET_ID, "ws_1");
 
-    expect(result).toHaveLength(1);
-    expect(result![0].content).toBe("Nice work!");
+    expect(result).toEqual([
+      {
+        id: "cmt_1",
+        content: "Nice work!",
+        author_id: "user_2",
+        ticket_id: TICKET_ID,
+        created_at: COMMENT_DATE,
+      },
+    ]);
   });
 
   it("returns null for wrong workspace", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue({ workspace_id: "ws_other" });
 
-    const result = await listComments("a1b2c3d4-e5f6-7890-abcd-ef1234567890", "ws_1");
-
-    expect(result).toBeNull();
+    expect(await listComments(TICKET_ID, "ws_1")).toBeNull();
   });
 });
 
 describe("createComment", () => {
-  it("creates comment and activity", async () => {
+  const COMMENT_DATE = new Date("2026-03-15T10:00:00Z");
+
+  it("returns full created comment and creates activity", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue({ workspace_id: "ws_1" });
     (prisma.comment.create as jest.Mock).mockResolvedValue({
       id: "cmt_new",
       content: "LGTM",
       author_id: "user_1",
-      ticket_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      created_at: new Date(),
+      ticket_id: TICKET_ID,
+      created_at: COMMENT_DATE,
     });
     (prisma.activity.create as jest.Mock).mockResolvedValue({});
 
-    const result = await createComment(
-      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "LGTM",
-      "user_1",
-      "ws_1",
-    );
+    const result = await createComment(TICKET_ID, "LGTM", "user_1", "ws_1");
 
-    expect(result).toBeDefined();
-    expect(result!.content).toBe("LGTM");
-    expect(prisma.activity.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          type: "comment_added",
-          message: "added a comment",
-        }),
-      }),
-    );
+    expect(result).toEqual({
+      id: "cmt_new",
+      content: "LGTM",
+      author_id: "user_1",
+      ticket_id: TICKET_ID,
+      created_at: COMMENT_DATE,
+    });
+
+    expect(prisma.activity.create).toHaveBeenCalledWith({
+      data: {
+        type: "comment_added",
+        message: "added a comment",
+        user_id: "user_1",
+        ticket_id: TICKET_ID,
+      },
+    });
   });
 });
 
 describe("listActivities", () => {
-  it("returns activities for valid ticket", async () => {
+  const ACTIVITY_DATE = new Date("2026-03-15T10:00:00Z");
+
+  it("returns full activity response", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue({ workspace_id: "ws_1" });
-    const mockActivities = [
+    ((prisma as any).activity.findMany as jest.Mock).mockResolvedValue([
       {
         id: "act_1",
         type: "ticket_created",
         message: "created this ticket",
         user_id: "user_1",
-        ticket_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        created_at: new Date(),
+        ticket_id: TICKET_ID,
+        created_at: ACTIVITY_DATE,
       },
-    ];
+    ]);
 
-    ((prisma as any).activity.findMany as jest.Mock).mockResolvedValue(mockActivities);
+    const result = await listActivities(TICKET_ID, "ws_1");
 
-    const result = await listActivities("a1b2c3d4-e5f6-7890-abcd-ef1234567890", "ws_1");
-
-    expect(result).toHaveLength(1);
-    expect(result![0].type).toBe("ticket_created");
+    expect(result).toEqual([
+      {
+        id: "act_1",
+        type: "ticket_created",
+        message: "created this ticket",
+        user_id: "user_1",
+        ticket_id: TICKET_ID,
+        created_at: ACTIVITY_DATE,
+      },
+    ]);
   });
 });

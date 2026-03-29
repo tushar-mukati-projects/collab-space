@@ -53,10 +53,10 @@ export const up = async (prisma: PrismaClient) => {
   `);
 
   await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "_TicketLabels" (
-      "A" TEXT NOT NULL REFERENCES "Label"(id) ON DELETE CASCADE,
-      "B" UUID NOT NULL REFERENCES "Ticket"(id) ON DELETE CASCADE,
-      UNIQUE("A", "B")
+    CREATE TABLE IF NOT EXISTS "TicketLabel" (
+      label_id TEXT NOT NULL REFERENCES "Label"(id) ON DELETE CASCADE,
+      ticket_id UUID NOT NULL REFERENCES "Ticket"(id) ON DELETE CASCADE,
+      PRIMARY KEY (label_id, ticket_id)
     )
   `);
 
