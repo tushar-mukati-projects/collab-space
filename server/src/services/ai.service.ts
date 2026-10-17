@@ -261,24 +261,39 @@ export const chatStream = async (messages: ChatMessage[], workspaceId: string, r
   res.setHeader("Connection", "keep-alive");
   res.flushHeaders();
 
+  const controller = new AbortController();
+  let aborted = false;
+  res.on("close", () => {
+    aborted = true;
+    controller.abort();
+  });
+
   const chatMessages: ChatCompletionMessageParam[] = [
     { role: "system", content: SYSTEM_PROMPT },
     ...messages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
   ];
 
   try {
-    let response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: chatMessages,
-      tools,
-      temperature: 0.3,
-      max_tokens: 1000,
-    });
+    let response = await openai.chat.completions.create(
+      {
+        model: "gpt-4o-mini",
+        messages: chatMessages,
+        tools,
+        temperature: 0.3,
+        max_tokens: 1000,
+      },
+      { signal: controller.signal },
+    );
 
     let choice = response.choices[0];
 
     let rounds = 0;
-    while (choice?.finish_reason === "tool_calls" && choice.message.tool_calls && rounds < 3) {
+    while (
+      !aborted &&
+      choice?.finish_reason === "tool_calls" &&
+      choice.message.tool_calls &&
+      rounds < 3
+    ) {
       rounds++;
       chatMessages.push(choice.message);
 
@@ -296,41 +311,64 @@ export const chatStream = async (messages: ChatMessage[], workspaceId: string, r
         });
       }
 
-      response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: chatMessages,
-        tools,
-        temperature: 0.3,
-        max_tokens: 1000,
-      });
+      response = await openai.chat.completions.create(
+        {
+          model: "gpt-4o-mini",
+          messages: chatMessages,
+          tools,
+          temperature: 0.3,
+          max_tokens: 1000,
+        },
+        { signal: controller.signal },
+      );
 
       choice = response.choices[0];
     }
 
-    if (choice?.message?.content) {
-      const stream = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: chatMessages,
-        temperature: 0.3,
-        max_tokens: 1000,
-        stream: true,
-      });
+    if (!aborted) {
+      const answer = choice?.message?.content;
+      if (answer) {
+        res.write(`data: ${JSON.stringify({ type: "text", content: answer })}\n\n`);
+      } else {
+        const stream = await openai.chat.completions.create(
+          {
+            model: "gpt-4o-mini",
+            messages: chatMessages,
+            temperature: 0.3,
+            max_tokens: 1000,
+            stream: true,
+          },
+          { signal: controller.signal },
+        );
 
-      for await (const chunk of stream) {
-        const delta = chunk.choices[0]?.delta?.content;
-        if (delta) {
-          res.write(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`);
+        let streamed = false;
+        for await (const chunk of stream) {
+          if (aborted) break;
+          const delta = chunk.choices[0]?.delta?.content;
+          if (delta) {
+            streamed = true;
+            res.write(`data: ${JSON.stringify({ type: "text", content: delta })}\n\n`);
+          }
+        }
+        if (!streamed && !aborted) {
+          res.write(
+            `data: ${JSON.stringify({ type: "text", content: "I couldn't find enough information to answer that." })}\n\n`,
+          );
         }
       }
     }
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    logger.error("AI chat stream failed", { error: message });
-    res.write(
-      `data: ${JSON.stringify({ type: "text", content: "Sorry, something went wrong. Please try again." })}\n\n`,
-    );
+    if (!aborted) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      logger.error("AI chat stream failed", { error: message });
+      res.write(
+        `data: ${JSON.stringify({ type: "text", content: "Sorry, something went wrong. Please try again." })}\n\n`,
+      );
+    }
   }
 
-  res.write("data: [DONE]\n\n");
-  res.end();
+  if (!aborted) {
+    res.write("data: [DONE]\n\n");
+    res.end();
+  }
 };

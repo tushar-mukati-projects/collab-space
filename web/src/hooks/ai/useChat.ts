@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 
 interface ChatMessage {
@@ -24,7 +24,9 @@ export const useChat = () => {
       setIsLoading(true);
       setActiveTools([]);
 
-      abortRef.current = new AbortController();
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
 
       try {
         const token = await getToken();
@@ -37,7 +39,7 @@ export const useChat = () => {
           body: JSON.stringify({
             messages: history.map((m) => ({ role: m.role, content: m.content })),
           }),
-          signal: abortRef.current.signal,
+          signal: controller.signal,
         });
 
         if (!response.ok || !response.body) {
@@ -93,9 +95,11 @@ export const useChat = () => {
           ]);
         }
       } finally {
-        setIsLoading(false);
-        setActiveTools([]);
-        abortRef.current = null;
+        if (abortRef.current === controller) {
+          setIsLoading(false);
+          setActiveTools([]);
+          abortRef.current = null;
+        }
       }
     },
     [messages, getToken],
@@ -106,6 +110,8 @@ export const useChat = () => {
     setMessages([]);
     setActiveTools([]);
   }, []);
+
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   return { messages, isLoading, activeTools, sendMessage, clearMessages };
 };
