@@ -184,7 +184,10 @@ export const DashboardView = () => {
   }));
 
   const trendData = stats.dailyCreated.map((d) => ({
-    date: new Date(d.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    date: new Date(`${d.date}T00:00:00`).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    }),
     tickets: d.count,
   }));
 

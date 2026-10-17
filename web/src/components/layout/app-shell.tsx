@@ -23,6 +23,15 @@ const resolveTheme = (pref: "light" | "dark" | "system"): "light" | "dark" => {
   return pref;
 };
 
+const ACCENT_PRIMARY: Record<string, { light: string; dark: string }> = {
+  blue: { light: "oklch(0.55 0.2 260)", dark: "oklch(0.7 0.16 260)" },
+  indigo: { light: "oklch(0.49 0.24 275)", dark: "oklch(0.68 0.2 275)" },
+  violet: { light: "oklch(0.52 0.26 300)", dark: "oklch(0.7 0.2 300)" },
+  emerald: { light: "oklch(0.6 0.15 160)", dark: "oklch(0.72 0.15 160)" },
+  rose: { light: "oklch(0.58 0.22 15)", dark: "oklch(0.7 0.18 15)" },
+  orange: { light: "oklch(0.65 0.19 55)", dark: "oklch(0.75 0.17 55)" },
+};
+
 export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const theme = useUIStore((s) => s.theme);
   const setTheme = useUIStore((s) => s.setTheme);
@@ -67,6 +76,16 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
     if (appearance.font_size === "compact") root.classList.add("font-compact");
     else if (appearance.font_size === "comfortable") root.classList.add("font-comfortable");
   }, [appearance?.font_size]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const preset = appearance?.accent_color ? ACCENT_PRIMARY[appearance.accent_color] : undefined;
+    if (!preset) {
+      root.style.removeProperty("--primary");
+      return;
+    }
+    root.style.setProperty("--primary", theme === "dark" ? preset.dark : preset.light);
+  }, [appearance?.accent_color, theme]);
 
   useEffect(() => {
     if (appearance?.theme !== "system") return;

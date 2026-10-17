@@ -109,11 +109,10 @@ export const getWorkspaceStats = async (workspaceId: string) => {
     .slice(0, 8)
     .map(toDeadlineItem);
 
-  const overdueTickets = tickets
+  const overdueAll = tickets
     .filter((t) => t.due_date && t.due_date < now && t.status !== "done")
-    .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime())
-    .slice(0, 5)
-    .map(toDeadlineItem);
+    .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime());
+  const overdueTickets = overdueAll.slice(0, 5).map(toDeadlineItem);
 
   // Recent activity feed
   const activityFeed = recentActivities.map((a) => ({
@@ -164,7 +163,7 @@ export const getWorkspaceStats = async (workspaceId: string) => {
   const total = tickets.length;
   const completed = tickets.filter((t) => t.status === "done").length;
   const inProgress = tickets.filter((t) => t.status === "in_progress").length;
-  const overdue = overdueTickets.length;
+  const overdue = overdueAll.length;
 
   return {
     summary: { total, completed, in_progress: inProgress, overdue },

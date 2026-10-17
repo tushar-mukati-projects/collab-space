@@ -35,7 +35,7 @@ const BoardSkeleton = () => (
 export const BoardView = () => {
   const router = useRouter();
   const { data: boards, isLoading } = useFetchBoards();
-  const [openBoardId, setOpenBoardId] = useState<string | null>(null);
+  const [openBoardId, setOpenBoardId] = useState<string | null | undefined>(undefined);
   const createBoardMutation = useCreateBoard();
   const deleteBoardMutation = useDeleteBoard();
   const [showCreateInput, setShowCreateInput] = useState(false);
@@ -47,7 +47,7 @@ export const BoardView = () => {
   const canManageLabels = usePermission("label:manage");
   const canManageSettings = usePermission("settings:manage");
 
-  const effectiveOpenId = openBoardId ?? boards?.[0]?.id ?? null;
+  const effectiveOpenId = openBoardId === undefined ? (boards?.[0]?.id ?? null) : openBoardId;
 
   const toggleBoard = (boardId: string) => {
     setOpenBoardId(effectiveOpenId === boardId ? null : boardId);

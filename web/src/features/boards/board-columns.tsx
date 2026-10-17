@@ -4,6 +4,7 @@ import * as React from "react";
 import { useFetchLabels } from "@/hooks/labels";
 import { useFetchUsers } from "@/hooks/users";
 import { useTickets } from "@/hooks/tickets";
+import { useFetchStatuses } from "@/hooks/statuses";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import type {
   BoardSummary,
@@ -25,20 +26,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-const COLUMN_DEFS: { status: TicketStatus; name: string; color: string }[] = [
+type ColumnDef = { status: TicketStatus; name: string; color: string };
+
+const COLUMN_DEFS: ColumnDef[] = [
   { status: "backlog", name: "Backlog", color: "#6b7280" },
   { status: "todo", name: "Todo", color: "#3b82f6" },
   { status: "in-progress", name: "In Progress", color: "#f59e0b" },
   { status: "in-review", name: "In Review", color: "#8b5cf6" },
   { status: "done", name: "Done", color: "#10b981" },
-];
-
-const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [
-  { value: "backlog", label: "Backlog" },
-  { value: "todo", label: "Todo" },
-  { value: "in-progress", label: "In Progress" },
-  { value: "in-review", label: "In Review" },
-  { value: "done", label: "Done" },
 ];
 
 const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
@@ -49,8 +44,8 @@ const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
   { value: "none", label: "None" },
 ];
 
-const buildColumns = (tickets: TicketSummary[]): BoardColumnType[] => {
-  return COLUMN_DEFS.map((def, idx) => ({
+const buildColumns = (tickets: TicketSummary[], defs: ColumnDef[]): BoardColumnType[] => {
+  return defs.map((def, idx) => ({
     id: `col_${def.status}`,
     name: def.name,
     color: def.color,
@@ -65,9 +60,10 @@ interface FilterBarProps {
   onFiltersChange: (f: TicketFilters) => void;
   users: { id: string; name: string }[];
   labels: Label[];
+  statusOptions: { value: TicketStatus; label: string }[];
 }
 
-const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) => {
+const FilterBar = ({ filters, onFiltersChange, users, labels, statusOptions }: FilterBarProps) => {
   const activeCount = [
     filters.statuses?.length,
     filters.priorities?.length,
@@ -112,7 +108,7 @@ const FilterBar = ({ filters, onFiltersChange, users, labels }: FilterBarProps) 
           <ChevronDown className="size-3" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-36">
-          {STATUS_OPTIONS.map((opt) => (
+          {statusOptions.map((opt) => (
             <DropdownMenuCheckboxItem
               key={opt.value}
               checked={(filters.statuses ?? []).includes(opt.value)}
@@ -234,6 +230,7 @@ interface BoardColumnsProps {
 export const BoardColumns = ({ board, onCardClick }: BoardColumnsProps) => {
   const { data: labels = [] } = useFetchLabels();
   const { data: users = [] } = useFetchUsers();
+  const { data: statusDefs = [] } = useFetchStatuses();
 
   const [activeFilters, setActiveFilters] = React.useState<TicketFilters>({});
   const { data: tickets = [], isLoading: ticketsLoading } = useTickets({
@@ -248,7 +245,21 @@ export const BoardColumns = ({ board, onCardClick }: BoardColumnsProps) => {
     return map;
   }, [labels]);
 
-  const columns = React.useMemo(() => buildColumns(tickets), [tickets]);
+  const columnDefs = React.useMemo<ColumnDef[]>(
+    () =>
+      statusDefs.length > 0
+        ? [...statusDefs]
+            .sort((a, b) => a.order - b.order)
+            .map((s) => ({ status: s.value, name: s.name, color: s.color }))
+        : COLUMN_DEFS,
+    [statusDefs],
+  );
+  const statusOptions = React.useMemo(
+    () => columnDefs.map((d) => ({ value: d.status, label: d.name })),
+    [columnDefs],
+  );
+
+  const columns = React.useMemo(() => buildColumns(tickets, columnDefs), [tickets, columnDefs]);
 
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [createInitialStatus, setCreateInitialStatus] = React.useState<TicketStatus>("backlog");
@@ -265,6 +276,7 @@ export const BoardColumns = ({ board, onCardClick }: BoardColumnsProps) => {
         onFiltersChange={setActiveFilters}
         users={users}
         labels={labels}
+        statusOptions={statusOptions}
       />
       <ScrollArea className="flex-1">
         {ticketsLoading ? (
