@@ -2,15 +2,10 @@ import { Hocuspocus } from "@hocuspocus/server";
 import { Database } from "@hocuspocus/extension-database";
 import { WebSocketServer } from "ws";
 import { verifyToken } from "@clerk/backend";
-import pg from "pg";
-
+import { createPool } from "./db.js";
 import { logger } from "./logger.js";
 
-const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 3,
-  idleTimeoutMillis: 60_000,
-});
+const pool = createPool({ max: 3, idleTimeoutMillis: 60_000 });
 
 pool
   .query(

@@ -1,12 +1,13 @@
 import "../config.js";
 import { readdir } from "fs/promises";
 import { resolve, basename } from "path";
-import { prisma } from "../db.js";
+import { DB_SCHEMA, prisma } from "../db.js";
 import { logger } from "../logger.js";
 
 const MIGRATIONS_DIR = resolve(process.cwd(), "src", "orm", "migrations");
 
 const ensureMigrationsTable = async () => {
+  await prisma.$executeRawUnsafe(`CREATE SCHEMA IF NOT EXISTS ${DB_SCHEMA}`);
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS _migrations (
       id SERIAL PRIMARY KEY,
