@@ -121,7 +121,38 @@ export const getSubscription = async (workspaceId: string) => {
   };
 };
 
+export const syncSubscriptionSeats = async (workspaceId: string) => {
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { stripe_subscription_id: true, _count: { select: { members: true } } },
+  });
+  if (!workspace?.stripe_subscription_id) return;
+
+  try {
+    const subscription = await stripe.subscriptions.retrieve(workspace.stripe_subscription_id);
+    const item = subscription.items.data[0];
+    if (!item) return;
+    if (item.quantity === workspace._count.members) return;
+    await stripe.subscriptionItems.update(item.id, {
+      quantity: workspace._count.members,
+      proration_behavior: "none",
+    });
+    logger.info("Synced subscription seats", {
+      workspaceId,
+      quantity: workspace._count.members,
+    });
+  } catch (err: any) {
+    logger.error("Failed to sync subscription seats", { workspaceId, error: err?.message });
+  }
+};
+
 export const handleWebhookEvent = async (event: Stripe.Event) => {
+  const seen = await prisma.processedWebhookEvent.findUnique({ where: { id: event.id } });
+  if (seen) {
+    logger.info("Duplicate Stripe webhook ignored", { id: event.id, type: event.type });
+    return;
+  }
+
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
@@ -159,9 +190,6 @@ export const handleWebhookEvent = async (event: Stripe.Event) => {
       const priceId = subscription.items.data[0]?.price.id;
       const plan = priceId ? PRICE_PLAN_MAP[priceId] : undefined;
 
-      // Detect pending cancellation (cancel_at_period_end)
-      const effectiveStatus = subscription.cancel_at_period_end ? "canceled" : subscription.status;
-
       const periodEnd = subscription.cancel_at
         ? new Date(subscription.cancel_at * 1000)
         : getSubscriptionPeriodEnd(subscription);
@@ -170,11 +198,16 @@ export const handleWebhookEvent = async (event: Stripe.Event) => {
         where: { id: workspaceId },
         data: {
           ...(plan && { plan }),
-          subscription_status: effectiveStatus,
+          subscription_status: subscription.status,
           current_period_end: periodEnd,
         },
       });
-      logger.info("Subscription updated", { workspaceId, status: effectiveStatus, plan });
+      logger.info("Subscription updated", {
+        workspaceId,
+        status: subscription.status,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        plan,
+      });
       break;
     }
 
@@ -214,6 +247,12 @@ export const handleWebhookEvent = async (event: Stripe.Event) => {
       logger.warn("Invoice payment failed", { workspaceId, subscriptionId });
       break;
     }
+  }
+
+  try {
+    await prisma.processedWebhookEvent.create({ data: { id: event.id } });
+  } catch (err: any) {
+    if (err?.code !== "P2002") throw err;
   }
 };
 

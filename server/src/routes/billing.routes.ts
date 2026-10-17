@@ -13,5 +13,5 @@ router.post(
   checkout,
 );
 router.post("/portal", requirePermission(PERMISSIONS.BILLING_MANAGE), portal);
-router.get("/subscription", subscription);
+router.get("/subscription", requirePermission(PERMISSIONS.BILLING_MANAGE), subscription);
 export default router;
