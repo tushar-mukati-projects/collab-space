@@ -32,9 +32,20 @@ export const runMigrations = async () => {
   await ensureMigrationsTable();
   const executed = await getExecutedMigrations();
 
+  const sortKey = (f: string): [number, number, number, number] => {
+    const [dd, mm, yyyy, nn] = f.split("-");
+    return [Number(yyyy) || 0, Number(mm) || 0, Number(dd) || 0, Number(nn) || 0];
+  };
   const files = (await readdir(MIGRATIONS_DIR))
     .filter((f) => f.endsWith(".ts") && !f.startsWith("_"))
-    .sort();
+    .sort((a, b) => {
+      const ka = sortKey(a);
+      const kb = sortKey(b);
+      for (let i = 0; i < ka.length; i++) {
+        if (ka[i] !== kb[i]) return ka[i] - kb[i];
+      }
+      return a.localeCompare(b);
+    });
 
   const pending = files.filter((f) => !executed.has(f));
 

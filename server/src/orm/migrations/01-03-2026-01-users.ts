@@ -12,6 +12,7 @@ export const up = async (prisma: PrismaClient) => {
     )
   `);
 
+  await prisma.$executeRawUnsafe(`DROP TRIGGER IF EXISTS set_user_updated_at ON "User"`);
   await prisma.$executeRawUnsafe(`
     CREATE TRIGGER set_user_updated_at BEFORE UPDATE ON "User"
     FOR EACH ROW EXECUTE FUNCTION update_updated_at()

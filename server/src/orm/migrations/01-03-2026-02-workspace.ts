@@ -25,6 +25,7 @@ export const up = async (prisma: PrismaClient) => {
     )
   `);
 
+  await prisma.$executeRawUnsafe(`DROP TRIGGER IF EXISTS set_workspace_updated_at ON "Workspace"`);
   await prisma.$executeRawUnsafe(`
     CREATE TRIGGER set_workspace_updated_at BEFORE UPDATE ON "Workspace"
     FOR EACH ROW EXECUTE FUNCTION update_updated_at()

@@ -15,6 +15,7 @@ export const up = async (prisma: PrismaClient) => {
     CREATE INDEX IF NOT EXISTS "Board_workspace_id_idx" ON "Board"(workspace_id)
   `);
 
+  await prisma.$executeRawUnsafe(`DROP TRIGGER IF EXISTS set_board_updated_at ON "Board"`);
   await prisma.$executeRawUnsafe(`
     CREATE TRIGGER set_board_updated_at BEFORE UPDATE ON "Board"
     FOR EACH ROW EXECUTE FUNCTION update_updated_at()

@@ -60,6 +60,7 @@ export const up = async (prisma: PrismaClient) => {
     )
   `);
 
+  await prisma.$executeRawUnsafe(`DROP TRIGGER IF EXISTS set_ticket_updated_at ON "Ticket"`);
   await prisma.$executeRawUnsafe(`
     CREATE TRIGGER set_ticket_updated_at BEFORE UPDATE ON "Ticket"
     FOR EACH ROW EXECUTE FUNCTION update_updated_at()
