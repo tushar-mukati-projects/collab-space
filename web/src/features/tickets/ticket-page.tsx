@@ -202,21 +202,22 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   const canDelete = usePermission("ticket:delete");
   const canComment = usePermission("ticket:comment");
 
+  const userId = clerkUser?.id;
+  const userName = clerkUser?.fullName ?? clerkUser?.firstName ?? "User";
+  const wsId = workspace?.id;
+
   const collabConfig = React.useMemo(() => {
     const collabUrl = process.env.NEXT_PUBLIC_COLLAB_URL;
-    if (!collabUrl || !clerkUser?.id || !workspace) return undefined;
-    const wsId =
-      typeof workspace === "object" && "id" in workspace ? (workspace as { id: string }).id : "";
-    if (!wsId) return undefined;
+    if (!collabUrl || !userId || !wsId) return undefined;
     return {
       documentName: `ticket:${ticketId}`,
       user: {
-        name: clerkUser.fullName ?? clerkUser.firstName ?? "User",
-        color: getCollabColor(clerkUser.id),
+        name: userName,
+        color: getCollabColor(userId),
       },
-      token: `${clerkUser.id}:${wsId}`,
+      token: `${userId}:${wsId}`,
     };
-  }, [ticketId, clerkUser, workspace]);
+  }, [ticketId, userId, userName, wsId]);
 
   const parentTicketId = ticket?.parent_type === "ticket" ? (ticket.parent_id ?? "") : "";
   const { data: parentTicket } = useFetchTicket(parentTicketId, fetchEnabled);
