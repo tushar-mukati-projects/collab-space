@@ -13,6 +13,14 @@ const transporter = nodemailer.createTransport({
 
 const fromEmail = process.env.SMTP_FROM ?? process.env.SMTP_USER ?? "noreply@collabspace.io";
 
+const esc = (value: string): string =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 interface SendEmailOptions {
   to: string;
   subject: string;
@@ -63,8 +71,8 @@ export const sendInvitationEmail = async (
         <tr><td style="padding:32px;">
           <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;font-weight:600;">You've been invited!</h2>
           <p style="margin:0 0 24px;color:#52525b;font-size:15px;line-height:1.6;">
-            <strong>${inviterName}</strong> has invited you to join
-            <strong>${workspaceName}</strong> on CollabSpace.
+            <strong>${esc(inviterName)}</strong> has invited you to join
+            <strong>${esc(workspaceName)}</strong> on CollabSpace.
           </p>
           <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
             <a href="${appUrl}/onboarding" style="display:inline-block;background:#6366f1;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;font-weight:600;">
@@ -112,11 +120,11 @@ export const sendTicketAssignedEmail = async (
         </td></tr>
         <tr><td style="padding:32px;">
           <h2 style="margin:0 0 8px;color:#18181b;font-size:18px;font-weight:600;">Ticket Assigned to You</h2>
-          <p style="margin:0 0 20px;color:#71717a;font-size:13px;">Hi ${assigneeName},</p>
+          <p style="margin:0 0 20px;color:#71717a;font-size:13px;">Hi ${esc(assigneeName)},</p>
           <div style="background:#f8f8fc;border:1px solid #e4e4e7;border-radius:10px;padding:20px;margin-bottom:24px;">
             <p style="margin:0 0 6px;color:#71717a;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;">Ticket</p>
-            <p style="margin:0;color:#18181b;font-size:16px;font-weight:600;">${ticketTitle}</p>
-            <p style="margin:10px 0 0;color:#71717a;font-size:13px;">Assigned by <strong style="color:#18181b;">${assignedByName}</strong></p>
+            <p style="margin:0;color:#18181b;font-size:16px;font-weight:600;">${esc(ticketTitle)}</p>
+            <p style="margin:10px 0 0;color:#71717a;font-size:13px;">Assigned by <strong style="color:#18181b;">${esc(assignedByName)}</strong></p>
           </div>
           <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
             <a href="${appUrl}/ticket/${ticketId}" style="display:inline-block;background:#6366f1;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:14px;font-weight:600;">
@@ -159,8 +167,8 @@ export const sendNotificationEmail = async (
           <h1 style="margin:0;color:#ffffff;font-size:20px;">CollabSpace</h1>
         </td></tr>
         <tr><td style="padding:28px 32px;">
-          <h2 style="margin:0 0 12px;color:#18181b;font-size:18px;">${title}</h2>
-          <p style="margin:0 0 20px;color:#52525b;font-size:14px;line-height:1.6;">${message}</p>
+          <h2 style="margin:0 0 12px;color:#18181b;font-size:18px;">${esc(title)}</h2>
+          <p style="margin:0 0 20px;color:#52525b;font-size:14px;line-height:1.6;">${esc(message)}</p>
           <a href="${appUrl}${link}" style="display:inline-block;background:#6366f1;color:#fff;text-decoration:none;padding:10px 24px;border-radius:6px;font-size:14px;font-weight:600;">View Details</a>
         </td></tr>
       </table>

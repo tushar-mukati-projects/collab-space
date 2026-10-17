@@ -14,7 +14,6 @@ function getContentType(filename: string): string {
     ".jpeg": "image/jpeg",
     ".gif": "image/gif",
     ".webp": "image/webp",
-    ".svg": "image/svg+xml",
     ".doc": "application/msword",
     ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ".xls": "application/vnd.ms-excel",
@@ -57,11 +56,12 @@ export const uploadAttachment = async (
   const id = crypto.randomUUID().slice(0, 8);
   const ext = path.extname(file.originalname);
   const safeName = `${workspaceId}/${ticketId}/${id}${ext}`;
+  const contentType = getContentType(file.originalname);
 
   const { error } = await supabase.storage
     .from(config.SUPABASE_BUCKET)
     .upload(safeName, file.buffer, {
-      contentType: file.mimetype || getContentType(file.originalname),
+      contentType,
       upsert: false,
     });
 
@@ -72,18 +72,27 @@ export const uploadAttachment = async (
 
   const { data: urlData } = supabase.storage.from(config.SUPABASE_BUCKET).getPublicUrl(safeName);
 
-  const attachment = await prisma.attachment.create({
-    data: {
-      filename: safeName,
-      original_name: file.originalname,
-      url: urlData.publicUrl,
-      size: file.size,
-      mime_type: file.mimetype || getContentType(file.originalname),
-      uploaded_by: userId,
-      ticket_id: ticketId,
-      workspace_id: workspaceId,
-    },
-  });
+  let attachment;
+  try {
+    attachment = await prisma.attachment.create({
+      data: {
+        filename: safeName,
+        original_name: file.originalname,
+        url: urlData.publicUrl,
+        size: file.size,
+        mime_type: contentType,
+        uploaded_by: userId,
+        ticket_id: ticketId,
+        workspace_id: workspaceId,
+      },
+    });
+  } catch (err) {
+    await supabase.storage
+      .from(config.SUPABASE_BUCKET)
+      .remove([safeName])
+      .catch(() => {});
+    throw err;
+  }
 
   await prisma.activity.create({
     data: {
@@ -154,10 +163,11 @@ export const deleteAttachment = async (
       .remove([attachment.filename]);
 
     if (error) {
-      logger.warn("Supabase delete failed", {
+      logger.error("Supabase delete failed; keeping attachment record", {
         error: error.message,
         filename: attachment.filename,
       });
+      throw new Error(`Failed to delete attachment file: ${error.message}`);
     }
   }
 
@@ -192,7 +202,7 @@ export const uploadEditorFile = async (
   const { error } = await supabase.storage
     .from(config.SUPABASE_BUCKET)
     .upload(safeName, file.buffer, {
-      contentType: file.mimetype || getContentType(file.originalname),
+      contentType: getContentType(file.originalname),
       upsert: false,
     });
 

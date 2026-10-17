@@ -41,6 +41,10 @@ app.use(
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/api", authMiddleware, workspaceMiddleware, routes);
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  const status = (err as any).status ?? (err.name === "MulterError" ? 400 : undefined);
+  if (status && status < 500) {
+    return res.status(status).json({ error: err.message });
+  }
   logger.error("Unhandled error", { error: err.message, stack: err.stack });
   res.status(500).json({ error: "Internal server error" });
 });
