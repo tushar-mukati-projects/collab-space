@@ -20,7 +20,7 @@ export const boardHandlers = [
     await delay(300);
     const input = (await request.json()) as CreateBoardInput;
     const newBoard: BoardSummary = {
-      id: `board_${String(_boards.length + 1).padStart(2, "0")}`,
+      id: `board_${crypto.randomUUID().slice(0, 8)}`,
       name: input.name,
       workspace_id: "ws_01",
       ticket_counts: { total: 0, backlog: 0, todo: 0, in_progress: 0, in_review: 0, done: 0 },

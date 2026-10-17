@@ -21,7 +21,7 @@ export const mockBoards: BoardSummary[] = [
     id: "board_03",
     name: "Technical Debt",
     workspace_id: "ws_01",
-    ticket_counts: { total: 2, backlog: 1, todo: 0, in_progress: 1, in_review: 0, done: 0 },
+    ticket_counts: { total: 2, backlog: 1, todo: 0, in_progress: 0, in_review: 0, done: 1 },
     created_at: "2026-03-10T00:00:00.000Z",
     updated_at: "2026-03-13T14:00:00.000Z",
   },
