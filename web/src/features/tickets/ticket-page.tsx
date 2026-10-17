@@ -493,6 +493,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
           >
             <PropertyField icon={CircleDot} label="Status">
               <Select
+                items={statusOptions}
                 value={currentProperties.status}
                 disabled={isPropertiesSaving}
                 onValueChange={(value) => updatePropertyDraft("status", value as TicketStatus)}
@@ -520,6 +521,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
 
             <PropertyField icon={AlertCircle} label="Priority">
               <Select
+                items={priorityOptions}
                 value={currentProperties.priority}
                 disabled={isPropertiesSaving}
                 onValueChange={(value) => updatePropertyDraft("priority", value as TicketPriority)}
