@@ -88,11 +88,11 @@ export const listComments = async (req: Request, res: Response) => {
 export const createComment = async (req: Request, res: Response) => {
   const {
     params: { id },
-    body: { content, author_id },
+    body: { content },
     userId,
     workspaceId,
   } = validated(req, createCommentSchema);
-  const c = await createCommentSvc(id, content, author_id ?? userId, workspaceId);
+  const c = await createCommentSvc(id, content, userId, workspaceId);
   if (!c) return res.status(404).json({ error: "Ticket not found" });
   res.status(201).json(c);
 };

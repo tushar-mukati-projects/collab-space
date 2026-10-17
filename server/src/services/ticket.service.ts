@@ -187,9 +187,43 @@ export const getTicket = async (id: string, workspaceId: string) => {
   });
 };
 
+const resolveAssignee = async (workspaceId: string, assignee: string | null | undefined) => {
+  if (!assignee) return null;
+  const member = await prisma.workspaceMember.findUnique({
+    where: { user_id_workspace_id: { user_id: assignee, workspace_id: workspaceId } },
+    select: { user_id: true },
+  });
+  return member ? assignee : null;
+};
+
+const resolveLabels = async (workspaceId: string, labels: string[] | undefined) => {
+  if (!labels || labels.length === 0) return [];
+  const found = await prisma.label.findMany({
+    where: { id: { in: labels }, workspace_id: workspaceId },
+    select: { id: true },
+  });
+  return found.map((l: { id: string }) => l.id);
+};
+
+export const collectTicketSubtree = async (rootId: string): Promise<string[]> => {
+  const seen = new Set<string>([rootId]);
+  let frontier = [rootId];
+  while (frontier.length > 0) {
+    const children = await prisma.ticket.findMany({
+      where: { parent_id: { in: frontier }, parent_type: "ticket" },
+      select: { id: true },
+    });
+    frontier = children.map((c: { id: string }) => c.id).filter((cid) => !seen.has(cid));
+    for (const cid of frontier) seen.add(cid);
+  }
+  return [...seen];
+};
+
 export const createTicket = async (data: CreateTicketData, userId: string, workspaceId: string) => {
   const resolvedParentId = data.parent_id ?? null;
   const resolvedParentType = data.parent_type ? deserializeParentType(data.parent_type) : null;
+  const assigneeId = await resolveAssignee(workspaceId, data.assignee);
+  const labelIds = await resolveLabels(workspaceId, data.labels);
 
   const ticket = await prisma.ticket.create({
     data: {
@@ -198,15 +232,15 @@ export const createTicket = async (data: CreateTicketData, userId: string, works
       content: data.content ?? "",
       status: data.status ? deserializeStatus(data.status) : undefined,
       priority: data.priority ? deserializePriority(data.priority) : undefined,
-      assignee_id: data.assignee ?? null,
+      assignee_id: assigneeId,
       created_by: userId,
       parent_id: resolvedParentId,
       parent_type: resolvedParentType,
       due_date: data.due_date ? new Date(data.due_date) : null,
       workspace_id: workspaceId,
       ticketLabels:
-        data.labels && data.labels.length > 0
-          ? { create: data.labels.map((label_id: string) => ({ label_id })) }
+        labelIds.length > 0
+          ? { create: labelIds.map((label_id: string) => ({ label_id })) }
           : undefined,
     },
     include: fullTicketInclude,
@@ -242,7 +276,8 @@ export const updateTicket = async (
   if (data.content !== undefined) updateData.content = data.content;
   if (data.status !== undefined) updateData.status = deserializeStatus(data.status);
   if (data.priority !== undefined) updateData.priority = deserializePriority(data.priority);
-  if (data.assignee !== undefined) updateData.assignee_id = data.assignee;
+  if (data.assignee !== undefined)
+    updateData.assignee_id = await resolveAssignee(workspaceId, data.assignee);
   if (data.due_date !== undefined)
     updateData.due_date = data.due_date ? new Date(data.due_date) : null;
   if (data.parent_id !== undefined) updateData.parent_id = data.parent_id;
@@ -250,9 +285,10 @@ export const updateTicket = async (
     updateData.parent_type = data.parent_type ? deserializeParentType(data.parent_type) : null;
 
   if (data.labels !== undefined) {
+    const labelIds = await resolveLabels(workspaceId, data.labels);
     updateData.ticketLabels = {
       deleteMany: {},
-      create: data.labels.map((label_id: string) => ({ label_id })),
+      create: labelIds.map((label_id: string) => ({ label_id })),
     };
   }
 
@@ -328,23 +364,16 @@ export const updateTicket = async (
 };
 
 export const deleteTicket = async (id: string, workspaceId: string) => {
-  const existing = await prisma.ticket.findUnique({ where: { id } });
+  const existing = await prisma.ticket.findUnique({
+    where: { id },
+    select: { workspace_id: true },
+  });
   if (!existing || existing.workspace_id !== workspaceId) {
     return false;
   }
 
-  const deleteRecursive = async (ticketId: string) => {
-    const children = await prisma.ticket.findMany({
-      where: { parent_id: ticketId, parent_type: "ticket" },
-      select: { id: true },
-    });
-    for (const child of children) {
-      await deleteRecursive(child.id);
-    }
-    await prisma.ticket.delete({ where: { id: ticketId } });
-  };
-
-  await deleteRecursive(id);
+  const ids = await collectTicketSubtree(id);
+  await prisma.ticket.deleteMany({ where: { id: { in: ids } } });
   return true;
 };
 

@@ -13,5 +13,7 @@ export const toggle = async (req: Request, res: Response) => {
     userId,
     workspaceId,
   } = validated(req, toggleFavoriteSchema);
-  res.json(await toggleFavorite(userId, workspaceId, ticket_id));
+  const result = await toggleFavorite(userId, workspaceId, ticket_id);
+  if ("error" in result) return res.status(404).json({ error: "Ticket not found" });
+  res.json(result);
 };

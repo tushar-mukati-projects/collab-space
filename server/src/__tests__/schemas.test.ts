@@ -185,14 +185,14 @@ describe("createCommentSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("accepts optional author_id", () => {
+  it("strips client-supplied author_id so comments cannot be spoofed", () => {
     const result = createCommentSchema.safeParse({
       params: { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
       body: { content: "Great work!", author_id: "user_456" },
     });
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.body.author_id).toBe("user_456");
+      expect((result.data.body as Record<string, unknown>).author_id).toBeUndefined();
     }
   });
 });

@@ -230,6 +230,7 @@ describe("createTicket", () => {
   it("creates ticket labels when provided", async () => {
     (prisma.ticket.create as jest.Mock).mockResolvedValue(mockTicket);
     (prisma.activity.create as jest.Mock).mockResolvedValue({});
+    (prisma.label.findMany as jest.Mock).mockResolvedValue([{ id: "lbl_1" }, { id: "lbl_2" }]);
 
     await createTicket({ title: "Labeled ticket", labels: ["lbl_1", "lbl_2"] }, "user_1", "ws_1");
 
@@ -354,15 +355,15 @@ describe("updateTicket", () => {
 });
 
 describe("deleteTicket", () => {
-  it("deletes existing ticket and returns true", async () => {
+  it("deletes existing ticket and its subtree atomically and returns true", async () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(mockTicket);
     (prisma.ticket.findMany as jest.Mock).mockResolvedValue([]);
-    (prisma.ticket.delete as jest.Mock).mockResolvedValue({});
+    (prisma.ticket.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
 
     const result = await deleteTicket(TICKET_ID, "ws_1");
 
     expect(result).toBe(true);
-    expect(prisma.ticket.delete).toHaveBeenCalledWith({ where: { id: TICKET_ID } });
+    expect(prisma.ticket.deleteMany).toHaveBeenCalledWith({ where: { id: { in: [TICKET_ID] } } });
   });
 
   it("returns false for non-existent ticket", async () => {

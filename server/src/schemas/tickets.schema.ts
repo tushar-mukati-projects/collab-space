@@ -56,6 +56,5 @@ export const createCommentSchema = z.object({
   params: z.object({ id: z.string() }),
   body: z.object({
     content: z.string().min(1, "content is required"),
-    author_id: z.string().optional(),
   }),
 });

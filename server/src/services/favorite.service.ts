@@ -18,6 +18,12 @@ export const listFavorites = async (userId: string, workspaceId: string) => {
 };
 
 export const toggleFavorite = async (userId: string, workspaceId: string, ticketId: string) => {
+  const ticket = await prisma.ticket.findFirst({
+    where: { id: ticketId, workspace_id: workspaceId },
+    select: { id: true },
+  });
+  if (!ticket) return { error: "not_found" as const };
+
   const existing = await prisma.favorite.findUnique({
     where: {
       user_id_workspace_id_ticket_id: {

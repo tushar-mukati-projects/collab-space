@@ -1,5 +1,23 @@
 import { prisma } from "../db.js";
-import { deleteTicket } from "./ticket.service.js";
+import { collectTicketSubtree } from "./ticket.service.js";
+
+type TicketCounts = {
+  total: number;
+  backlog: number;
+  todo: number;
+  in_progress: number;
+  in_review: number;
+  done: number;
+};
+
+const emptyCounts = (): TicketCounts => ({
+  total: 0,
+  backlog: 0,
+  todo: 0,
+  in_progress: 0,
+  in_review: 0,
+  done: 0,
+});
 
 interface BoardRow {
   id: string;
@@ -16,17 +34,9 @@ const computeTicketCounts = async (boardId: string) => {
     _count: true,
   });
 
-  const ticket_counts = {
-    total: 0,
-    backlog: 0,
-    todo: 0,
-    in_progress: 0,
-    in_review: 0,
-    done: 0,
-  };
-
+  const ticket_counts = emptyCounts();
   for (const c of counts) {
-    const key = c.status as keyof typeof ticket_counts;
+    const key = c.status as keyof TicketCounts;
     if (key in ticket_counts) {
       ticket_counts[key] = c._count;
     }
@@ -36,17 +46,30 @@ const computeTicketCounts = async (boardId: string) => {
   return ticket_counts;
 };
 
-const serializeBoard = (
-  board: BoardRow,
-  ticket_counts: {
-    total: number;
-    backlog: number;
-    todo: number;
-    in_progress: number;
-    in_review: number;
-    done: number;
-  },
-) => {
+const computeTicketCountsForBoards = async (boardIds: string[]) => {
+  const byBoard = new Map<string, TicketCounts>();
+  boardIds.forEach((id) => byBoard.set(id, emptyCounts()));
+  if (boardIds.length === 0) return byBoard;
+
+  const counts = await prisma.ticket.groupBy({
+    by: ["parent_id", "status"],
+    where: { parent_id: { in: boardIds }, parent_type: "board" },
+    _count: true,
+  });
+
+  for (const c of counts) {
+    if (!c.parent_id) continue;
+    const bucket = byBoard.get(c.parent_id);
+    if (!bucket) continue;
+    const key = c.status as keyof TicketCounts;
+    if (key in bucket) bucket[key] = c._count;
+    bucket.total += c._count;
+  }
+
+  return byBoard;
+};
+
+const serializeBoard = (board: BoardRow, ticket_counts: TicketCounts) => {
   return {
     id: board.id,
     name: board.name,
@@ -63,11 +86,9 @@ export const listBoards = async (workspaceId: string) => {
     orderBy: { created_at: "desc" },
   });
 
-  return Promise.all(
-    boards.map(async (board: any) => {
-      const ticket_counts = await computeTicketCounts(board.id);
-      return serializeBoard(board, ticket_counts);
-    }),
+  const countsByBoard = await computeTicketCountsForBoards(boards.map((b: BoardRow) => b.id));
+  return boards.map((board: BoardRow) =>
+    serializeBoard(board, countsByBoard.get(board.id) ?? emptyCounts()),
   );
 };
 
@@ -87,14 +108,7 @@ export const createBoard = async (name: string, workspaceId: string) => {
     data: { name, workspace_id: workspaceId },
   });
 
-  return serializeBoard(board, {
-    total: 0,
-    backlog: 0,
-    todo: 0,
-    in_progress: 0,
-    in_review: 0,
-    done: 0,
-  });
+  return serializeBoard(board, emptyCounts());
 };
 
 export const deleteBoard = async (id: string, workspaceId: string) => {
@@ -105,10 +119,15 @@ export const deleteBoard = async (id: string, workspaceId: string) => {
     where: { parent_id: id, parent_type: "board" },
     select: { id: true },
   });
+
+  const ticketIds: string[] = [];
   for (const ticket of boardTickets) {
-    await deleteTicket(ticket.id, workspaceId);
+    ticketIds.push(...(await collectTicketSubtree(ticket.id)));
   }
 
-  await prisma.board.delete({ where: { id } });
+  await prisma.$transaction([
+    prisma.ticket.deleteMany({ where: { id: { in: ticketIds } } }),
+    prisma.board.delete({ where: { id } }),
+  ]);
   return true;
 };
