@@ -22,7 +22,7 @@ spec:
             - name: PORT
               value: "4000"
             - name: CLIENT_URL
-              value: "http://localhost:3000"
+              value: "https://collabspace.io"
             - name: NODE_ENV
               value: "production"
           envFrom:
@@ -48,7 +48,7 @@ metadata:
   name: server
   namespace: collabspace
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: server
   ports:
