@@ -135,7 +135,6 @@ export const PermissionsSettings = () => {
       );
       toast.success(`${add ? "Granted" : "Revoked"} permission for ${role}`);
     } catch {
-      toast.error("Failed to update permission");
     } finally {
       setSaving(null);
     }

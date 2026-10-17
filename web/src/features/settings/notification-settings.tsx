@@ -130,7 +130,6 @@ export const NotificationSettings = () => {
               </span>
             </div>
             <TestButton
-              type="email"
               label="Test"
               onClick={async () => {
                 const res = await axiosInstance.post("/settings/test-email");
@@ -171,7 +170,6 @@ export const NotificationSettings = () => {
               </span>
             </div>
             <TestButton
-              type="push"
               label="Test"
               onClick={async () => {
                 if (!("Notification" in window)) throw new Error("Not supported");
@@ -204,12 +202,11 @@ export const NotificationSettings = () => {
 };
 
 interface TestButtonProps {
-  type: string;
   label: string;
   onClick: () => Promise<void>;
 }
 
-const TestButton = ({ type, label, onClick }: TestButtonProps) => {
+const TestButton = ({ label, onClick }: TestButtonProps) => {
   const [loading, setLoading] = React.useState(false);
 
   const handleClick = async (e: React.MouseEvent) => {
@@ -218,7 +215,6 @@ const TestButton = ({ type, label, onClick }: TestButtonProps) => {
     try {
       await onClick();
     } catch {
-      toast.error(`Failed to test ${type}`);
     } finally {
       setLoading(false);
     }

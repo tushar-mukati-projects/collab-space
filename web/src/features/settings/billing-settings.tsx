@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Check, CreditCard, ExternalLink, Loader2, AlertTriangle, Zap } from "lucide-react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -121,14 +120,12 @@ export const BillingSettings = () => {
 
   const handleUpgrade = (plan: "pro" | "enterprise") => {
     if (!canBilling) return;
-    checkoutMutation.mutate({ plan }, { onError: () => toast.error("Failed to start checkout") });
+    checkoutMutation.mutate({ plan });
   };
 
   const handleManageBilling = () => {
     if (!canBilling) return;
-    portalMutation.mutate(undefined, {
-      onError: () => toast.error("Failed to open billing portal"),
-    });
+    portalMutation.mutate(undefined);
   };
 
   if (isLoading || !subscription) {

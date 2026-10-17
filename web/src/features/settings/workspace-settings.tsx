@@ -60,7 +60,7 @@ export const WorkspaceSettings = () => {
   const canRemove = usePermission("member:remove");
   const canChangeRole = usePermission("member:role");
 
-  const invalidateWs = () => queryClient.invalidateQueries({ queryKey: ["settings", "workspace"] });
+  const invalidateWs = () => queryClient.invalidateQueries({ queryKey: ["workspace"] });
 
   const handleInvite = async () => {
     const email = inviteEmail.trim().toLowerCase();
@@ -82,9 +82,7 @@ export const WorkspaceSettings = () => {
       await inviteMutation.mutateAsync(email);
       setInviteEmail("");
       toast.success("Invitation sent");
-    } catch {
-      toast.error("Failed to send invitation");
-    }
+    } catch {}
   };
 
   const handleRemoveMember = async (memberId: string) => {
@@ -93,9 +91,7 @@ export const WorkspaceSettings = () => {
       await axiosInstance.delete(`/workspaces/${workspace.id}/members/${memberId}`);
       invalidateWs();
       toast.success("Member removed");
-    } catch {
-      toast.error("Failed to remove member");
-    }
+    } catch {}
   };
 
   const handleRevokeInvite = async (email: string) => {
@@ -104,9 +100,7 @@ export const WorkspaceSettings = () => {
       await axiosInstance.post(`/workspaces/${workspace.id}/revoke-invite`, { email });
       invalidateWs();
       toast.success("Invitation revoked");
-    } catch {
-      toast.error("Failed to revoke invitation");
-    }
+    } catch {}
   };
 
   const handleRoleChange = async (memberId: string, role: string) => {
@@ -115,9 +109,7 @@ export const WorkspaceSettings = () => {
       await axiosInstance.patch(`/workspaces/${workspace.id}/members/${memberId}`, { role });
       invalidateWs();
       toast.success("Role updated");
-    } catch {
-      toast.error("Failed to update role");
-    }
+    } catch {}
   };
 
   if (isLoading || !workspace) {
