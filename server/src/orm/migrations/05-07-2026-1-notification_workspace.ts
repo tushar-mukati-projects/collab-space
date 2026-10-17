@@ -5,6 +5,22 @@ export const up = async (prisma: PrismaClient) => {
     `ALTER TABLE "Notification" ADD COLUMN IF NOT EXISTS workspace_id TEXT`,
   );
 
+  await prisma.$executeRawUnsafe(`
+    UPDATE "Notification" n SET workspace_id = t.workspace_id
+    FROM "Ticket" t
+    WHERE n.workspace_id IS NULL AND n.link = '/ticket/' || t.id
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    UPDATE "Notification" n SET workspace_id = (
+      SELECT wm.workspace_id FROM "WorkspaceMember" wm
+      WHERE wm.user_id = n.user_id
+      ORDER BY wm.joined_at
+      LIMIT 1
+    )
+    WHERE n.workspace_id IS NULL
+  `);
+
   await prisma.$executeRawUnsafe(`DELETE FROM "Notification" WHERE workspace_id IS NULL`);
 
   await prisma.$executeRawUnsafe(
