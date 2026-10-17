@@ -2,6 +2,7 @@ import { prisma } from "../db.js";
 import { WORKSPACE_ROLES } from "../constants.js";
 import { logger } from "../logger.js";
 import { seedWorkspacePermissions } from "./permission.service.js";
+import { syncSubscriptionSeats } from "./billing.service.js";
 
 type ClerkUser = { id: string; email: string; name: string; avatar: string };
 
@@ -69,10 +70,13 @@ export const createWorkspace = async (
   userId: string,
   clerkUser: ClerkUser | null,
 ) => {
-  const slug = name
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
+  const baseSlug =
+    name
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/^-+|-+$/g, "") || "workspace";
+  const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 8)}`;
 
   const words = name.trim().split(/\s+/);
   const initials =
@@ -168,6 +172,14 @@ export const joinWorkspace = async (
     return { error: "forbidden" as const, workspace: null };
   }
 
+  const existingMember = await prisma.workspaceMember.findUnique({
+    where: { user_id_workspace_id: { user_id: userId, workspace_id: workspaceId } },
+    select: { user_id: true },
+  });
+  if (existingMember) {
+    return { error: null, workspace };
+  }
+
   if (clerkUser) {
     await upsertUser(clerkUser);
   }
@@ -193,6 +205,7 @@ export const joinWorkspace = async (
     return updated;
   });
 
+  await syncSubscriptionSeats(workspaceId);
   logger.info("User joined workspace", { workspaceId, userId });
   return { error: null, workspace: updatedWorkspace };
 };
@@ -228,15 +241,25 @@ export const revokeInvite = async (workspaceId: string, email: string) => {
   return { error: null };
 };
 
+const isLastAdmin = async (workspaceId: string, targetRole: string) => {
+  if (targetRole !== WORKSPACE_ROLES.ADMIN) return false;
+  const adminCount = await prisma.workspaceMember.count({
+    where: { workspace_id: workspaceId, role: WORKSPACE_ROLES.ADMIN },
+  });
+  return adminCount <= 1;
+};
+
 export const removeMember = async (workspaceId: string, memberId: string, callerId: string) => {
   const target = await prisma.workspaceMember.findUnique({
     where: { user_id_workspace_id: { user_id: memberId, workspace_id: workspaceId } },
   });
   if (!target) return { error: "not_found" as const };
+  if (await isLastAdmin(workspaceId, target.role)) return { error: "last_admin" as const };
 
   await prisma.workspaceMember.delete({
     where: { user_id_workspace_id: { user_id: memberId, workspace_id: workspaceId } },
   });
+  await syncSubscriptionSeats(workspaceId);
   logger.info("Member removed from workspace", { workspaceId, memberId, callerId });
   return { error: null };
 };
@@ -251,6 +274,8 @@ export const changeMemberRole = async (
     where: { user_id_workspace_id: { user_id: memberId, workspace_id: workspaceId } },
   });
   if (!target) return { error: "not_found" as const };
+  if (role !== WORKSPACE_ROLES.ADMIN && (await isLastAdmin(workspaceId, target.role)))
+    return { error: "last_admin" as const };
 
   await prisma.workspaceMember.update({
     where: { user_id_workspace_id: { user_id: memberId, workspace_id: workspaceId } },

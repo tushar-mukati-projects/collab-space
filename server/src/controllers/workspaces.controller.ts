@@ -31,6 +31,13 @@ const clerkUserObj = (u: any) => {
   };
 };
 
+const verifiedEmails = (u: any): Set<string> =>
+  new Set(
+    (u.emailAddresses ?? [])
+      .filter((e: any) => e.verification?.status === "verified")
+      .map((e: any) => String(e.emailAddress).toLowerCase()),
+  );
+
 export const create = async (req: Request, res: Response) => {
   const {
     body: { name },
@@ -43,7 +50,12 @@ export const create = async (req: Request, res: Response) => {
 export const getInvitations = async (req: Request, res: Response) => {
   const {
     query: { email },
+    userId,
   } = validated(req, getInvitationsSchema);
+  const cu = await clerkClient.users.getUser(userId);
+  if (!verifiedEmails(cu).has(email.toLowerCase())) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
   res.json(await getInvitationsSvc(email));
 };
 
@@ -54,6 +66,9 @@ export const join = async (req: Request, res: Response) => {
     userId,
   } = validated(req, joinWorkspaceSchema);
   const cu = await clerkClient.users.getUser(userId);
+  if (!verifiedEmails(cu).has(email.toLowerCase())) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
   const result = await joinWorkspace(id, email, userId, clerkUserObj(cu));
   if (result.error === "not_found") return res.status(404).json({ error: "Workspace not found" });
   if (result.error === "forbidden") return res.status(403).json({ error: "Forbidden" });
@@ -65,7 +80,9 @@ export const invite = async (req: Request, res: Response) => {
     params: { id },
     body: { email },
     userId,
+    workspaceId,
   } = validated(req, inviteToWorkspaceSchema);
+  if (id !== workspaceId) return res.status(403).json({ error: "Forbidden" });
   const result = await inviteToWorkspace(id, email, userId);
   if (result.error === "not_found") return res.status(404).json({ error: "Workspace not found" });
   try {
@@ -84,7 +101,9 @@ export const revokeInvite = async (req: Request, res: Response) => {
   const {
     params: { id },
     body: { email },
+    workspaceId,
   } = validated(req, revokeInviteSchema);
+  if (id !== workspaceId) return res.status(403).json({ error: "Forbidden" });
   const result = await revokeInviteSvc(id, email);
   if (result.error === "not_found") return res.status(404).json({ error: "Workspace not found" });
   res.json({ success: true });
@@ -94,9 +113,13 @@ export const removeMember = async (req: Request, res: Response) => {
   const {
     params: { id, memberId },
     userId,
+    workspaceId,
   } = validated(req, removeMemberSchema);
+  if (id !== workspaceId) return res.status(403).json({ error: "Forbidden" });
   const result = await removeMemberSvc(id, memberId, userId);
   if (result.error === "not_found") return res.status(404).json({ error: "Member not found" });
+  if (result.error === "last_admin")
+    return res.status(400).json({ error: "Cannot remove the last admin" });
   res.json({ success: true });
 };
 
@@ -105,8 +128,12 @@ export const changeRole = async (req: Request, res: Response) => {
     params: { id, memberId },
     body: { role },
     userId,
+    workspaceId,
   } = validated(req, changeRoleSchema);
+  if (id !== workspaceId) return res.status(403).json({ error: "Forbidden" });
   const result = await changeRoleSvc(id, memberId, role, userId);
   if (result.error === "not_found") return res.status(404).json({ error: "Member not found" });
+  if (result.error === "last_admin")
+    return res.status(400).json({ error: "Cannot demote the last admin" });
   res.json({ success: true });
 };

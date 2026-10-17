@@ -38,6 +38,13 @@ export const workspaceMiddleware = async (req: Request, res: Response, next: Nex
   next();
 };
 
+export const requireWorkspace = (req: Request, res: Response, next: NextFunction) => {
+  if (!(req as any).workspaceId) {
+    return res.status(403).json({ error: "No active workspace" });
+  }
+  next();
+};
+
 export const requirePermission = (...permissions: Permission[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const userPerms = (req as any).permissions as Set<Permission> | undefined;
