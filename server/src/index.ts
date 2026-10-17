@@ -54,10 +54,13 @@ const collabWss = startCollab();
 startMeetingSignaling(server, config.CLIENT_URL);
 
 server.on("upgrade", (req, socket, head) => {
-  if ((req.url ?? "").startsWith("/collab")) {
+  const url = req.url ?? "";
+  if (url.startsWith("/collab")) {
     collabWss.handleUpgrade(req, socket, head, (ws) => {
       collabWss.emit("connection", ws, req);
     });
+  } else if (!url.startsWith("/meeting-socket")) {
+    socket.destroy();
   }
 });
 

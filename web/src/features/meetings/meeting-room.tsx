@@ -31,6 +31,7 @@ interface MeetingRoomProps {
   users: User[];
   currentUserId: string;
   currentUserName: string;
+  getToken: () => Promise<string | null>;
   onLeave: () => void;
 }
 
@@ -49,6 +50,7 @@ export const MeetingRoom = ({
   users,
   currentUserId,
   currentUserName,
+  getToken,
   onLeave,
 }: MeetingRoomProps) => {
   const {
@@ -66,7 +68,12 @@ export const MeetingRoom = ({
     toggleScreenShare,
     sendChatMessage,
     disconnect,
-  } = useWebRTC({ roomId: meeting.room_id, userId: currentUserId, userName: currentUserName });
+  } = useWebRTC({
+    roomId: meeting.room_id,
+    userId: currentUserId,
+    userName: currentUserName,
+    getToken,
+  });
 
   const [sidePanel, setSidePanel] = React.useState<SidePanel>(null);
   const [chatInput, setChatInput] = React.useState("");

@@ -58,15 +58,34 @@ export const createMeeting = async (
   },
   workspaceId: string,
 ) => {
+  const startTime = new Date(data.start_time);
+  const endTime = new Date(data.end_time);
+  if (
+    Number.isNaN(startTime.getTime()) ||
+    Number.isNaN(endTime.getTime()) ||
+    endTime <= startTime
+  ) {
+    return { error: "invalid_time" as const, meeting: null };
+  }
+
   const roomId = "room_" + randomUUID().replace(/-/g, "").slice(0, 25);
-  const participantIds: string[] = Array.isArray(data.participants) ? data.participants : [];
+  const requested: string[] = Array.isArray(data.participants) ? data.participants : [];
+
+  const members =
+    requested.length > 0
+      ? await prisma.workspaceMember.findMany({
+          where: { workspace_id: workspaceId, user_id: { in: requested } },
+          select: { user_id: true },
+        })
+      : [];
+  const participantIds = members.map((m: { user_id: string }) => m.user_id);
 
   const meeting = await prisma.meeting.create({
     data: {
       title: data.title,
       description: data.description ?? "",
-      start_time: new Date(data.start_time),
-      end_time: new Date(data.end_time),
+      start_time: startTime,
+      end_time: endTime,
       room_id: roomId,
       workspace_id: workspaceId,
       participants: {
@@ -76,5 +95,5 @@ export const createMeeting = async (
     include: participantInclude,
   });
 
-  return toMeetingDTO(meeting);
+  return { error: null, meeting: toMeetingDTO(meeting) };
 };

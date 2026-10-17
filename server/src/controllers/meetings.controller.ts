@@ -9,7 +9,10 @@ export const list = async (req: Request, res: Response) => {
 };
 export const create = async (req: Request, res: Response) => {
   const { body, workspaceId } = validated(req, createMeetingSchema);
-  res.status(201).json(await createMeeting(body, workspaceId));
+  const result = await createMeeting(body, workspaceId);
+  if (result.error === "invalid_time")
+    return res.status(400).json({ error: "End time must be after start time" });
+  res.status(201).json(result.meeting);
 };
 export const getOne = async (req: Request, res: Response) => {
   const {
