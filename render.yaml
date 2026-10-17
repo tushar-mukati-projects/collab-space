@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: collab-space-api
+    runtime: node
+    region: singapore
+    plan: free
+    rootDir: server
+    buildCommand: bun install --frozen-lockfile && bun prisma generate
+    startCommand: bun run migrate && bun src/index.ts
+    healthCheckPath: /api/health
+    autoDeploy: true
