@@ -9,15 +9,16 @@ import { listNotifications, markNotifications } from "../services/notification.s
 import { savePushSubscription, removePushSubscription } from "../services/push.service.js";
 
 export const list = async (req: Request, res: Response) => {
-  const { userId } = validated(req);
-  res.json(await listNotifications(userId));
+  const { userId, workspaceId } = validated(req);
+  res.json(await listNotifications(userId, workspaceId));
 };
 export const markRead = async (req: Request, res: Response) => {
   const {
     body: { ids, status },
     userId,
+    workspaceId,
   } = validated(req, markNotificationsSchema);
-  await markNotifications(ids, status.read, userId);
+  await markNotifications(ids, status.read, userId, workspaceId);
   res.json({ success: true });
 };
 export const subscribe = async (req: Request, res: Response) => {

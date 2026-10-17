@@ -1,8 +1,8 @@
 import { prisma } from "../db.js";
 
-export const listNotifications = async (userId: string) => {
+export const listNotifications = async (userId: string, workspaceId: string) => {
   const notifications = await prisma.notification.findMany({
-    where: { user_id: userId },
+    where: { user_id: userId, workspace_id: workspaceId },
     orderBy: { created_at: "desc" },
   });
 
@@ -18,11 +18,17 @@ export const listNotifications = async (userId: string) => {
   }));
 };
 
-export const markNotifications = async (ids: string[], read: boolean, userId: string) => {
+export const markNotifications = async (
+  ids: string[],
+  read: boolean,
+  userId: string,
+  workspaceId: string,
+) => {
   await prisma.notification.updateMany({
     where: {
       id: { in: ids },
       user_id: userId,
+      workspace_id: workspaceId,
     },
     data: { read },
   });

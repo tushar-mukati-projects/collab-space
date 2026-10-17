@@ -114,6 +114,7 @@ model Workspace {
   tickets            Ticket[]
   labels             Label[]
   meetings           Meeting[]
+  notifications      Notification[]
   status_definitions StatusDefinition[]
   notification_prefs NotificationPrefs[]
   appearance_prefs   AppearancePrefs[]
@@ -261,16 +262,18 @@ model Notification {
   type       NotificationType
   title      String
   message    String
-  read       Boolean          @default(false)
-  link       String
-  actor_id   String
-  user_id    String
-  created_at DateTime         @default(now()) @db.Timestamptz(6)
+  read         Boolean          @default(false)
+  link         String
+  actor_id     String
+  user_id      String
+  workspace_id String
+  created_at   DateTime         @default(now()) @db.Timestamptz(6)
 
-  actor     User @relation("NotificationActor", fields: [actor_id], references: [id], onDelete: Cascade)
-  recipient User @relation("NotificationRecipient", fields: [user_id], references: [id], onDelete: Cascade)
+  actor     User      @relation("NotificationActor", fields: [actor_id], references: [id], onDelete: Cascade)
+  recipient User      @relation("NotificationRecipient", fields: [user_id], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
 
-  @@index([user_id, read, created_at(sort: Desc)])
+  @@index([user_id, workspace_id, read, created_at(sort: Desc)])
 }
 
 model ProcessedWebhookEvent {

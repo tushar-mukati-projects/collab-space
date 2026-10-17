@@ -18,6 +18,8 @@ export const savePushSubscription = async (
       auth,
     },
     update: {
+      user_id: userId,
+      workspace_id: workspaceId,
       p256dh,
       auth,
     },

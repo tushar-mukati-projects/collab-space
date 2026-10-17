@@ -6,12 +6,16 @@ jest.mock("../db", () => ({
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      deleteMany: jest.fn(),
       groupBy: jest.fn(),
     },
     activity: { create: jest.fn(), findMany: jest.fn() },
     comment: { findMany: jest.fn(), create: jest.fn() },
     user: { findUnique: jest.fn() },
     notification: { create: jest.fn() },
+    workspaceMember: { findUnique: jest.fn() },
+    label: { findMany: jest.fn() },
+    notificationPrefs: { findUnique: jest.fn() },
   },
 }));
 
@@ -295,6 +299,8 @@ describe("updateTicket", () => {
     (prisma.ticket.findUnique as jest.Mock).mockResolvedValue(existingTicket);
     (prisma.ticket.update as jest.Mock).mockResolvedValue({ ...mockTicket, assignee_id: "user_2" });
     (prisma.ticket.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.workspaceMember.findUnique as jest.Mock).mockResolvedValue({ user_id: "user_2" });
+    (prisma.notificationPrefs.findUnique as jest.Mock).mockResolvedValue(null);
     (prisma.user.findUnique as jest.Mock).mockImplementation(({ where }: any) => {
       if (where.id === "user_2")
         return Promise.resolve({ email: "new@test.com", name: "New User" });
@@ -321,6 +327,7 @@ describe("updateTicket", () => {
         link: `/ticket/${TICKET_ID}`,
         actor_id: "user_1",
         user_id: "user_2",
+        workspace_id: "ws_1",
       },
     });
 

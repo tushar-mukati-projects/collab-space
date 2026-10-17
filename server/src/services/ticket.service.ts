@@ -273,11 +273,8 @@ export const updateTicket = async (
     });
   }
 
-  if (
-    data.assignee !== undefined &&
-    data.assignee !== null &&
-    data.assignee !== existing.assignee_id
-  ) {
+  const newAssigneeId = updateData.assignee_id as string | null | undefined;
+  if (newAssigneeId && newAssigneeId !== existing.assignee_id) {
     await prisma.activity.create({
       data: {
         type: "ticket_assigned",
@@ -287,12 +284,18 @@ export const updateTicket = async (
       },
     });
 
-    const [assignee, actor] = await Promise.all([
-      prisma.user.findUnique({ where: { id: data.assignee }, select: { email: true, name: true } }),
+    const [assignee, actor, prefs] = await Promise.all([
+      prisma.user.findUnique({ where: { id: newAssigneeId }, select: { email: true, name: true } }),
       prisma.user.findUnique({ where: { id: userId }, select: { name: true } }),
+      prisma.notificationPrefs.findUnique({
+        where: { user_id_workspace_id: { user_id: newAssigneeId, workspace_id: workspaceId } },
+      }),
     ]);
 
-    if (assignee) {
+    const wantsInApp = prefs?.ticket_assigned ?? true;
+    const wantsEmail = wantsInApp && (prefs?.email_enabled ?? true);
+
+    if (assignee && wantsInApp) {
       await prisma.notification.create({
         data: {
           type: "ticket_assigned",
@@ -300,10 +303,13 @@ export const updateTicket = async (
           message: `${actor?.name ?? "Someone"} assigned you to "${ticket.title}"`,
           link: `/ticket/${ticket.id}`,
           actor_id: userId,
-          user_id: data.assignee,
+          user_id: newAssigneeId,
+          workspace_id: workspaceId,
         },
       });
+    }
 
+    if (assignee && wantsEmail) {
       sendTicketAssignedEmail(
         assignee.email,
         assignee.name,
