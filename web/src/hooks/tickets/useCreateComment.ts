@@ -9,13 +9,18 @@ export const useCreateComment = () => {
     mutationFn: async (input: CreateCommentInput) => {
       const response = await axiosInstance.post<Comment>(API_ROUTES.comments(input.ticket_id), {
         content: input.content,
-        author_id: input.author_id,
       });
       return response.data;
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.comments(variables.ticket_id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.activities(variables.ticket_id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.detail(variables.ticket_id),
       });
     },
   });

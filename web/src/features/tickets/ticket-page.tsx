@@ -33,11 +33,11 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, toDueDateISO } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TicketEditor, getCollabColor } from "./ticket-editor";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { useFetchWorkspace } from "@/hooks/workspace";
 import { CreateTicketDialog } from "./create-ticket-dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -178,8 +178,9 @@ interface TicketPageProps {
 
 export const TicketPage = ({ ticketId }: TicketPageProps) => {
   const router = useRouter();
-  const { user: clerkUser } = useUser();
-  const { data: workspace } = useFetchWorkspace();
+  const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
+  const { getToken } = useAuth();
+  const { data: workspace, isLoading: workspaceLoading } = useFetchWorkspace();
   const [isDeleted, setIsDeleted] = React.useState(false);
   const fetchEnabled = !isDeleted;
   const { data: ticket, isLoading: ticketLoading } = useFetchTicket(ticketId, fetchEnabled);
@@ -215,9 +216,12 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
         name: userName,
         color: getCollabColor(userId),
       },
-      token: `${userId}:${wsId}`,
+      token: async () => (await getToken()) ?? "",
     };
-  }, [ticketId, userId, userName, wsId]);
+  }, [ticketId, userId, userName, wsId, getToken]);
+
+  const collabPending =
+    !!process.env.NEXT_PUBLIC_COLLAB_URL && !collabConfig && (!clerkLoaded || workspaceLoading);
 
   const parentTicketId = ticket?.parent_type === "ticket" ? (ticket.parent_id ?? "") : "";
   const { data: parentTicket } = useFetchTicket(parentTicketId, fetchEnabled);
@@ -292,7 +296,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
   );
 
   const handleContentChange = (value: string) => {
-    if (collabConfig) return;
+    if (collabConfig || collabPending) return;
     debouncedSaveContent(value);
   };
 
@@ -328,7 +332,6 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
     if (commentText.trim()) {
       createCommentMutation.mutate({
         content: commentText.trim(),
-        author_id: "usr_01",
         ticket_id: ticketId,
       });
       setCommentText("");
@@ -725,7 +728,7 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
                     mode="single"
                     selected={selectedDate}
                     onSelect={(date) => {
-                      updatePropertyDraft("due_date", date ? date.toISOString() : null);
+                      updatePropertyDraft("due_date", toDueDateISO(date));
                       setDueDateOpen(false);
                     }}
                   />
@@ -1086,13 +1089,19 @@ export const TicketPage = ({ ticketId }: TicketPageProps) => {
 
         <ScrollArea className="min-h-0 flex-1">
           <div className="mx-auto w-full max-w-6xl py-4 sm:px-10 lg:px-16 lg:py-6">
-            <TicketEditor
-              key={collabConfig ? `${ticketId}-collab` : ticketId}
-              initialContent={ticket.content ?? ""}
-              onChange={handleContentChange}
-              mentionUsers={users.map((u) => ({ id: u.id, name: u.name }))}
-              collaboration={collabConfig}
-            />
+            {collabPending ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 className="text-muted-foreground size-5 animate-spin" />
+              </div>
+            ) : (
+              <TicketEditor
+                key={collabConfig ? `${ticketId}-collab` : ticketId}
+                initialContent={ticket.content ?? ""}
+                onChange={handleContentChange}
+                mentionUsers={users.map((u) => ({ id: u.id, name: u.name }))}
+                collaboration={collabConfig}
+              />
+            )}
 
             <div className="px-4 sm:px-0">
               <Separator className="my-6" />

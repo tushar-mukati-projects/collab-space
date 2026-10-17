@@ -191,7 +191,7 @@ export const ticketHandlers = [
     const comment: Comment = {
       id: crypto.randomUUID(),
       content: input.content,
-      author_id: input.author_id,
+      author_id: "usr_01",
       ticket_id: ticketId,
       created_at: now,
     };

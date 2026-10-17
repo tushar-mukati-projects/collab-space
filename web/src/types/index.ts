@@ -240,7 +240,6 @@ export interface Attachment {
 
 export interface CreateCommentInput {
   content: string;
-  author_id: string;
   ticket_id: string;
 }
 

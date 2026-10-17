@@ -20,7 +20,7 @@ import {
   User as UserIcon,
   Star,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, toDueDateISO } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -396,7 +396,7 @@ export const TicketDetail = ({
                   selected={selectedDate}
                   onSelect={(date) =>
                     onUpdate(ticket.id, {
-                      due_date: date ? date.toISOString() : null,
+                      due_date: toDueDateISO(date),
                     })
                   }
                 />

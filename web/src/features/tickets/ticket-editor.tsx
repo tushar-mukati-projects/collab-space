@@ -20,7 +20,7 @@ const suggestionMenuKeys = createExtension(({ editor }) => ({
 interface CollaborationConfig {
   documentName: string;
   user: { name: string; color: string };
-  token: string;
+  token: string | (() => Promise<string>);
 }
 
 interface TicketEditorProps {
@@ -75,14 +75,20 @@ export const TicketEditor = ({
   const [editor, setEditor] = React.useState<BlockNoteEditor | null>(null);
   const providerRef = React.useRef<{ destroy: () => void } | null>(null);
 
+  const initialContentRef = React.useRef(initialContent);
+  initialContentRef.current = initialContent;
+
   React.useEffect(() => {
     let cancelled = false;
+    let localDoc: { destroy: () => void } | null = null;
 
     (async () => {
       if (collaboration) {
         const Y = await import("yjs");
         const { HocuspocusProvider } = await import("@hocuspocus/provider");
+        if (cancelled) return;
         const doc = new Y.Doc();
+        localDoc = doc;
 
         const provider = new HocuspocusProvider({
           url: process.env.NEXT_PUBLIC_COLLAB_URL!,
@@ -102,11 +108,24 @@ export const TicketEditor = ({
             showCursorLabels: "activity",
           },
         });
+
+        const seedContent = initialContentRef.current;
+        provider.on("synced", async () => {
+          if (cancelled || !seedContent) return;
+          const meta = doc.getMap("meta");
+          const fragment = doc.getXmlFragment("document-store");
+          if (meta.get("seeded") || fragment.length > 0) return;
+          meta.set("seeded", true);
+          const blocks = await ed.tryParseMarkdownToBlocks(seedContent);
+          if (!cancelled && fragment.length === 0) ed.replaceBlocks(ed.document, blocks);
+        });
+
         if (!cancelled) setEditor(ed);
       } else {
         const ed = BlockNoteEditor.create({ uploadFile, extensions: [suggestionMenuKeys()] });
-        if (initialContent) {
-          const blocks = await ed.tryParseMarkdownToBlocks(initialContent);
+        const content = initialContentRef.current;
+        if (content) {
+          const blocks = await ed.tryParseMarkdownToBlocks(content);
           if (!cancelled) ed.replaceBlocks(ed.document, blocks);
         }
         if (!cancelled) setEditor(ed);
@@ -117,8 +136,9 @@ export const TicketEditor = ({
       cancelled = true;
       providerRef.current?.destroy();
       providerRef.current = null;
+      localDoc?.destroy();
     };
-  }, [collaboration, initialContent]);
+  }, [collaboration]);
 
   const onChangeRef = React.useRef(onChange);
   onChangeRef.current = onChange;

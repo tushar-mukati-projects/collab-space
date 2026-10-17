@@ -17,7 +17,7 @@ import {
   Tag,
   X,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, toDueDateISO } from "@/lib/utils";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -126,7 +126,7 @@ export const CreateTicketDialog = ({
         priority,
         assignee,
         labels: selectedLabels,
-        due_date: dueDate ? dueDate.toISOString() : null,
+        due_date: toDueDateISO(dueDate),
         parent_id: parentId ?? boardId,
         parent_type: parentType ?? (boardId ? "board" : undefined),
       });
